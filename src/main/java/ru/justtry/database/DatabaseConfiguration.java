@@ -13,10 +13,10 @@ import javax.inject.Named;
 @PropertySource("classpath:application.properties")
 public class DatabaseConfiguration
 {
-    @Value("${server.port:8765}")
+    @Value("${database.port:27017}")
     private Integer port;
 
-    @Value("${server.host:localhost}")
+    @Value("${database.host:localhost}")
     private String host;
 
     @Value("${database.name}")

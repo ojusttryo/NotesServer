@@ -1,7 +1,7 @@
 package ru.justtry.attributes;
 
-public class Attribute {
-
+public class Attribute
+{
     private String name = "";
     private String method = "none";
     private boolean visible = true;
@@ -13,72 +13,89 @@ public class Attribute {
      * - int - numeric field
      */
     private String type;
-    private int minWidth = 0;
-    private int maxWidth = 0;
+
+    private String minWidth = "0";
+    private String maxWidth = "0";
     private int linesCount = 1;
     private String alignment = "left";
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name)
+    {
         this.name = name;
     }
 
-    public String getMethod() {
+    public String getMethod()
+    {
         return method;
     }
 
-    public void setMethod(String method) {
+    public void setMethod(String method)
+    {
         this.method = method;
     }
 
-    public boolean isVisible() {
+    public boolean getVisible()
+    {
         return visible;
     }
 
-    public void setVisible(boolean visible) {
+    public void setVisible(boolean visible)
+    {
         this.visible = visible;
     }
 
-    public String getType() {
+    public String getType()
+    {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(String type)
+    {
         this.type = type;
     }
 
-    public int getMinWidth() {
+    public String getMinWidth()
+    {
         return minWidth;
     }
 
-    public void setMinWidth(int minWidth) {
+    public void setMinWidth(String minWidth)
+    {
         this.minWidth = minWidth;
     }
 
-    public int getMaxWidth() {
+    public String getMaxWidth()
+    {
         return maxWidth;
     }
 
-    public void setMaxWidth(int maxWidth) {
+    public void setMaxWidth(String maxWidth)
+    {
         this.maxWidth = maxWidth;
     }
 
-    public int getLinesCount() {
+    public int getLinesCount()
+    {
         return linesCount;
     }
 
-    public void setLinesCount(int linesCount) {
+    public void setLinesCount(int linesCount)
+    {
         this.linesCount = linesCount;
     }
 
-    public String getAlignment() {
+    public String getAlignment()
+    {
         return alignment;
     }
 
-    public void setAlignment(String alignment) {
+    public void setAlignment(String alignment)
+    {
         this.alignment = alignment;
     }
 }

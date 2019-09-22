@@ -3,6 +3,32 @@ package ru.justtry.attributes;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Entity {
-    private List<Attribute> attributes = new ArrayList<Attribute>();
+/**
+ * The metadata of some notes entity (Movies, Books, etc).
+ */
+public class Entity
+{
+    private String name;
+    private List<String> attributes = new ArrayList<>();
+
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public List<String> getAttributes()
+    {
+        return attributes;
+    }
+
+    public void setAttributes(List<String> attributes)
+    {
+        this.attributes = attributes;
+    }
 }
