@@ -1,6 +1,8 @@
 package ru.justtry.attributes;
 
-public class Attribute
+import ru.justtry.shared.Identifiable;
+
+public class Attribute extends Identifiable
 {
     private String name = "";
     private String method = "none";
@@ -18,6 +20,7 @@ public class Attribute
     private String maxWidth = "0";
     private int linesCount = 1;
     private String alignment = "left";
+
 
     public String getName()
     {

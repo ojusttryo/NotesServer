@@ -8,20 +8,26 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import org.apache.log4j.Logger;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import ru.justtry.attributes.*;
 import ru.justtry.shared.Mapper;
+import ru.justtry.shared.Validator;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import static com.mongodb.client.model.Filters.eq;
 import static ru.justtry.attributes.AttributeConstants.*;
 import static ru.justtry.attributes.EntityConstants.*;
 import static ru.justtry.shared.Constants.*;
+
 
 //@Component
 //@PropertySource("classpath:application.properties")
@@ -69,7 +75,7 @@ public class Database
         credential = MongoCredential.createCredential(user, name, password.toCharArray());
     }
 
-    public void saveAttribute(Attribute attribute)
+    public String saveAttribute(Attribute attribute)
     {
         attributeValidator.validate(attribute);
 
@@ -84,6 +90,8 @@ public class Database
                 .append(LINES_COUNT, attribute.getLinesCount())
                 .append(ALIGNMENT, attribute.getAlignment());
         collection.insertOne(document);
+
+        return getId(document);
     }
 
     public Attribute getAttribute(String name)
@@ -101,7 +109,7 @@ public class Database
 //        if (cursor.hasNext())
 //        {
 //            Document document = cursor.next();
-//            attribute = attributeMapper.get(document);
+//            attribute = attributeMapper.getObject(document);
 //        }
 //        cursor.close();
 //
@@ -121,14 +129,26 @@ public class Database
 //        while (cursor.hasNext())
 //        {
 //            Document document = cursor.next();
-//            attributes.add((Attribute)attributeMapper.get(document));
+//            attributes.add((Attribute)attributeMapper.getObject(document));
 //        }
 //        cursor.close();
 //
 //        return attributes.toArray();
     }
 
-    public void saveEntity(Entity entity)
+    public String saveDocument(String collectionName, Validator validator, Mapper mapper, Map<String, Object> values)
+    {
+        Document document = mapper.getDocument(null, values);
+        validator.validate(document);
+
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        collection.insertOne(document);
+
+        return getId(document);
+    }
+
+
+    public String saveEntity(Entity entity)
     {
         entityValidator.validate(entity);
 
@@ -142,32 +162,92 @@ public class Database
         MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
         Document document = new Document()
                 .append(NAME, entity.getName())
-                .append(ATTRIBUTES, Arrays.asList(entity.getAttributes()));
+                .append(ATTRIBUTES, entity.getAttributes());
         collection.insertOne(document);
 
+        return getId(document);
     }
 
-    public Entity getEntity(String name)
+    private String getId(Document document)
     {
-        return (Entity)getObject(ENTITIES_COLLECTION, entityMapper, name);
+        return ((ObjectId)document.get(MONGO_ID)).toString();
+    }
 
+//    public void updateEntity(Entity entity)
+//    {
+//        entityValidator.validate(entity);
+//
+//        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
+//        Document document = new Document()
+//                .append(NAME, entity.getName())
+//                .append(ATTRIBUTES, entity.getAttributes());
+//
+//        UpdateResult result = collection.updateOne(
+//                eq(MONGO_ID, new ObjectId(entity.getId())), new Document("$set", document));
+//        if (result.getModifiedCount() != 1)
+//            throw new RuntimeException("There are no such entity to update");
+//    }
+
+    public void updateDocument(String collectionName, Validator validator, Mapper mapper,
+                               String id, Map<String, Object> values)
+    {
+        Document document = mapper.getDocument(id, values);
+        validator.validate(document);
+
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        UpdateResult result = collection.updateOne(
+                eq(MONGO_ID, document.get(MONGO_ID)), new Document("$set", document));
+        if (result.getModifiedCount() != 1)
+            throw new RuntimeException("There are no such entity to update");
+    }
+
+//    public void deleteEntity(String name)
+//    {
 //        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
 //
 //        BasicDBObject whereQuery = new BasicDBObject();
 //        whereQuery.put(NAME, name);
-//        FindIterable<Document> iterDoc = collection.find(whereQuery).limit(1);
-//        MongoCursor<Document> cursor = iterDoc.iterator();
-//
-//        Entity entity = null;
-//        if (cursor.hasNext())
-//        {
-//            Document document = cursor.next();
-//            entity = entityMapper.get(document);
-//        }
-//        cursor.close();
-//
-//        return entity;
+//        DeleteResult result = collection.deleteOne(whereQuery);
+//        if (result.getDeletedCount() != 1)
+//            throw new RuntimeException(String.format("Cannot delete %s: document not found", name));
+//    }
+
+    public void deleteDocument(String id)
+    {
+        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
+
+        DeleteResult result = collection.deleteOne(eq(MONGO_ID, new ObjectId(id)));
+        if (result.getDeletedCount() != 1)
+            throw new RuntimeException(String.format("Cannot delete %s: document not found", name));
     }
+
+    public void deleteDocuments(String collectionName)
+    {
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        collection.drop();
+    }
+
+//    public Entity getEntity(String id)
+//    {
+//        return (Entity)getObject(ENTITIES_COLLECTION, entityMapper, id);
+//
+////        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
+////
+////        BasicDBObject whereQuery = new BasicDBObject();
+////        whereQuery.put(NAME, id);
+////        FindIterable<Document> iterDoc = collection.find(whereQuery).limit(1);
+////        MongoCursor<Document> cursor = iterDoc.iterator();
+////
+////        Entity entity = null;
+////        if (cursor.hasNext())
+////        {
+////            Document document = cursor.next();
+////            entity = entityMapper.getObject(document);
+////        }
+////        cursor.close();
+////
+////        return entity;
+//    }
 
     public Object[] getEntities()
     {
@@ -185,27 +265,28 @@ public class Database
         while (cursor.hasNext())
         {
             Document document = cursor.next();
-            objects.add(mapper.get(document));
+            objects.add(mapper.getObject(document));
         }
         cursor.close();
 
         return objects.toArray();
     }
 
-    private Object getObject(String collectionName, Mapper mapper, String name)
+    public Object getObject(String collectionName, Mapper mapper, String id)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
 
-        BasicDBObject whereQuery = new BasicDBObject();
-        whereQuery.put(NAME, name);
-        FindIterable<Document> iterDoc = collection.find(whereQuery).limit(1);
+//        BasicDBObject whereQuery = new BasicDBObject();
+//        whereQuery.put(MONGO_ID, id);
+        //FindIterable<Document> iterDoc = collection.find(whereQuery).limit(1);
+        FindIterable<Document> iterDoc = collection.find(eq(MONGO_ID, new ObjectId(id))).limit(1);
         MongoCursor<Document> cursor = iterDoc.iterator();
 
         Object object = null;
         if (cursor.hasNext())
         {
             Document document = cursor.next();
-            object = mapper.get(document);
+            object = mapper.getObject(document);
         }
         cursor.close();
 
