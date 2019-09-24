@@ -20,9 +20,30 @@ public class Attribute extends Identifiable
     private String minValue;
     private String maxValue;
     private String defaultValue;
-    private int linesCount = 1;
+    private Integer linesCount = 1;
     private String alignment = "left";
+    private Boolean required = false;
+    private String regex;
 
+    public String getRegex()
+    {
+        return regex;
+    }
+
+    public void setRegex(String regex)
+    {
+        this.regex = regex;
+    }
+
+    public Boolean getRequired()
+    {
+        return required;
+    }
+
+    public void setRequired(Boolean required)
+    {
+        this.required = required;
+    }
 
     public String getName()
     {
@@ -84,12 +105,12 @@ public class Attribute extends Identifiable
         this.maxWidth = maxWidth;
     }
 
-    public int getLinesCount()
+    public Integer getLinesCount()
     {
         return linesCount;
     }
 
-    public void setLinesCount(int linesCount)
+    public void setLinesCount(Integer linesCount)
     {
         this.linesCount = linesCount;
     }

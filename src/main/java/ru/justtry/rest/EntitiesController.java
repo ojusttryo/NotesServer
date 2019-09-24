@@ -24,7 +24,7 @@ import static ru.justtry.shared.Constants.*;
 
 @RestController
 @RequestMapping("/rest/entities")
-public class EntityController extends Controller
+public class EntitiesController extends Controller
 {
     @Inject
     private EntityMapper entityMapper;

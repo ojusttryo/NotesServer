@@ -1,22 +1,12 @@
 package ru.justtry.notes;
 
+import ru.justtry.shared.Identifiable;
+
 import java.util.List;
 
-public class Note
+public class Note extends Identifiable
 {
-    private String entity;
     private List<NoteAttribute> attributes;
-
-
-    public String getEntity()
-    {
-        return entity;
-    }
-
-    public void setEntity(String entity)
-    {
-        this.entity = entity;
-    }
 
     public List<NoteAttribute> getAttributes()
     {

@@ -1,0 +1,70 @@
+package ru.justtry.notes;
+
+import com.google.common.base.Strings;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.springframework.stereotype.Component;
+import ru.justtry.attributes.Entity;
+import ru.justtry.notes.Note;
+import ru.justtry.notes.NoteAttribute;
+import ru.justtry.notes.NoteConstants;
+import ru.justtry.shared.Mapper;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static ru.justtry.attributes.EntityConstants.ATTRIBUTES;
+import static ru.justtry.notes.NoteConstants.ENTITY;
+import static ru.justtry.notes.NoteConstants.VALUE;
+import static ru.justtry.shared.Constants.MONGO_ID;
+import static ru.justtry.shared.Constants.NAME;
+
+@Component
+public class NoteMapper implements Mapper
+{
+    @Override
+    public Object getObject(Document document)
+    {
+        Note note = new Note();
+        note.setId(document.get(MONGO_ID).toString());
+        note.setAttributes((List<NoteAttribute>)document.get(NoteConstants.ATTRIBUTES));
+
+        return note;
+    }
+
+    @Override
+    public Document getDocument(String id, Map<String, Object> values)
+    {
+        Document document = new Document();
+
+        if (!Strings.isNullOrEmpty(id))
+            document.append(MONGO_ID, new ObjectId(id));
+
+        document.append(ATTRIBUTES, values.get(ATTRIBUTES));
+
+        return document;
+    }
+
+    @Override
+    public Document getDocument(Object object)
+    {
+        Note note = (Note)object;
+
+        Document document = new Document();
+        List<Document> attributes = new ArrayList<>();
+        for (NoteAttribute attribute : note.getAttributes())
+        {
+            Document attrDocument = new Document()
+                    .append(NAME, attribute.getName())
+                    .append(VALUE, attribute.getValue());
+            attributes.add(attrDocument);
+        }
+        document.append(NoteConstants.ATTRIBUTES, attributes);
+
+        if (!Strings.isNullOrEmpty(note.getId()))
+            document.append(MONGO_ID, new ObjectId(note.getId()));
+
+        return document;
+    }
+}

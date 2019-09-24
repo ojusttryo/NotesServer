@@ -16,4 +16,6 @@ public interface AttributeConstants
     String NONE = "none";
     String LEFT = "left";
     String DEFAULT_WIDTH = "0";
+    String REQUIRED = "required";
+    String REGEX = "regex";
 }

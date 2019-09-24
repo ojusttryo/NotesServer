@@ -33,6 +33,8 @@ public class AttributeMapper implements Mapper
         attribute.setMinValue(getStringOrNull(document, MIN_VALUE));
         attribute.setMaxValue(getStringOrNull(document, MAX_VALUE));
         attribute.setDefaultValue(getStringOrNull(document, DEFAULT));
+        attribute.setRequired((Boolean)document.get(REQUIRED));
+        attribute.setRegex(getStringOrNull(document, REGEX));
 
         return attribute;
     }
@@ -74,7 +76,9 @@ public class AttributeMapper implements Mapper
                 .append(ALIGNMENT, attribute.getAlignment())
                 .append(DEFAULT, attribute.getDefaultValue())
                 .append(MAX_VALUE, attribute.getMaxValue())
-                .append(MIN_VALUE, attribute.getMinValue());
+                .append(MIN_VALUE, attribute.getMinValue())
+                .append(REQUIRED, attribute.getRequired())
+                .append(REGEX, attribute.getRegex());
 
         if (!Strings.isNullOrEmpty(attribute.getId()))
             document.append(MONGO_ID, new ObjectId(attribute.getId()));
