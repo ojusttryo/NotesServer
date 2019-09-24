@@ -34,9 +34,9 @@ public class EntityController extends Controller
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public String save(
-            @RequestParam(value = NAME) String name,
-            @RequestParam(value = ATTRIBUTES) String attributes[])
+    public String save(@RequestBody Entity entity)
+//            @RequestParam(value = NAME) String name,
+//            @RequestParam(value = ATTRIBUTES) String attributes[])
     {
 //        Entity entity = new Entity();
 //
@@ -45,23 +45,23 @@ public class EntityController extends Controller
 //
 //        return database.saveEntity(entity);
 
-        Map<String, Object> values = new HashMap<>();
-        values.put(NAME, name);
-        values.put(ATTRIBUTES, Arrays.asList(attributes));
+//        Map<String, Object> values = new HashMap<>();
+//        values.put(NAME, name);
+//        values.put(ATTRIBUTES, Arrays.asList(attributes));
 
-        return database.saveDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, values);
+        return database.saveDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
-    public void update(
-            @RequestParam(value = MONGO_ID) String id,
-            @RequestParam(value = NAME) String name,
-            @RequestParam(value = ATTRIBUTES) String attributes[])
+    public void update(@RequestBody Entity entity)
+//            @RequestParam(value = MONGO_ID) String id,
+//            @RequestParam(value = NAME) String name,
+//            @RequestParam(value = ATTRIBUTES) String attributes[])
     {
-        Map<String, Object> values = new HashMap<>();
-        values.put(NAME, name);
-        values.put(ATTRIBUTES, Arrays.asList(attributes));
+//        Map<String, Object> values = new HashMap<>();
+//        values.put(NAME, name);
+//        values.put(ATTRIBUTES, Arrays.asList(attributes));
 
         //Document document = entityMapper.getDocument(id, values);
 
@@ -69,7 +69,7 @@ public class EntityController extends Controller
 //        entity.setName(name);
 //        entity.setAttributes(Arrays.asList(attributes));
 
-        database.updateDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, id, values);
+        database.updateDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
 //        database.updateEntity(document);
     }
 

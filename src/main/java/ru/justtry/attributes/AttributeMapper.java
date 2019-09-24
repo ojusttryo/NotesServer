@@ -30,8 +30,17 @@ public class AttributeMapper implements Mapper
         attribute.setMethod(document.get(METHOD).toString());
         attribute.setMaxWidth(document.get(MAX_WIDTH).toString());
         attribute.setMinWidth(document.get(MIN_WIDTH).toString());
+        attribute.setMinValue(getStringOrNull(document, MIN_VALUE));
+        attribute.setMaxValue(getStringOrNull(document, MAX_VALUE));
+        attribute.setDefaultValue(getStringOrNull(document, DEFAULT));
 
         return attribute;
+    }
+
+
+    private String getStringOrNull(Document document, String key)
+    {
+        return (document.containsKey(key) && document.get(key) != null) ? document.get(key).toString() : null;
     }
 
 
@@ -48,4 +57,30 @@ public class AttributeMapper implements Mapper
 
         return document;
     }
+
+    @Override
+    public Document getDocument(Object object)
+    {
+        Attribute attribute = (Attribute)object;
+
+        Document document = new Document()
+                .append(NAME, attribute.getName())
+                .append(METHOD, attribute.getMethod())
+                .append(VISIBLE, attribute.getVisible())
+                .append(TYPE, attribute.getType())
+                .append(MIN_WIDTH, attribute.getMinWidth())
+                .append(MAX_WIDTH, attribute.getMaxWidth())
+                .append(LINES_COUNT, attribute.getLinesCount())
+                .append(ALIGNMENT, attribute.getAlignment())
+                .append(DEFAULT, attribute.getDefaultValue())
+                .append(MAX_VALUE, attribute.getMaxValue())
+                .append(MIN_VALUE, attribute.getMinValue());
+
+        if (!Strings.isNullOrEmpty(attribute.getId()))
+            document.append(MONGO_ID, new ObjectId(attribute.getId()));
+
+        return document;
+    }
+
+
 }

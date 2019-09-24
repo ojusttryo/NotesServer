@@ -80,19 +80,12 @@ public class Database
         attributeValidator.validate(attribute);
 
         MongoCollection<Document> collection = database.getCollection(ATTRIBUTES_COLLECTION);
-        Document document = new Document()
-                .append(NAME, attribute.getName())
-                .append(METHOD, attribute.getMethod())
-                .append(VISIBLE, attribute.getVisible())
-                .append(TYPE, attribute.getType())
-                .append(MIN_WIDTH, attribute.getMinWidth())
-                .append(MAX_WIDTH, attribute.getMaxWidth())
-                .append(LINES_COUNT, attribute.getLinesCount())
-                .append(ALIGNMENT, attribute.getAlignment());
+        Document document = attributeMapper.getDocument(attribute);
         collection.insertOne(document);
 
         return getId(document);
     }
+
 
     public Attribute getAttribute(String name)
     {
@@ -116,29 +109,40 @@ public class Database
 //        return attribute;
     }
 
-    public Object[] getAttributes()
-    {
-        return getObjects(ATTRIBUTES_COLLECTION, attributeMapper);
-
-//        MongoCollection<Document> collection = database.getCollection(ATTRIBUTES_COLLECTION);
+//    public Object[] getAttributes()
+//    {
+//        return getObjects(ATTRIBUTES_COLLECTION, attributeMapper);
 //
-//        FindIterable<Document> iterDoc = collection.find();
-//        MongoCursor<Document> cursor = iterDoc.iterator();
-//
-//        List<Attribute> attributes = new ArrayList<>();
-//        while (cursor.hasNext())
-//        {
-//            Document document = cursor.next();
-//            attributes.add((Attribute)attributeMapper.getObject(document));
-//        }
-//        cursor.close();
-//
-//        return attributes.toArray();
-    }
+////        MongoCollection<Document> collection = database.getCollection(ATTRIBUTES_COLLECTION);
+////
+////        FindIterable<Document> iterDoc = collection.find();
+////        MongoCursor<Document> cursor = iterDoc.iterator();
+////
+////        List<Attribute> attributes = new ArrayList<>();
+////        while (cursor.hasNext())
+////        {
+////            Document document = cursor.next();
+////            attributes.add((Attribute)attributeMapper.getObject(document));
+////        }
+////        cursor.close();
+////
+////        return attributes.toArray();
+//    }
 
     public String saveDocument(String collectionName, Validator validator, Mapper mapper, Map<String, Object> values)
     {
         Document document = mapper.getDocument(null, values);
+        validator.validate(document);
+
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        collection.insertOne(document);
+
+        return getId(document);
+    }
+
+    public String saveDocument(String collectionName, Validator validator, Mapper mapper, Object object)
+    {
+        Document document = mapper.getDocument(object);
         validator.validate(document);
 
         MongoCollection<Document> collection = database.getCollection(collectionName);
@@ -201,6 +205,18 @@ public class Database
             throw new RuntimeException("There are no such entity to update");
     }
 
+    public void updateDocument(String collectionName, Validator validator, Mapper mapper, Object object)
+    {
+        Document document = mapper.getDocument(object);
+        validator.validate(document);
+
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        UpdateResult result = collection.updateOne(
+                eq(MONGO_ID, document.get(MONGO_ID)), new Document("$set", document));
+        if (result.getModifiedCount() != 1)
+            throw new RuntimeException("There are no such object to update");
+    }
+
 //    public void deleteEntity(String name)
 //    {
 //        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
@@ -212,9 +228,9 @@ public class Database
 //            throw new RuntimeException(String.format("Cannot delete %s: document not found", name));
 //    }
 
-    public void deleteDocument(String id)
+    public void deleteDocument(String collectionName, String id)
     {
-        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
+        MongoCollection<Document> collection = database.getCollection(collectionName);
 
         DeleteResult result = collection.deleteOne(eq(MONGO_ID, new ObjectId(id)));
         if (result.getDeletedCount() != 1)

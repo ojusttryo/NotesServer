@@ -7,7 +7,6 @@ public class Attribute extends Identifiable
     private String name = "";
     private String method = "none";
     private boolean visible = true;
-
     /**
      * Value type. Possible types:
      * - text - single line string
@@ -15,9 +14,12 @@ public class Attribute extends Identifiable
      * - int - numeric field
      */
     private String type;
-
     private String minWidth = "0";
     private String maxWidth = "0";
+
+    private String minValue;
+    private String maxValue;
+    private String defaultValue;
     private int linesCount = 1;
     private String alignment = "left";
 
@@ -101,4 +103,36 @@ public class Attribute extends Identifiable
     {
         this.alignment = alignment;
     }
+
+
+    public String getMinValue()
+    {
+        return minValue;
+    }
+
+    public void setMinValue(String minValue)
+    {
+        this.minValue = minValue;
+    }
+
+    public String getMaxValue()
+    {
+        return maxValue;
+    }
+
+    public void setMaxValue(String maxValue)
+    {
+        this.maxValue = maxValue;
+    }
+
+    public String getDefaultValue()
+    {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue)
+    {
+        this.defaultValue = defaultValue;
+    }
+
 }

@@ -6,9 +6,12 @@ public interface AttributeConstants
     String METHOD = "method";
     String VISIBLE = "visible";
     String TYPE = "type";
-    String MIN_WIDTH = "min-width";
-    String MAX_WIDTH = "max-width";
-    String LINES_COUNT = "lines-count";
+    String MIN_WIDTH = "minWidth";
+    String MAX_WIDTH = "maxWidth";
+    String MIN_VALUE = "min";
+    String MAX_VALUE = "max";
+    String DEFAULT = "default";
+    String LINES_COUNT = "linesCount";
     String ALIGNMENT = "alignment";
     String NONE = "none";
     String LEFT = "left";

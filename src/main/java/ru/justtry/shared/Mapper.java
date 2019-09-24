@@ -11,4 +11,6 @@ public interface Mapper
 
     // Не делать общий метод, т.к. ожидаются более сложные типы данных в values.
     Document getDocument(String id, Map<String, Object> values);
+
+    Document getDocument(Object object);
 }

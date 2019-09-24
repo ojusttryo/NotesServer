@@ -10,6 +10,7 @@ import ru.justtry.shared.Mapper;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,21 @@ public class EntityMapper implements Mapper
 
         document.append(NAME, values.get(NAME));
         document.append(ATTRIBUTES, values.get(ATTRIBUTES));    // expected List<String>
+
+        return document;
+    }
+
+    @Override
+    public Document getDocument(Object object)
+    {
+        Entity entity = (Entity)object;
+
+        Document document = new Document()
+                .append(NAME, entity.getName())
+                .append(ATTRIBUTES, entity.getAttributes());
+
+        if (!Strings.isNullOrEmpty(entity.getId()))
+            document.append(MONGO_ID, new ObjectId(entity.getId()));
 
         return document;
     }

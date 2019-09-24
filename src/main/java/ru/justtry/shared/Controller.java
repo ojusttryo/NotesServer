@@ -23,7 +23,7 @@ public abstract class Controller
     @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable(value = ID) String id)
     {
-        database.deleteDocument(id);
+        database.deleteDocument(getCollectionName(), id);
     }
 
     @DeleteMapping
