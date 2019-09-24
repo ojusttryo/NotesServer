@@ -15,19 +15,19 @@ import java.util.List;
 import java.util.Map;
 
 import static ru.justtry.attributes.EntityConstants.ATTRIBUTES;
-import static ru.justtry.notes.NoteConstants.ENTITY;
-import static ru.justtry.notes.NoteConstants.VALUE;
+import static ru.justtry.notes.NoteConstants.*;
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.Constants.NAME;
 
 @Component
-public class NoteMapper implements Mapper
+public class NoteMapper extends Mapper
 {
     @Override
     public Object getObject(Document document)
     {
         Note note = new Note();
         note.setId(document.get(MONGO_ID).toString());
+        note.setFolderId(getStringOrNull(document, FOLDER_ID));
         note.setAttributes((List<NoteAttribute>)document.get(NoteConstants.ATTRIBUTES));
 
         return note;
@@ -41,6 +41,7 @@ public class NoteMapper implements Mapper
         if (!Strings.isNullOrEmpty(id))
             document.append(MONGO_ID, new ObjectId(id));
 
+        document.append(FOLDER_ID, values.get(FOLDER_ID));
         document.append(ATTRIBUTES, values.get(ATTRIBUTES));
 
         return document;
@@ -52,6 +53,10 @@ public class NoteMapper implements Mapper
         Note note = (Note)object;
 
         Document document = new Document();
+        document.append(FOLDER_ID, note.getFolderId());
+        if (!Strings.isNullOrEmpty(note.getId()))
+            document.append(MONGO_ID, new ObjectId(note.getId()));
+
         List<Document> attributes = new ArrayList<>();
         for (NoteAttribute attribute : note.getAttributes())
         {
@@ -61,9 +66,6 @@ public class NoteMapper implements Mapper
             attributes.add(attrDocument);
         }
         document.append(NoteConstants.ATTRIBUTES, attributes);
-
-        if (!Strings.isNullOrEmpty(note.getId()))
-            document.append(MONGO_ID, new ObjectId(note.getId()));
 
         return document;
     }

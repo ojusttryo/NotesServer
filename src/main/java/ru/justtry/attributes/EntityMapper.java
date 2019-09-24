@@ -20,7 +20,7 @@ import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.Constants.NAME;
 
 @Component
-public class EntityMapper implements Mapper
+public class EntityMapper extends Mapper
 {
     @Override
     public Object getObject(Document document)

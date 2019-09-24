@@ -14,7 +14,7 @@ import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.Constants.NAME;
 
 @Component
-public class AttributeMapper implements Mapper
+public class AttributeMapper extends Mapper
 {
     @Override
     public Object getObject(Document document)
@@ -40,10 +40,7 @@ public class AttributeMapper implements Mapper
     }
 
 
-    private String getStringOrNull(Document document, String key)
-    {
-        return (document.containsKey(key) && document.get(key) != null) ? document.get(key).toString() : null;
-    }
+
 
 
     @Override
