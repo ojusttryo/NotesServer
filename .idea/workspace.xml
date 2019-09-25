@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f3eb92ba-b3d8-4a0f-841f-83a8431e420a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/notes/Note.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/notes/Note.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteConstants.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Mapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Mapper.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -22,8 +18,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/Note.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="351">
-              <caret line="29" column="5" selection-start-line="29" selection-start-column="5" selection-end-line="29" selection-end-column="5" />
+            <state relative-caret-position="266">
+              <caret line="17" column="73" selection-start-line="17" selection-start-column="73" selection-end-line="17" selection-end-column="73" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#450#451#0" expanded="true" />
@@ -35,7 +31,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteAttribute.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="34">
@@ -45,25 +41,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/Attribute.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="25" column="25" lean-forward="true" selection-start-line="25" selection-start-column="25" selection-end-line="25" selection-end-column="25" />
-              <folding>
-                <element signature="e#732#733#0" expanded="true" />
-                <element signature="e#760#761#0" expanded="true" />
-                <element signature="e#806#807#0" expanded="true" />
-                <element signature="e#840#841#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeMapper.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="16" column="36" selection-start-line="16" selection-start-column="36" selection-end-line="16" selection-end-column="36" />
+            <state relative-caret-position="351">
+              <caret line="64" column="42" lean-forward="true" selection-start-line="64" selection-start-column="42" selection-end-line="64" selection-end-column="42" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -104,11 +85,23 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteMapper.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="281">
-              <caret line="67" column="62" selection-start-line="67" selection-start-column="62" selection-end-line="67" selection-end-column="62" />
+            <state relative-caret-position="249">
+              <caret line="78" column="11" selection-start-line="78" selection-start-column="11" selection-end-line="78" selection-end-column="11" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/rest/NotesController.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="79">
+              <caret line="30" selection-start-line="30" selection-end-line="30" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -119,8 +112,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="148" selection-start-line="148" selection-end-line="148" />
+            <state relative-caret-position="147">
+              <caret line="213" lean-forward="true" selection-start-line="213" selection-end-line="213" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -142,6 +135,7 @@
       <find>Database created</find>
       <find>guav</find>
       <find>ATTRIBUTES_COLL</find>
+      <find>&quot;$set&quot;</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -179,12 +173,12 @@
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/rest/NotesController.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/Attribute.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeConstants.java" />
-        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/Note.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteConstants.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Mapper.java" />
-        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteMapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeMapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityMapper.java" />
+        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/Note.java" />
+        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteMapper.java" />
       </list>
     </option>
   </component>
@@ -325,7 +319,7 @@
     <property name="RequestMappingsPanelWidth1" value="75" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1569350475561" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1569382525728" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -467,18 +461,18 @@
       <option name="presentableId" value="Default" />
       <updated>1569067902449</updated>
       <workItem from="1569067913949" duration="16108000" />
-      <workItem from="1569130092669" duration="56200000" />
+      <workItem from="1569130092669" duration="62378000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="72308000" />
+    <option name="totallyTimeSpent" value="78486000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1616" height="876" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Image Layers" order="3" />
@@ -489,7 +483,7 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3293011" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.3293011" />
-      <window_info anchor="bottom" id="Debug" order="3" visible="true" weight="0.41801074" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.41801074" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -524,6 +518,12 @@
           <line>63</line>
           <properties />
           <option name="timeStamp" value="74" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteMapper.java</url>
+          <line>107</line>
+          <properties />
+          <option name="timeStamp" value="85" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -745,13 +745,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/org/springframework/spring-web/5.1.9.RELEASE/spring-web-5.1.9.RELEASE.jar!/org/springframework/web/method/support/InvocableHandlerMethod.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="101" selection-start-line="101" selection-end-line="101" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/shared/Constants.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="85">
@@ -846,28 +839,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/rest/NotesController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="332">
-          <caret line="28" column="46" lean-forward="true" selection-start-line="28" selection-start-column="46" selection-end-line="28" selection-end-column="46" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#1210#1211#0" expanded="true" />
-            <element signature="e#1247#1248#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="148" selection-start-line="148" selection-end-line="148" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/Attribute.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="136">
@@ -888,44 +859,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/Note.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="351">
-          <caret line="29" column="5" selection-start-line="29" selection-start-column="5" selection-end-line="29" selection-end-column="5" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#450#451#0" expanded="true" />
-            <element signature="e#481#482#0" expanded="true" />
-            <element signature="e#533#534#0" expanded="true" />
-            <element signature="e#573#574#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/shared/Mapper.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="272">
           <caret line="16" column="13" selection-start-line="16" selection-start-column="13" selection-end-line="16" selection-end-column="13" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteMapper.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="281">
-          <caret line="67" column="62" selection-start-line="67" selection-start-column="62" selection-end-line="67" selection-end-column="62" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeMapper.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" column="36" selection-start-line="16" selection-start-column="36" selection-end-line="16" selection-end-column="36" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -953,6 +890,74 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
           <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/rest/NotesController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="79">
+          <caret line="30" selection-start-line="30" selection-end-line="30" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeMapper.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="351">
+          <caret line="64" column="42" lean-forward="true" selection-start-line="64" selection-start-column="42" selection-end-line="64" selection-end-column="42" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="147">
+          <caret line="213" lean-forward="true" selection-start-line="213" selection-end-line="213" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/mongodb/mongo-java-driver/3.11.0-rc0/mongo-java-driver-3.11.0-rc0.jar!/com/mongodb/DBObject.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="9" column="17" selection-start-line="9" selection-start-column="17" selection-end-line="9" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/Note.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="17" column="73" selection-start-line="17" selection-start-column="73" selection-end-line="17" selection-end-column="73" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#450#451#0" expanded="true" />
+            <element signature="e#481#482#0" expanded="true" />
+            <element signature="e#533#534#0" expanded="true" />
+            <element signature="e#573#574#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/springframework/spring-web/5.1.9.RELEASE/spring-web-5.1.9.RELEASE.jar!/org/springframework/web/method/support/InvocableHandlerMethod.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="217">
+          <caret line="106" selection-start-line="106" selection-end-line="106" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteMapper.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="249">
+          <caret line="78" column="11" selection-start-line="78" selection-start-column="11" selection-end-line="78" selection-end-column="11" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
