@@ -18,4 +18,8 @@ public interface AttributeConstants
     String DEFAULT_WIDTH = "0";
     String REQUIRED = "required";
     String REGEX = "regex";
+    String TEXT = "text";
+    String TEXTAREA = "textarea";
+    String INT = "int";
+    String FLOAT = "float";
 }

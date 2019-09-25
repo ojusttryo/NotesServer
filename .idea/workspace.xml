@@ -2,8 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f3eb92ba-b3d8-4a0f-841f-83a8431e420a" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/Attribute.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/Attribute.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Identifiable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Identifiable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeConstants.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Validator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Validator.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -32,15 +38,6 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteAttribute.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="34">
-              <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeMapper.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="351">
@@ -52,11 +49,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/Attribute.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="102">
-              <caret line="6" column="3" lean-forward="true" selection-start-line="6" selection-start-column="3" selection-end-line="6" selection-end-column="3" />
+            <state relative-caret-position="334">
+              <caret line="35" column="14" selection-start-line="35" selection-start-column="14" selection-end-line="35" selection-end-column="14" />
               <folding>
                 <element signature="e#2134#2135#0" expanded="true" />
                 <element signature="e#2162#2163#0" expanded="true" />
@@ -115,11 +112,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityMapper.java">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteValidator.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="113">
-              <caret line="22" column="33" selection-start-line="22" selection-start-column="33" selection-end-line="22" selection-end-column="33" />
+            <state relative-caret-position="-159">
+              <caret line="25" column="33" lean-forward="true" selection-start-line="25" selection-start-column="33" selection-end-line="25" selection-end-column="33" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -128,13 +125,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/shared/Mapper.java">
+        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeConstants.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="16" column="13" selection-start-line="16" selection-start-column="13" selection-end-line="16" selection-end-column="13" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state relative-caret-position="300">
+              <caret line="20" column="25" lean-forward="true" selection-start-line="20" selection-start-column="25" selection-end-line="20" selection-end-column="25" />
             </state>
           </provider>
         </entry>
@@ -152,10 +146,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/rest/NotesController.java">
+        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="79">
-              <caret line="30" selection-start-line="30" selection-end-line="30" />
+            <state relative-caret-position="351">
+              <caret line="352" column="26" lean-forward="true" selection-start-line="352" selection-start-column="26" selection-end-line="352" selection-end-column="26" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -164,10 +158,31 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java">
+        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/shared/Validator.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="147">
-              <caret line="213" lean-forward="true" selection-start-line="213" selection-end-line="213" />
+            <state relative-caret-position="119">
+              <caret line="7" selection-start-line="7" selection-end-line="7" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeValidator.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="238">
+              <caret line="14" column="5" selection-start-line="14" selection-start-column="5" selection-end-line="14" selection-end-column="5" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityValidator.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="187">
+              <caret line="11" column="5" lean-forward="true" selection-start-line="11" selection-start-column="5" selection-end-line="11" selection-end-column="5" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -210,29 +225,29 @@
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/shared/EntityConstants.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityConstants.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/Entity.java" />
-        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Validator.java" />
-        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeValidator.java" />
-        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityValidator.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Constants.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteAttribute.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/rest/AttributesController.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/rest/EntityController.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Controller.java" />
-        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java" />
         <option value="$PROJECT_DIR$/src/main/resources/log4j.properties" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/rest/NoteValidator.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/rest/NoteMapper.java" />
-        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteValidator.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/rest/NotesController.java" />
-        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeConstants.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteConstants.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Mapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeMapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityMapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/Note.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteMapper.java" />
-        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/Attribute.java" />
         <option value="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Identifiable.java" />
+        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java" />
+        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/shared/Validator.java" />
+        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeValidator.java" />
+        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityValidator.java" />
+        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/Attribute.java" />
+        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeConstants.java" />
+        <option value="$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteValidator.java" />
       </list>
     </option>
   </component>
@@ -373,7 +388,7 @@
     <property name="RequestMappingsPanelWidth1" value="75" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1569384336233" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1569391589545" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -515,12 +530,12 @@
       <option name="presentableId" value="Default" />
       <updated>1569067902449</updated>
       <workItem from="1569067913949" duration="16108000" />
-      <workItem from="1569130092669" duration="64284000" />
+      <workItem from="1569130092669" duration="70780000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="80392000" />
+    <option name="totallyTimeSpent" value="86888000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1616" height="876" extended-state="6" />
@@ -757,13 +772,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/shared/Validator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="8" column="23" selection-start-line="8" selection-start-column="23" selection-end-line="8" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/rest/SettingsController.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
@@ -802,30 +810,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeValidator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="12" column="5" lean-forward="true" selection-start-line="12" selection-start-column="5" selection-end-line="12" selection-end-column="5" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityConstants.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
           <caret line="2" column="32" lean-forward="true" selection-start-line="2" selection-start-column="32" selection-end-line="2" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityValidator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="6" lean-forward="true" selection-start-line="6" selection-end-line="7" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -869,23 +857,6 @@
             <element signature="e#3281#3282#0" expanded="true" />
             <element signature="e#3325#3326#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteValidator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeConstants.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="19" column="27" selection-start-line="19" selection-start-column="27" selection-end-line="19" selection-end-column="27" />
         </state>
       </provider>
     </entry>
@@ -943,16 +914,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="147">
-          <caret line="213" lean-forward="true" selection-start-line="213" selection-end-line="213" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/org/mongodb/mongo-java-driver/3.11.0-rc0/mongo-java-driver-3.11.0-rc0.jar!/com/mongodb/DBObject.class">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="102">
@@ -1004,10 +965,47 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/database/Database.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="351">
+          <caret line="352" column="26" lean-forward="true" selection-start-line="352" selection-start-column="26" selection-end-line="352" selection-end-column="26" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/shared/Validator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" selection-start-line="7" selection-end-line="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeValidator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="5" selection-start-line="14" selection-start-column="5" selection-end-line="14" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/EntityValidator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="11" column="5" lean-forward="true" selection-start-line="11" selection-start-column="5" selection-end-line="11" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/Attribute.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="3" lean-forward="true" selection-start-line="6" selection-start-column="3" selection-end-line="6" selection-end-column="3" />
+        <state relative-caret-position="334">
+          <caret line="35" column="14" selection-start-line="35" selection-start-column="14" selection-end-line="35" selection-end-column="14" />
           <folding>
             <element signature="e#2134#2135#0" expanded="true" />
             <element signature="e#2162#2163#0" expanded="true" />
@@ -1061,6 +1059,23 @@
             <element signature="e#4126#4127#0" expanded="true" />
             <element signature="e#4186#4187#0" expanded="true" />
             <element signature="e#4234#4235#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/attributes/AttributeConstants.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="20" column="25" lean-forward="true" selection-start-line="20" selection-start-column="25" selection-end-line="20" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ru/justtry/notes/NoteValidator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-159">
+          <caret line="25" column="33" lean-forward="true" selection-start-line="25" selection-start-column="33" selection-end-line="25" selection-end-column="33" />
+          <folding>
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -142,8 +142,9 @@ public class Database
 
     public String saveDocument(String collectionName, Validator validator, Mapper mapper, Object object)
     {
+        validator.validate(object);
+
         Document document = mapper.getDocument(object);
-        validator.validate(document);
 
         MongoCollection<Document> collection = database.getCollection(collectionName);
         collection.insertOne(document);
@@ -207,8 +208,9 @@ public class Database
 
     public void updateDocument(String collectionName, Validator validator, Mapper mapper, Object object)
     {
+        validator.validate(object);
+
         Document document = mapper.getDocument(object);
-        validator.validate(document);
 
         MongoCollection<Document> collection = database.getCollection(collectionName);
         UpdateResult result = collection.updateOne(

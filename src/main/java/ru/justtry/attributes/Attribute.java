@@ -33,6 +33,7 @@ public class Attribute extends Identifiable
      * - text - single line string
      * - textarea - multiline string
      * - int - numeric field
+     * - float - number with floating point
      */
     private String type;
 

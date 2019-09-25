@@ -12,10 +12,4 @@ public class EntityValidator implements Validator
     {
 
     }
-
-    @Override
-    public void validate(Document document)
-    {
-
-    }
 }

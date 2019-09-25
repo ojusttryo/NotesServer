@@ -13,10 +13,4 @@ public class AttributeValidator implements Validator
     {
 
     }
-
-    @Override
-    public void validate(Document document)
-    {
-
-    }
 }
