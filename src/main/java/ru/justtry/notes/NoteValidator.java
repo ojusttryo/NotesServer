@@ -107,7 +107,7 @@ public class NoteValidator implements Validator
         if (attribute.getRegex() == null)
             return;
 
-        String string = (String)value.getValue();
+        String string = value.getValue().toString();
         if (!string.matches(attribute.getRegex()))
             throwIllegalArg("The value %s doesn't match regex %s", string, attribute.getRegex());
     }

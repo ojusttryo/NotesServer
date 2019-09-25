@@ -215,8 +215,8 @@ public class Database
         MongoCollection<Document> collection = database.getCollection(collectionName);
         UpdateResult result = collection.updateOne(
                 eq(MONGO_ID, document.get(MONGO_ID)), new Document("$set", document));
-        if (result.getModifiedCount() != 1)
-            throw new RuntimeException("There are no such object to update");
+        if (result.getMatchedCount() != 1)
+            throw new RuntimeException("There are no object with id " + document.get(MONGO_ID));
     }
 
 //    public void deleteEntity(String name)
