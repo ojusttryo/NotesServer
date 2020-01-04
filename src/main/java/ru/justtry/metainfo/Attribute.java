@@ -1,4 +1,4 @@
-package ru.justtry.attributes;
+package ru.justtry.metainfo;
 
 import ru.justtry.shared.Identifiable;
 

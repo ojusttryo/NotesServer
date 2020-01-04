@@ -1,7 +1,7 @@
-package ru.justtry.attributes;
+package ru.justtry.shared;
 
 public interface EntityConstants
 {
-    String ATTRIBUTES = "attributes";
+    String ATTRIBUTES = "metainfo";
     String ENTITIES_COLLECTION = "entities";
 }

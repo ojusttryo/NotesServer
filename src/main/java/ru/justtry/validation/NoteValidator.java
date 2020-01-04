@@ -1,16 +1,15 @@
-package ru.justtry.notes;
+package ru.justtry.validation;
 
-import org.bson.Document;
 import org.springframework.stereotype.Component;
-import ru.justtry.attributes.Attribute;
-import ru.justtry.attributes.AttributeMapper;
+import ru.justtry.metainfo.Attribute;
+import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.database.Database;
-import ru.justtry.shared.Validator;
+import ru.justtry.notes.Note;
 
 import javax.inject.Inject;
 import java.util.Map;
 
-import static ru.justtry.attributes.AttributeConstants.*;
+import static ru.justtry.shared.AttributeConstants.*;
 
 @Component
 public class NoteValidator implements Validator

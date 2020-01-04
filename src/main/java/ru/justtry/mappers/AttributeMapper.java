@@ -1,15 +1,15 @@
-package ru.justtry.attributes;
+package ru.justtry.mappers;
 
 import com.google.common.base.Strings;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
-import ru.justtry.shared.Mapper;
+import ru.justtry.metainfo.Attribute;
 
 import java.util.Map;
 
-import static ru.justtry.attributes.AttributeConstants.*;
-import static ru.justtry.attributes.AttributeConstants.MIN_WIDTH;
+import static ru.justtry.shared.AttributeConstants.*;
+import static ru.justtry.shared.AttributeConstants.MIN_WIDTH;
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.Constants.NAME;
 
@@ -39,23 +39,6 @@ public class AttributeMapper extends Mapper
         return attribute;
     }
 
-
-
-
-
-    @Override
-    public Document getDocument(String id, Map<String, Object> values)
-    {
-        Document document = new Document();
-
-        if (!Strings.isNullOrEmpty(id))
-            document.append(MONGO_ID, new ObjectId(id));
-
-        for (String key : values.keySet())
-            document.append(key, values.get(key));
-
-        return document;
-    }
 
     @Override
     public Document getDocument(Object object)

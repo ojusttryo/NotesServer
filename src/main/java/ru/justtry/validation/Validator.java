@@ -1,4 +1,4 @@
-package ru.justtry.shared;
+package ru.justtry.validation;
 
 import org.bson.Document;
 

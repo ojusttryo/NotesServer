@@ -10,7 +10,7 @@ public class Note extends Identifiable
 {
     private String folderId;
     // Such weird data type is because I need to parse array from JSON to key-value type. Something like that:
-    // "attributes": [
+    // "metainfo": [
     //		{ "5d8a5a87602f051474ea6a4e": "Avengers 5" },
     //		{ "5d8a5b17602f051474ea6a50": "Finished" },
     //		{ "5d8a6035afa6f80313f050c3": 2025 }

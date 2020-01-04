@@ -1,29 +1,22 @@
 package ru.justtry.rest;
 
-import com.google.common.base.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.justtry.attributes.Attribute;
-import ru.justtry.attributes.AttributeMapper;
-import ru.justtry.attributes.AttributeValidator;
-import ru.justtry.database.Database;
-import ru.justtry.shared.Controller;
-import ru.justtry.shared.Mapper;
-import ru.justtry.shared.Validator;
+import ru.justtry.metainfo.Attribute;
+import ru.justtry.mappers.AttributeMapper;
+import ru.justtry.validation.AttributeValidator;
+import ru.justtry.mappers.Mapper;
+import ru.justtry.validation.Validator;
 
 import javax.inject.Inject;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static ru.justtry.attributes.AttributeConstants.*;
-import static ru.justtry.shared.Constants.*;
+import static ru.justtry.shared.AttributeConstants.*;
 
 // { "Name": "State", "Method": "none",  "Visible": true, "Type": "text", "Min-width": 100, "Max-width": 100, "Align": "center" }
 
 @RestController
 @RequestMapping("/rest/attributes")
-public class AttributesController extends Controller
+public class AttributesController extends MetainfoController
 {
     @Inject
     private AttributeValidator attributeValidator;

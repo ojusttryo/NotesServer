@@ -3,25 +3,25 @@ package ru.justtry.rest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.justtry.database.Database;
+import ru.justtry.mappers.FolderMapper;
 import ru.justtry.mappers.Mapper;
 import ru.justtry.notes.Note;
-import ru.justtry.mappers.NoteMapper;
-import ru.justtry.validation.NoteValidator;
+import ru.justtry.notes.NoteFolder;
+import ru.justtry.validation.FolderValidator;
 import ru.justtry.validation.Validator;
 
 import javax.inject.Inject;
 
 import static ru.justtry.shared.NoteConstants.ENTITY;
-import static ru.justtry.shared.Constants.ID;
 
 @RestController
-@RequestMapping("/rest/notes")
-public class NotesController extends ObjectsController
+@RequestMapping("/rest/folders")
+public class FoldersController extends ObjectsController
 {
     @Inject
-    private NoteValidator noteValidator;
+    private FolderValidator folderValidator;
     @Inject
-    private NoteMapper noteMapper;
+    private FolderMapper folderMapper;
     @Inject
     protected Database database;
 
@@ -29,39 +29,38 @@ public class NotesController extends ObjectsController
     @PostMapping(value = "/{entity}", consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public String save(@PathVariable(value = ENTITY) String entity,
-                       @RequestBody Note note)
+                       @RequestBody NoteFolder folder)
     {
-        return database.saveDocument(getCollectionName(entity), noteValidator, noteMapper, note);
+        return database.saveDocument(getCollectionName(entity), getValidator(), getMapper(), folder);
     }
 
 
     @PutMapping(value = "/{entity}", consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public void update(@PathVariable(value = ENTITY) String entity,
-                       @RequestBody Note note)
+                       @RequestBody NoteFolder folder)
     {
-        database.updateDocument(getCollectionName(entity), noteValidator, noteMapper, note);
+        database.updateDocument(getCollectionName(entity), getValidator(), getMapper(), folder);
     }
 
 
     @Override
     protected Validator getValidator()
     {
-        return noteValidator;
+        return folderValidator;
     }
 
 
     @Override
     protected Mapper getMapper()
     {
-        return noteMapper;
+        return folderMapper;
     }
 
 
     @Override
     protected String getCollectionName(String entity)
     {
-        return String.format("%s.notes", entity);
+        return String.format("%s.folder", entity);
     }
-
 }

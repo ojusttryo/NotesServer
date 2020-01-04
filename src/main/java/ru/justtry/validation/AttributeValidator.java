@@ -1,9 +1,7 @@
-package ru.justtry.attributes;
+package ru.justtry.validation;
 
-import org.bson.Document;
 import org.springframework.stereotype.Component;
-import ru.justtry.attributes.Attribute;
-import ru.justtry.shared.Validator;
+import ru.justtry.validation.Validator;
 
 @Component
 public class AttributeValidator implements Validator

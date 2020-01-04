@@ -1,8 +1,8 @@
-package ru.justtry.attributes;
+package ru.justtry.shared;
 
 public interface AttributeConstants
 {
-    String ATTRIBUTES_COLLECTION = "attributes";
+    String ATTRIBUTES_COLLECTION = "metainfo";
     String METHOD = "method";
     String VISIBLE = "visible";
     String TYPE = "type";

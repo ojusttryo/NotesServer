@@ -1,30 +1,20 @@
 package ru.justtry.rest;
 
-import org.bson.Document;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.justtry.attributes.Entity;
-import ru.justtry.attributes.EntityMapper;
-import ru.justtry.attributes.EntityValidator;
-import ru.justtry.database.Database;
-import ru.justtry.shared.Controller;
-import ru.justtry.shared.Mapper;
-import ru.justtry.shared.Validator;
+import ru.justtry.metainfo.Entity;
+import ru.justtry.mappers.EntityMapper;
+import ru.justtry.validation.EntityValidator;
+import ru.justtry.mappers.Mapper;
+import ru.justtry.validation.Validator;
 
 import javax.inject.Inject;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import static ru.justtry.attributes.EntityConstants.ATTRIBUTES;
-import static ru.justtry.attributes.EntityConstants.ENTITIES_COLLECTION;
-import static ru.justtry.shared.Constants.*;
+import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
 
 @RestController
 @RequestMapping("/rest/entities")
-public class EntitiesController extends Controller
+public class EntitiesController extends MetainfoController
 {
     @Inject
     private EntityMapper entityMapper;
@@ -36,18 +26,18 @@ public class EntitiesController extends Controller
     @ResponseStatus(HttpStatus.OK)
     public String save(@RequestBody Entity entity)
 //            @RequestParam(value = NAME) String name,
-//            @RequestParam(value = ATTRIBUTES) String attributes[])
+//            @RequestParam(value = ATTRIBUTES) String metainfo[])
     {
 //        Entity entity = new Entity();
 //
 //        entity.setName(name);
-//        entity.setAttributes(Arrays.asList(attributes));
+//        entity.setAttributes(Arrays.asList(metainfo));
 //
 //        return database.saveEntity(entity);
 
 //        Map<String, Object> values = new HashMap<>();
 //        values.put(NAME, name);
-//        values.put(ATTRIBUTES, Arrays.asList(attributes));
+//        values.put(ATTRIBUTES, Arrays.asList(metainfo));
 
         return database.saveDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
     }
@@ -57,17 +47,17 @@ public class EntitiesController extends Controller
     public void update(@RequestBody Entity entity)
 //            @RequestParam(value = MONGO_ID) String id,
 //            @RequestParam(value = NAME) String name,
-//            @RequestParam(value = ATTRIBUTES) String attributes[])
+//            @RequestParam(value = ATTRIBUTES) String metainfo[])
     {
 //        Map<String, Object> values = new HashMap<>();
 //        values.put(NAME, name);
-//        values.put(ATTRIBUTES, Arrays.asList(attributes));
+//        values.put(ATTRIBUTES, Arrays.asList(metainfo));
 
         //Document document = entityMapper.getDocument(id, values);
 
 //        entity.setId(id);
 //        entity.setName(name);
-//        entity.setAttributes(Arrays.asList(attributes));
+//        entity.setAttributes(Arrays.asList(metainfo));
 
         database.updateDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
 //        database.updateEntity(document);

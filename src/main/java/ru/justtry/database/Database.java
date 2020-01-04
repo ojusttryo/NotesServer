@@ -1,6 +1,5 @@
 package ru.justtry.database;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.client.FindIterable;
@@ -13,9 +12,13 @@ import com.mongodb.client.result.UpdateResult;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import ru.justtry.attributes.*;
-import ru.justtry.shared.Mapper;
-import ru.justtry.shared.Validator;
+import ru.justtry.metainfo.*;
+import ru.justtry.mappers.AttributeMapper;
+import ru.justtry.mappers.EntityMapper;
+import ru.justtry.mappers.Mapper;
+import ru.justtry.validation.AttributeValidator;
+import ru.justtry.validation.EntityValidator;
+import ru.justtry.validation.Validator;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -24,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.mongodb.client.model.Filters.eq;
-import static ru.justtry.attributes.AttributeConstants.*;
-import static ru.justtry.attributes.EntityConstants.*;
+import static ru.justtry.shared.AttributeConstants.*;
+import static ru.justtry.shared.EntityConstants.*;
 import static ru.justtry.shared.Constants.*;
 
 
@@ -36,15 +39,6 @@ import static ru.justtry.shared.Constants.*;
 //@Named("database")
 public class Database
 {
-    @Inject
-    AttributeValidator attributeValidator;
-    @Inject
-    AttributeMapper attributeMapper;
-    @Inject
-    EntityValidator entityValidator;
-    @Inject
-    EntityMapper entityMapper;
-
     final static Logger logger = Logger.getLogger(Database.class);
 
     private MongoClient mongo;
@@ -57,10 +51,12 @@ public class Database
     private String user;
     private String password;
 
+
     public Database()
     {
         logger.info("Database created");
     }
+
 
     public void init(String host, Integer port, String name, String user, String password)
     {
@@ -75,70 +71,6 @@ public class Database
         credential = MongoCredential.createCredential(user, name, password.toCharArray());
     }
 
-    public String saveAttribute(Attribute attribute)
-    {
-        attributeValidator.validate(attribute);
-
-        MongoCollection<Document> collection = database.getCollection(ATTRIBUTES_COLLECTION);
-        Document document = attributeMapper.getDocument(attribute);
-        collection.insertOne(document);
-
-        return getId(document);
-    }
-
-
-    public Attribute getAttribute(String name)
-    {
-        return (Attribute)getObject(ATTRIBUTES_COLLECTION, attributeMapper, name);
-
-//        MongoCollection<Document> collection = database.getCollection(ATTRIBUTES_COLLECTION);
-//
-//        BasicDBObject whereQuery = new BasicDBObject();
-//        whereQuery.put(NAME, name);
-//        FindIterable<Document> iterDoc = collection.find(whereQuery).limit(1);
-//        MongoCursor<Document> cursor = iterDoc.iterator();
-//
-//        Attribute attribute = null;
-//        if (cursor.hasNext())
-//        {
-//            Document document = cursor.next();
-//            attribute = attributeMapper.getObject(document);
-//        }
-//        cursor.close();
-//
-//        return attribute;
-    }
-
-//    public Object[] getAttributes()
-//    {
-//        return getObjects(ATTRIBUTES_COLLECTION, attributeMapper);
-//
-////        MongoCollection<Document> collection = database.getCollection(ATTRIBUTES_COLLECTION);
-////
-////        FindIterable<Document> iterDoc = collection.find();
-////        MongoCursor<Document> cursor = iterDoc.iterator();
-////
-////        List<Attribute> attributes = new ArrayList<>();
-////        while (cursor.hasNext())
-////        {
-////            Document document = cursor.next();
-////            attributes.add((Attribute)attributeMapper.getObject(document));
-////        }
-////        cursor.close();
-////
-////        return attributes.toArray();
-//    }
-
-    public String saveDocument(String collectionName, Validator validator, Mapper mapper, Map<String, Object> values)
-    {
-        Document document = mapper.getDocument(null, values);
-        validator.validate(document);
-
-        MongoCollection<Document> collection = database.getCollection(collectionName);
-        collection.insertOne(document);
-
-        return getId(document);
-    }
 
     public String saveDocument(String collectionName, Validator validator, Mapper mapper, Object object)
     {
@@ -153,58 +85,11 @@ public class Database
     }
 
 
-    public String saveEntity(Entity entity)
-    {
-        entityValidator.validate(entity);
-
-        //BasicDBObject dbObject = new BasicDBObject(ATTRIBUTES, "value").append("array", entity.getAttributes());
-
-//        for (String attribute : entity.getAttributes())
-//        {
-//            List<BasicDBObject> attributes = new ArrayList<>();
-//            attributes.add(new BasicDBObject("key", attribute));
-//        }
-        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
-        Document document = new Document()
-                .append(NAME, entity.getName())
-                .append(ATTRIBUTES, entity.getAttributes());
-        collection.insertOne(document);
-
-        return getId(document);
-    }
-
     private String getId(Document document)
     {
         return ((ObjectId)document.get(MONGO_ID)).toString();
     }
 
-//    public void updateEntity(Entity entity)
-//    {
-//        entityValidator.validate(entity);
-//
-//        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
-//        Document document = new Document()
-//                .append(NAME, entity.getName())
-//                .append(ATTRIBUTES, entity.getAttributes());
-//
-//        UpdateResult result = collection.updateOne(
-//                eq(MONGO_ID, new ObjectId(entity.getId())), new Document("$set", document));
-//        if (result.getModifiedCount() != 1)
-//            throw new RuntimeException("There are no such entity to update");
-//    }
-
-    public void updateDocument(String collectionName, Validator validator, Mapper mapper,
-                               String id, Map<String, Object> values)
-    {
-        Document document = mapper.getDocument(id, values);
-        validator.validate(document);
-
-        MongoCollection<Document> collection = database.getCollection(collectionName);
-        UpdateResult result = collection.updateOne(
-                eq(MONGO_ID, document.get(MONGO_ID)), new Document("$set", document));
-        if (result.getModifiedCount() != 1)
-            throw new RuntimeException("There are no such entity to update");
-    }
 
     public void updateDocument(String collectionName, Validator validator, Mapper mapper, Object object)
     {
@@ -219,16 +104,6 @@ public class Database
             throw new RuntimeException("There are no object with id " + document.get(MONGO_ID));
     }
 
-//    public void deleteEntity(String name)
-//    {
-//        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
-//
-//        BasicDBObject whereQuery = new BasicDBObject();
-//        whereQuery.put(NAME, name);
-//        DeleteResult result = collection.deleteOne(whereQuery);
-//        if (result.getDeletedCount() != 1)
-//            throw new RuntimeException(String.format("Cannot delete %s: document not found", name));
-//    }
 
     public void deleteDocument(String collectionName, String id)
     {
@@ -239,38 +114,13 @@ public class Database
             throw new RuntimeException(String.format("Cannot delete %s: document not found", name));
     }
 
+
     public void deleteDocuments(String collectionName)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
         collection.drop();
     }
 
-//    public Entity getEntity(String id)
-//    {
-//        return (Entity)getObject(ENTITIES_COLLECTION, entityMapper, id);
-//
-////        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
-////
-////        BasicDBObject whereQuery = new BasicDBObject();
-////        whereQuery.put(NAME, id);
-////        FindIterable<Document> iterDoc = collection.find(whereQuery).limit(1);
-////        MongoCursor<Document> cursor = iterDoc.iterator();
-////
-////        Entity entity = null;
-////        if (cursor.hasNext())
-////        {
-////            Document document = cursor.next();
-////            entity = entityMapper.getObject(document);
-////        }
-////        cursor.close();
-////
-////        return entity;
-//    }
-
-    public Object[] getEntities()
-    {
-        return getObjects(ENTITIES_COLLECTION, entityMapper);
-    }
 
     public Object[] getObjects(String collectionName, Mapper mapper)
     {
@@ -290,13 +140,11 @@ public class Database
         return objects.toArray();
     }
 
+
     public Object getObject(String collectionName, Mapper mapper, String id)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
 
-//        BasicDBObject whereQuery = new BasicDBObject();
-//        whereQuery.put(MONGO_ID, id);
-        //FindIterable<Document> iterDoc = collection.find(whereQuery).limit(1);
         FindIterable<Document> iterDoc = collection.find(eq(MONGO_ID, new ObjectId(id))).limit(1);
         MongoCursor<Document> cursor = iterDoc.iterator();
 
@@ -309,35 +157,6 @@ public class Database
         cursor.close();
 
         return object;
-    }
-
-    public void saveDatabaseUnit(String collection)
-    {
-
-    }
-
-    public void createTestData()
-    {
-        MongoCollection<Document> collection = database.getCollection("sampleCollection");
-
-        Document document = new Document("title", "MongoDB")
-                .append("id", 1)
-                .append("description", "database")
-                .append("likes", 100)
-                .append("url", "http://www.tutorialspoint.com/mongodb/")
-                .append("by", "tutorials point");
-        collection.insertOne(document);
-
-        FindIterable<Document> iterDoc = collection.find();
-        int i = 1;
-
-        // Getting the iterator
-        Iterator it = iterDoc.iterator();
-
-        while (it.hasNext()) {
-            System.out.println(it.next());
-            i++;
-        }
     }
 }
 
