@@ -1,15 +1,17 @@
 package ru.justtry.validation;
 
-import org.springframework.stereotype.Component;
-import ru.justtry.metainfo.Attribute;
-import ru.justtry.mappers.AttributeMapper;
-import ru.justtry.database.Database;
-import ru.justtry.notes.Note;
+import static ru.justtry.shared.AttributeConstants.*;
 
-import javax.inject.Inject;
 import java.util.Map;
 
-import static ru.justtry.shared.AttributeConstants.*;
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Component;
+
+import ru.justtry.database.Database;
+import ru.justtry.mappers.AttributeMapper;
+import ru.justtry.metainfo.Attribute;
+import ru.justtry.notes.Note;
 
 @Component
 public class NoteValidator implements Validator
@@ -59,13 +61,13 @@ public class NoteValidator implements Validator
 
     private void checkRange(Map.Entry<String, Object> value, Attribute attribute)
     {
-        String min = attribute.getMinValue();
-        String max = attribute.getMaxValue();
+        String min = attribute.getMin();
+        String max = attribute.getMax();
 
         if (min == null && max == null)
             return;
 
-        if (attribute.getType() == TEXT || attribute.getType() == TEXTAREA)
+        if (attribute.getType() == Type.TEXT || attribute.getType() == Type.TEXTAREA)
         {
             String string = (String)value.getValue();
 

@@ -1,20 +1,26 @@
 package ru.justtry.rest;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import ru.justtry.metainfo.Entity;
-import ru.justtry.mappers.EntityMapper;
-import ru.justtry.validation.EntityValidator;
-import ru.justtry.mappers.Mapper;
-import ru.justtry.validation.Validator;
+import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
 
 import javax.inject.Inject;
 
-import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import ru.justtry.mappers.EntityMapper;
+import ru.justtry.mappers.Mapper;
+import ru.justtry.metainfo.Entity;
+import ru.justtry.validation.EntityValidator;
+import ru.justtry.validation.Validator;
 
 @RestController
 @RequestMapping("/rest/entities")
-public class EntitiesController extends MetainfoController
+public class EntitiesController extends MetaInfoController
 {
     @Inject
     private EntityMapper entityMapper;
@@ -38,7 +44,6 @@ public class EntitiesController extends MetainfoController
 //        Map<String, Object> values = new HashMap<>();
 //        values.put(NAME, name);
 //        values.put(ATTRIBUTES, Arrays.asList(metainfo));
-
         return database.saveDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
     }
 
@@ -71,19 +76,19 @@ public class EntitiesController extends MetainfoController
 //    }
 
     @Override
-    protected Mapper getMapper()
+    public Mapper getMapper()
     {
         return entityMapper;
     }
 
     @Override
-    protected Validator getValidator()
+    public Validator getValidator()
     {
         return entityValidator;
     }
 
     @Override
-    protected String getCollectionName()
+    public String getCollectionName()
     {
         return ENTITIES_COLLECTION;
     }

@@ -1,9 +1,9 @@
 package ru.justtry.metainfo;
 
-import ru.justtry.shared.Identifiable;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import ru.justtry.shared.Identifiable;
 
 /**
  * The metadata of some notes entity (Movies, Books, etc).
@@ -12,7 +12,6 @@ public class Entity extends Identifiable
 {
     private String name;
     private List<String> attributes = new ArrayList<>();
-
 
     public String getName()
     {

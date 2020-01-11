@@ -1,18 +1,19 @@
 package ru.justtry.database;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.*;
-import ru.justtry.database.Database;
-
-import javax.inject.Inject;
-import javax.inject.Named;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 @Configuration
 @PropertySource("classpath:application.properties")
 public class DatabaseConfiguration
 {
+    @Autowired
+    private ApplicationContext context;
+
     @Value("${database.port:27017}")
     private Integer port;
 
@@ -30,7 +31,7 @@ public class DatabaseConfiguration
 
 
 
-    @Bean
+    @Bean(name = "database")
 //    @Scope("singleton")
 //    @Named("database")
     public Database getDatabase()

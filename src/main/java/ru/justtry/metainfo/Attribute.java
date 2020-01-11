@@ -1,9 +1,16 @@
 package ru.justtry.metainfo;
 
+import java.util.Arrays;
+import java.util.List;
+
+import ru.justtry.shared.AttributeConstants.DefaultValue;
 import ru.justtry.shared.Identifiable;
 
 /**
- * The meta information about some attribute of the note.
+ * The meta information about some field of the note. This class describes how to use fields of notes.
+ *
+ * For example, there are information about how to display some value on the notes table in user interface.
+ * Also there are some information to check new value before send to server or save in database.
  */
 public class Attribute extends Identifiable
 {
@@ -16,16 +23,16 @@ public class Attribute extends Identifiable
      * Method responsible for aggregation operations on folders.
      * Possible methods:
      * - none - do nothing, just empty field
-     * - name - the name of the folder
+     * - folder name - the name of the folder
      * - avg - get the average attribute value from the notes inside folder
      * - count - count of objects in folder
      */
-    private String method = "none";
+    private String method = null;
 
     /**
      * The visibility of column with this attribute in table
      */
-    private boolean visible = true;
+    private boolean visible = DefaultValue.VISIBLE;
 
     /**
      * Value type.
@@ -34,56 +41,70 @@ public class Attribute extends Identifiable
      * - textarea - multiline string
      * - int - numeric field
      * - float - number with floating point
+     * - select - drop-down list with single selected value, represents enum value
+     * - multiselect - drop-down list that allows multiple selections, represents list of enum selectValues
+     * - checkbox - boolean value
+     * - year - numeric field limited by value and size
+     * - inc - incremented number, which has plus sign beside
+     * - url - the URL
+     * - etc
      */
-    private String type;
+    private String type = DefaultValue.TYPE;
 
     /**
-     * Minimum width of the field with this attribute
+     * Minimum width of the field with this attribute.
+     * Could keep value like "200" and "20em"
      */
-    private String minWidth = "0";
+    private String minWidth = null;
 
     /**
-     * Maximum width of the field with this attribute
+     * Maximum width of the field with this attribute.
+     * Could keep value like "200" and "20em".
      */
-    private String maxWidth = "0";
+    private String maxWidth = null;
 
     /**
-     * Minimum value of the attribute.
-     * For int types applies as the lower bound. For text types - as the minimum length.
+     * For number types applies as the lower bound. For text types - as the minimum length.
+     * Could contains different data types, so the field is String
      */
-    private String minValue;
+    private String min = null;
 
     /**
-     * Maximum value of the attribute.
      * For int types applies as the upper bound. For text types - as the maximum length.
+     * Could contains different data types, so the field is String
      */
-    private String maxValue;
+    private String max = null;
 
     /**
      * Default value of attribute.
      */
-    private String defaultValue;
+    private String defaultValue = null;
 
     /**
      * Lines count to display this attribute.
      * Except textarea the value is ignored.
      */
-    private Integer linesCount = 1;
+    private Integer linesCount = null;
 
     /**
      * The alignment of the attribute in data table.
      */
-    private String alignment = "left";
+    private String alignment = DefaultValue.ALIGNMENT;
 
     /**
      * Specifies if the attribute must be filled.
      */
-    private Boolean required = false;
+    private Boolean required = DefaultValue.REQUIRED;
 
     /**
      * The regular expression is used to check the correctness of value.
      */
     private String regex;
+
+    /**
+     * The values of drop-down list (enum)
+     */
+    private List<String> selectValues;
 
     /**
      * Get the regular expression.
@@ -92,6 +113,11 @@ public class Attribute extends Identifiable
     public String getRegex()
     {
         return regex;
+    }
+
+    public List<String> getSelectValues()
+    {
+        return selectValues;
     }
 
     /**
@@ -135,6 +161,11 @@ public class Attribute extends Identifiable
     public boolean getVisible()
     {
         return visible;
+    }
+
+    public void setSelectValues(String... selectValues)
+    {
+        this.selectValues = Arrays.asList(selectValues);
     }
 
     public void setVisible(boolean visible)
@@ -193,24 +224,24 @@ public class Attribute extends Identifiable
     }
 
 
-    public String getMinValue()
+    public String getMin()
     {
-        return minValue;
+        return min;
     }
 
-    public void setMinValue(String minValue)
+    public void setMin(String min)
     {
-        this.minValue = minValue;
+        this.min = min;
     }
 
-    public String getMaxValue()
+    public String getMax()
     {
-        return maxValue;
+        return max;
     }
 
-    public void setMaxValue(String maxValue)
+    public void setMax(String max)
     {
-        this.maxValue = maxValue;
+        this.max = max;
     }
 
     public String getDefaultValue()

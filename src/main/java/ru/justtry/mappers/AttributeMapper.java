@@ -1,17 +1,16 @@
 package ru.justtry.mappers;
 
-import com.google.common.base.Strings;
+import static ru.justtry.shared.AttributeConstants.*;
+import static ru.justtry.shared.Constants.MONGO_ID;
+import static ru.justtry.shared.Constants.NAME;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
+
+import com.google.common.base.Strings;
+
 import ru.justtry.metainfo.Attribute;
-
-import java.util.Map;
-
-import static ru.justtry.shared.AttributeConstants.*;
-import static ru.justtry.shared.AttributeConstants.MIN_WIDTH;
-import static ru.justtry.shared.Constants.MONGO_ID;
-import static ru.justtry.shared.Constants.NAME;
 
 @Component
 public class AttributeMapper extends Mapper
@@ -27,11 +26,11 @@ public class AttributeMapper extends Mapper
         attribute.setLinesCount((Integer)document.get(LINES_COUNT));
         attribute.setType(document.get(TYPE).toString());
         attribute.setVisible((Boolean)document.get(VISIBLE));
-        attribute.setMethod(document.get(METHOD).toString());
-        attribute.setMaxWidth(document.get(MAX_WIDTH).toString());
-        attribute.setMinWidth(document.get(MIN_WIDTH).toString());
-        attribute.setMinValue(getStringOrNull(document, MIN_VALUE));
-        attribute.setMaxValue(getStringOrNull(document, MAX_VALUE));
+        attribute.setMethod(getStringOrNull(document, METHOD));
+        attribute.setMaxWidth(getStringOrNull(document, MAX_WIDTH));
+        attribute.setMinWidth(getStringOrNull(document, MIN_WIDTH));
+        attribute.setMin(getStringOrNull(document, MIN));
+        attribute.setMax(getStringOrNull(document, MAX));
         attribute.setDefaultValue(getStringOrNull(document, DEFAULT));
         attribute.setRequired((Boolean)document.get(REQUIRED));
         attribute.setRegex(getStringOrNull(document, REGEX));
@@ -55,8 +54,8 @@ public class AttributeMapper extends Mapper
                 .append(LINES_COUNT, attribute.getLinesCount())
                 .append(ALIGNMENT, attribute.getAlignment())
                 .append(DEFAULT, attribute.getDefaultValue())
-                .append(MAX_VALUE, attribute.getMaxValue())
-                .append(MIN_VALUE, attribute.getMinValue())
+                .append(MAX, attribute.getMax())
+                .append(MIN, attribute.getMin())
                 .append(REQUIRED, attribute.getRequired())
                 .append(REGEX, attribute.getRegex());
 
@@ -65,6 +64,4 @@ public class AttributeMapper extends Mapper
 
         return document;
     }
-
-
 }

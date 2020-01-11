@@ -1,36 +1,30 @@
 package ru.justtry.database;
 
+import static com.mongodb.client.model.Filters.eq;
+import static ru.justtry.shared.Constants.MONGO_ID;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
+import com.mongodb.ReadConcern;
+import com.mongodb.ServerAddress;
+import com.mongodb.WriteConcern;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import org.apache.log4j.Logger;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-import ru.justtry.metainfo.*;
-import ru.justtry.mappers.AttributeMapper;
-import ru.justtry.mappers.EntityMapper;
+
 import ru.justtry.mappers.Mapper;
-import ru.justtry.validation.AttributeValidator;
-import ru.justtry.validation.EntityValidator;
 import ru.justtry.validation.Validator;
-
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import static com.mongodb.client.model.Filters.eq;
-import static ru.justtry.shared.AttributeConstants.*;
-import static ru.justtry.shared.EntityConstants.*;
-import static ru.justtry.shared.Constants.*;
-
 
 //@Component
 //@PropertySource("classpath:application.properties")
@@ -66,7 +60,13 @@ public class Database
         this.user = user;
         this.password = password;
 
-        mongo = new MongoClient(host, port);
+        ServerAddress address = new ServerAddress(host, port);
+        MongoClientOptions options = MongoClientOptions
+                .builder()
+                .writeConcern(WriteConcern.ACKNOWLEDGED)
+                .readConcern(ReadConcern.LOCAL)
+                .build();
+        mongo = new MongoClient(address, options);
         database = mongo.getDatabase(name);
         credential = MongoCredential.createCredential(user, name, password.toCharArray());
     }

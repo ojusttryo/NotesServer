@@ -1,17 +1,18 @@
 package ru.justtry.mappers;
 
-import com.google.common.base.Strings;
+import static ru.justtry.shared.Constants.MONGO_ID;
+import static ru.justtry.shared.Constants.NAME;
+import static ru.justtry.shared.EntityConstants.ATTRIBUTES;
+
+import java.util.List;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
+
+import com.google.common.base.Strings;
+
 import ru.justtry.metainfo.Entity;
-
-import java.util.List;
-import java.util.Map;
-
-import static ru.justtry.shared.EntityConstants.ATTRIBUTES;
-import static ru.justtry.shared.Constants.MONGO_ID;
-import static ru.justtry.shared.Constants.NAME;
 
 @Component
 public class EntityMapper extends Mapper
