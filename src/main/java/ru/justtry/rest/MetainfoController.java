@@ -4,9 +4,7 @@ import static ru.justtry.shared.Constants.ID;
 
 import javax.inject.Inject;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,15 +30,8 @@ public abstract class MetaInfoController
     @ResponseStatus(HttpStatus.OK)
     public Boolean delete(@PathVariable(value = ID) String id)
     {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Access-Control-Allow-Credentials", "true");
-        headers.set("Access-Control-Allow-Origin", "*");
-        headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
         database.deleteDocument(getCollectionName(), id);
-
         return true;
-
-       // return new ResponseEntity<Void>(null, headers, HttpStatus.OK);
     }
 
     @DeleteMapping
@@ -50,23 +41,18 @@ public abstract class MetaInfoController
         database.deleteDocuments(getCollectionName());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(path = "/{id}", produces = "text/plain;charset=UTF-8")
     @ResponseBody
     public Object get(@PathVariable(value = ID) String id)
     {
         return database.getObject(getCollectionName(), getMapper(), id);
     }
 
-    @GetMapping
+    @GetMapping(produces = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<Object[]> getAll()
+    public Object[] getAll()
     {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Access-Control-Allow-Credentials", "true");
-        headers.set("Access-Control-Allow-Origin", "*");
-        headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-        Object[] result = database.getObjects(getCollectionName(), getMapper());
-        return new ResponseEntity<>(result, null, HttpStatus.OK);
-        //return database.getObjects(getCollectionName(), getMapper());
+        return database.getObjects(getCollectionName(), getMapper());
     }
 }

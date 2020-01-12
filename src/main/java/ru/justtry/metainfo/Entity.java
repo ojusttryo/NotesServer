@@ -11,7 +11,7 @@ import ru.justtry.shared.Identifiable;
 public class Entity extends Identifiable
 {
     private String name;
-    private List<String> attributes = new ArrayList<>();
+    private List<String> attributes = new ArrayList<>();    // identifiers
 
     public String getName()
     {

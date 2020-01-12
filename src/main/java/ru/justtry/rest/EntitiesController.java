@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,8 +29,9 @@ public class EntitiesController extends MetaInfoController
     private EntityValidator entityValidator;
 
 
-    @PostMapping
+    @PostMapping(consumes = "application/json;charset=UTF-8", produces = "text/plain;charset=UTF-8")
     @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
     public String save(@RequestBody Entity entity)
 //            @RequestParam(value = NAME) String name,
 //            @RequestParam(value = ATTRIBUTES) String metainfo[])
@@ -47,9 +49,9 @@ public class EntitiesController extends MetaInfoController
         return database.saveDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
     }
 
-    @PutMapping
+    @PutMapping(consumes = "application/json;charset=UTF-8", produces = "text/plain;charset=UTF-8")
     @ResponseStatus(HttpStatus.OK)
-    public void update(@RequestBody Entity entity)
+    public String update(@RequestBody Entity entity)
 //            @RequestParam(value = MONGO_ID) String id,
 //            @RequestParam(value = NAME) String name,
 //            @RequestParam(value = ATTRIBUTES) String metainfo[])
@@ -65,6 +67,7 @@ public class EntitiesController extends MetaInfoController
 //        entity.setAttributes(Arrays.asList(metainfo));
 
         database.updateDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
+        return entity.getId();
 //        database.updateEntity(document);
     }
 
