@@ -3,7 +3,6 @@ package ru.justtry.validation;
 import com.google.common.base.Strings;
 import org.springframework.stereotype.Component;
 import ru.justtry.metainfo.Entity;
-import ru.justtry.validation.Validator;
 
 import static ru.justtry.shared.ErrorMessages.ATTRIBUTES_SIZE_INCORRECT;
 import static ru.justtry.shared.ErrorMessages.NAME_IS_NOT_SET;
@@ -24,7 +23,7 @@ public class EntityValidator implements Validator
 
     private void checkName(Entity entity)
     {
-        if (Strings.isNullOrEmpty(entity.getName()))
+        if (Strings.isNullOrEmpty(entity.getCollection()))
             throw new IllegalArgumentException(NAME_IS_NOT_SET);
     }
 

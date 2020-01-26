@@ -23,7 +23,7 @@ import java.net.MalformedURLException;
 public class Application
 {
     // To see logger debug info at start use Run configurations - VM option -Dlog4j.debug
-    private static Logger logger = Logger.getLogger(Application.class);// LogManager.getLogger(Application.class.getName());
+    private static Logger logger = Logger.getLogger(Application.class);// LogManager.getLogger(Application.class.getCollection());
     //private static AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(Application.class);
     //private static AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
 

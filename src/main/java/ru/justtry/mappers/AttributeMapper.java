@@ -22,6 +22,7 @@ public class AttributeMapper extends Mapper
 
         attribute.setId(document.get(MONGO_ID).toString());
         attribute.setName(document.get(NAME).toString());
+        attribute.setTitle(document.get(TITLE).toString());
         attribute.setAlignment(document.get(ALIGNMENT).toString());
         attribute.setLinesCount((Integer)document.get(LINES_COUNT));
         attribute.setType(document.get(TYPE).toString());
@@ -46,6 +47,7 @@ public class AttributeMapper extends Mapper
 
         Document document = new Document()
                 .append(NAME, attribute.getName())
+                .append(TITLE, attribute.getTitle())
                 .append(METHOD, attribute.getMethod())
                 .append(VISIBLE, attribute.getVisible())
                 .append(TYPE, attribute.getType())

@@ -41,7 +41,7 @@ public abstract class MetaInfoController
         database.deleteDocuments(getCollectionName());
     }
 
-    @GetMapping(path = "/{id}", produces = "text/plain;charset=UTF-8")
+    @GetMapping(path = "/{id}", produces = "application/json;charset=UTF-8")
     @ResponseBody
     public Object get(@PathVariable(value = ID) String id)
     {

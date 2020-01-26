@@ -63,7 +63,8 @@ public class MetaInfoInitializer
     private Attribute getAttributeName()
     {
         Attribute attribute = new Attribute();
-        attribute.setName(PredefinedAttributes.NAME);
+        attribute.setName("name");
+        attribute.setTitle("Name");
         attribute.setRequired(true);
         attribute.setVisible(true);
         return attribute;
@@ -75,7 +76,8 @@ public class MetaInfoInitializer
         attribute.setVisible(true);
         attribute.setType(Type.SELECT);
         attribute.setRequired(true);
-        attribute.setName(PredefinedAttributes.STATE);
+        attribute.setName("state");
+        attribute.setTitle("State");
         attribute.setSelectValues("Active", "Deleted", "Postponed", "waiting", "Finished", "Not defined");
         attribute.setDefaultValue("Not selected");
         return attribute;
@@ -90,7 +92,8 @@ public class MetaInfoInitializer
     {
         Attribute attribute = new Attribute();
         attribute.setVisible(false);
-        attribute.setName(PredefinedAttributes.COMMENT);
+        attribute.setName("comment");
+        attribute.setTitle("Comment");
         attribute.setRequired(false);
         attribute.setType(Type.TEXTAREA);
         attribute.setLinesCount(3);

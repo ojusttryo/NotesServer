@@ -54,7 +54,7 @@ public abstract class ObjectsController
 //    @ResponseBody
 //    public Object[] getAll(@PathVariable(value = ENTITY) String entity)
 //    {
-//        return database.getObjects(getCollectionName(entity), getMapper());
+//        return database.getObjects(getCollection(entity), getMapper());
 //    }
 
     @GetMapping("/{entity}")

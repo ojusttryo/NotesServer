@@ -10,17 +10,18 @@ import ru.justtry.shared.Identifiable;
  */
 public class Entity extends Identifiable
 {
-    private String name;
+    private String collection;
+    private String title;
     private List<String> attributes = new ArrayList<>();    // identifiers
 
-    public String getName()
+    public String getCollection()
     {
-        return name;
+        return collection;
     }
 
-    public void setName(String name)
+    public void setCollection(String collection)
     {
-        this.name = name;
+        this.collection = collection;
     }
 
     public List<String> getAttributes()
@@ -31,5 +32,15 @@ public class Entity extends Identifiable
     public void setAttributes(List<String> attributes)
     {
         this.attributes = attributes;
+    }
+
+    public String getTitle()
+    {
+        return title;
+    }
+
+    public void setTitle(String title)
+    {
+        this.title = title;
     }
 }

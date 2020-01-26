@@ -1,8 +1,9 @@
 package ru.justtry.mappers;
 
 import static ru.justtry.shared.Constants.MONGO_ID;
-import static ru.justtry.shared.Constants.NAME;
 import static ru.justtry.shared.EntityConstants.ATTRIBUTES;
+import static ru.justtry.shared.EntityConstants.COLLECTION;
+import static ru.justtry.shared.EntityConstants.TITLE;
 
 import java.util.List;
 
@@ -22,12 +23,12 @@ public class EntityMapper extends Mapper
     {
         Entity entity = new Entity();
         entity.setId(document.get(MONGO_ID).toString());
-        entity.setName(document.get(NAME).toString());
+        entity.setCollection(document.get(COLLECTION).toString());
+        entity.setTitle(document.get(TITLE).toString());
         entity.setAttributes((List<String>)document.get(ATTRIBUTES));
 
         return entity;
     }
-
 
     @Override
     public Document getDocument(Object object)
@@ -35,7 +36,8 @@ public class EntityMapper extends Mapper
         Entity entity = (Entity)object;
 
         Document document = new Document()
-                .append(NAME, entity.getName())
+                .append(COLLECTION, entity.getCollection())
+                .append(TITLE, entity.getTitle())
                 .append(ATTRIBUTES, entity.getAttributes());
 
         if (!Strings.isNullOrEmpty(entity.getId()))

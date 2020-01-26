@@ -2,6 +2,7 @@ package ru.justtry.shared;
 
 public interface AttributeConstants
 {
+    String TITLE = "title";
     String ATTRIBUTES_COLLECTION = "attributes";
     String METHOD = "method";
     String VISIBLE = "visible";
@@ -46,11 +47,11 @@ public interface AttributeConstants
 
     interface PredefinedAttributes
     {
-        String NAME = "Name";
-        String ADD_TIME = "Add time";
-        String UPDATE_TIME = "Last update time";
-        String STATE = "State";
-        String FOLDER = "Folder";
-        String COMMENT = "Comment";
+        String NAME = "name";
+        String ADD_TIME = "add time";
+        String UPDATE_TIME = "last update time";
+        String STATE = "state";
+        String FOLDER = "folder";
+        String COMMENT = "comment";
     }
 }

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import ru.justtry.shared.AttributeConstants.DefaultValue;
+import ru.justtry.shared.AttributeConstants.Method;
 import ru.justtry.shared.Identifiable;
 
 /**
@@ -15,9 +16,14 @@ import ru.justtry.shared.Identifiable;
 public class Attribute extends Identifiable
 {
     /**
-     * Name is used as the title of the columns and forms.
+     * The unique name of attribute.
      */
     private String name = "";
+
+    /**
+     * The title of attribute, which will be displayed on the form.
+     */
+    private String title = "";
 
     /**
      * Method responsible for aggregation operations on folders.
@@ -27,7 +33,7 @@ public class Attribute extends Identifiable
      * - avg - get the average attribute value from the notes inside folder
      * - count - count of objects in folder
      */
-    private String method = null;
+    private String method = Method.NONE;
 
     /**
      * The visibility of column with this attribute in table
@@ -84,7 +90,7 @@ public class Attribute extends Identifiable
      * Lines count to display this attribute.
      * Except textarea the value is ignored.
      */
-    private Integer linesCount = null;
+    private Integer linesCount = DefaultValue.LINES_COUNT;
 
     /**
      * The alignment of the attribute in data table.
@@ -252,5 +258,15 @@ public class Attribute extends Identifiable
     public void setDefaultValue(String defaultValue)
     {
         this.defaultValue = defaultValue;
+    }
+
+    public String getTitle()
+    {
+        return title;
+    }
+
+    public void setTitle(String title)
+    {
+        this.title = title;
     }
 }

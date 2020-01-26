@@ -38,7 +38,7 @@ public class EntitiesController extends MetaInfoController
     {
 //        Entity entity = new Entity();
 //
-//        entity.setName(name);
+//        entity.setCollection(name);
 //        entity.setAttributes(Arrays.asList(metainfo));
 //
 //        return database.saveEntity(entity);
@@ -63,7 +63,7 @@ public class EntitiesController extends MetaInfoController
         //Document document = entityMapper.getDocument(id, values);
 
 //        entity.setId(id);
-//        entity.setName(name);
+//        entity.setCollection(name);
 //        entity.setAttributes(Arrays.asList(metainfo));
 
         database.updateDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
