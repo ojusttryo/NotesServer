@@ -40,6 +40,12 @@ public class NoteValidator implements Validator
 
     private void validateAttributes(Note note)
     {
+        // TODO: здесь надо получить все атрибуты для заметки и проверить уже по полному списку, а не тому, что пришло
+        // с клиента
+
+        if (true)
+            return;
+
         for (Map.Entry<String, Object> value : note.getAttributes())
         {
             Attribute attribute = (Attribute)database.getObject(ATTRIBUTES_COLLECTION, attributeMapper, value.getKey());

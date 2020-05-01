@@ -33,19 +33,18 @@ public class MetaInfoInitializer
     public void createDefaultMetaInfo()
     {
         Database database = (Database)context.getBean("database");
-        AttributesController attributesController = (AttributesController)context.getBean("attributesController");
+        AttributesController attrController = (AttributesController)context.getBean("attributesController");
 
-        Object[] attributes = database.getObjects(attributesController.getCollectionName(),
-            attributesController.getMapper());
+        Object[] attrs = database.getObjects(attrController.getCollectionName(), attrController.getMapper(), null);
 
-        if (!containsAttribute(attributes, PredefinedAttributes.NAME))
-            attributesController.save(getAttributeName());
+        if (!containsAttribute(attrs, PredefinedAttributes.NAME))
+            attrController.save(getAttributeName());
 
-        if (!containsAttribute(attributes, PredefinedAttributes.STATE))
-            attributesController.save(getAttributeState());
+        if (!containsAttribute(attrs, PredefinedAttributes.STATE))
+            attrController.save(getAttributeState());
 
-        if (!containsAttribute(attributes, PredefinedAttributes.COMMENT))
-            attributesController.save(getAttributeComment());
+        if (!containsAttribute(attrs, PredefinedAttributes.COMMENT))
+            attrController.save(getAttributeComment());
     }
 
     /**

@@ -1,14 +1,19 @@
 package ru.justtry.rest;
 
+import static ru.justtry.shared.Constants.ID;
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
 
 import javax.inject.Inject;
+import javax.websocket.server.PathParam;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -71,12 +76,14 @@ public class EntitiesController extends MetaInfoController
 //        database.updateEntity(document);
     }
 
-//    @GetMapping("/{_id}")
-//    @ResponseBody
-//    public Object get(@PathVariable(value = MONGO_ID) String id)
-//    {
-//        return database.getObject(ENTITIES_COLLECTION, entityMapper, id);
-//    }
+
+    @GetMapping(path = "/search", produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    public Object get(@RequestParam(value = ID, required = true) String id)
+    {
+        return database.getObject(getCollectionName(), getMapper(), id);
+    }
 
     @Override
     public Mapper getMapper()

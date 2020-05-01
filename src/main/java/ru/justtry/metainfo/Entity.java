@@ -43,4 +43,10 @@ public class Entity extends Identifiable
     {
         this.title = title;
     }
+
+    @Override
+    public String toString()
+    {
+        return title + " " + collection;
+    }
 }

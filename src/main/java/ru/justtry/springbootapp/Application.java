@@ -1,7 +1,8 @@
 package ru.justtry.springbootapp;
 
-import org.apache.log4j.Logger;
 //import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ApplicationContext;
@@ -23,7 +24,7 @@ import java.net.MalformedURLException;
 public class Application
 {
     // To see logger debug info at start use Run configurations - VM option -Dlog4j.debug
-    private static Logger logger = Logger.getLogger(Application.class);// LogManager.getLogger(Application.class.getCollection());
+    private static Logger logger = LogManager.getLogger(Application.class);// LogManager.getLogger(Application.class.getCollection());
     //private static AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(Application.class);
     //private static AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
 

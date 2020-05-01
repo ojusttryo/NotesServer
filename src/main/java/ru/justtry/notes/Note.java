@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 public class Note extends Identifiable
 {
     private String folderId;
@@ -35,5 +37,18 @@ public class Note extends Identifiable
     public void setFolderId(String folderId)
     {
         this.folderId = folderId;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuffer buffer = new StringBuffer();
+        for (Map.Entry<String, Object> attribute : attributes)
+        {
+            Object value = (attribute.getValue() == null) ? "" : attribute.getValue();
+            buffer.append(value + ";");
+        }
+        buffer.deleteCharAt(buffer.length() - 1);
+        return buffer.toString();
     }
 }

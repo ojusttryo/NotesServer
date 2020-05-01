@@ -1,22 +1,26 @@
 package ru.justtry.rest;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ru.justtry.database.Database;
-import ru.justtry.mappers.FolderMapper;
-import ru.justtry.mappers.Mapper;
-import ru.justtry.notes.Note;
-import ru.justtry.validation.FolderValidator;
-import ru.justtry.validation.Validator;
-
-import javax.inject.Inject;
-
 import static ru.justtry.shared.Constants.ID;
 import static ru.justtry.shared.NoteConstants.ENTITY;
 
+import javax.inject.Inject;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+import ru.justtry.database.Database;
+import ru.justtry.mappers.Mapper;
+import ru.justtry.validation.Validator;
+
+
+@CrossOrigin(maxAge = 3600)
 public abstract class ObjectsController
 {
     protected abstract Validator getValidator();
@@ -32,7 +36,7 @@ public abstract class ObjectsController
     public void delete(@PathVariable(value = ENTITY) String entity,
                        @PathVariable(value = ID) String id)
     {
-        database.deleteDocument(getCollectionName(entity), id);
+        database.deleteDocument(getCollectionName(entity), getMapper(), id);
     }
 
     @DeleteMapping("/{entity}")
@@ -52,7 +56,7 @@ public abstract class ObjectsController
 
 //    @GetMapping("/{entity}")
 //    @ResponseBody
-//    public Object[] getAll(@PathVariable(value = ENTITY) String entity)
+//    public Object[] get(@PathVariable(value = ENTITY) String entity)
 //    {
 //        return database.getObjects(getCollection(entity), getMapper());
 //    }
@@ -62,9 +66,10 @@ public abstract class ObjectsController
     public ResponseEntity<Object[]> getAll(@PathVariable(value = ENTITY) String entity)
     {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Access-Control-Allow-Credentials", "true");
-        headers.set("Access-Control-Allow-Origin", "*");
-        headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-        return new ResponseEntity<>(database.getObjects(getCollectionName(entity), getMapper()), headers, HttpStatus.OK);
+//        headers.set("Access-Control-Allow-Credentials", "true");
+//        headers.set("Access-Control-Allow-Origin", "*");
+//        headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+        return new ResponseEntity<>(database.getObjects(getCollectionName(entity), getMapper(), null), headers,
+                HttpStatus.OK);
     }
 }

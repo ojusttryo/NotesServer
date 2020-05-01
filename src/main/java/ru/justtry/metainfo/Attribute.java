@@ -269,4 +269,10 @@ public class Attribute extends Identifiable
     {
         this.title = title;
     }
+
+    @Override
+    public String toString()
+    {
+        return title + " " + name;
+    }
 }

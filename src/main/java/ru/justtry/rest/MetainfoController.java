@@ -30,29 +30,22 @@ public abstract class MetaInfoController
     @ResponseStatus(HttpStatus.OK)
     public Boolean delete(@PathVariable(value = ID) String id)
     {
-        database.deleteDocument(getCollectionName(), id);
+        database.deleteDocument(getCollectionName(), getMapper(), id);
         return true;
     }
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.OK)
-    public void deleteAll()
+    public void delete()
     {
         database.deleteDocuments(getCollectionName());
-    }
-
-    @GetMapping(path = "/{id}", produces = "application/json;charset=UTF-8")
-    @ResponseBody
-    public Object get(@PathVariable(value = ID) String id)
-    {
-        return database.getObject(getCollectionName(), getMapper(), id);
     }
 
     @GetMapping(produces = "application/json;charset=UTF-8")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Object[] getAll()
+    public Object get()
     {
-        return database.getObjects(getCollectionName(), getMapper());
+        return database.getObjects(getCollectionName(), getMapper(), null);
     }
 }

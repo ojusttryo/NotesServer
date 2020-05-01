@@ -1,12 +1,16 @@
 package ru.justtry.database;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.in;
 import static ru.justtry.shared.Constants.MONGO_ID;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import javax.inject.Inject;
+
+import org.apache.logging.log4j.LogManager;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -23,8 +27,11 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
+import ru.justtry.mappers.LogMapper;
 import ru.justtry.mappers.Mapper;
 import ru.justtry.validation.Validator;
+
+import org.apache.logging.log4j.Logger;
 
 //@Component
 //@PropertySource("classpath:application.properties")
@@ -33,7 +40,8 @@ import ru.justtry.validation.Validator;
 //@Named("database")
 public class Database
 {
-    final static Logger logger = Logger.getLogger(Database.class);
+    final static Logger logger = LogManager.getLogger(Database.class);
+    final static String LOG_COLLECTION = "log";
 
     private MongoClient mongo;
     private MongoDatabase database;
@@ -45,6 +53,9 @@ public class Database
     private String user;
     private String password;
 
+
+    @Inject
+    private LogMapper logMapper;
 
     public Database()
     {
@@ -80,8 +91,11 @@ public class Database
 
         MongoCollection<Document> collection = database.getCollection(collectionName);
         collection.insertOne(document);
+        String id = getId(document);
 
-        return getId(document);
+        saveLog(collectionName.replace(".notes", ""), "CREATE", id, null, object.toString());
+
+        return id;
     }
 
 
@@ -97,36 +111,46 @@ public class Database
 
         Document document = mapper.getDocument(object);
 
+        Object before = getObject(collectionName, mapper, document.get(MONGO_ID).toString());
+
         MongoCollection<Document> collection = database.getCollection(collectionName);
         UpdateResult result = collection.updateOne(
                 eq(MONGO_ID, document.get(MONGO_ID)), new Document("$set", document));
         if (result.getMatchedCount() != 1)
             throw new RuntimeException("There are no object with id " + document.get(MONGO_ID));
+
+        saveLog(collectionName.replace(".notes", ""), "UPDATE", document.get(MONGO_ID).toString(),
+                before.toString(), object.toString());
     }
 
 
-    public void deleteDocument(String collectionName, String id)
+    public void deleteDocument(String collectionName, Mapper mapper, String id)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
-
+        Object object = getObject(collectionName, mapper, id);
         DeleteResult result = collection.deleteOne(eq(MONGO_ID, new ObjectId(id)));
         if (result.getDeletedCount() != 1)
             throw new RuntimeException(String.format("Cannot delete %s: document not found", name));
+
+        saveLog(collectionName.replace(".notes", ""), "DELETE", id, object.toString(), null);
     }
 
 
     public void deleteDocuments(String collectionName)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
+        long count = collection.estimatedDocumentCount();
         collection.drop();
+
+        saveLog(collectionName.replace(".notes", ""), "DELETE", null, count, 0);
     }
 
 
-    public Object[] getObjects(String collectionName, Mapper mapper)
+    public Object[] getObjects(String collectionName, Mapper mapper, List<String> ids)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
 
-        FindIterable<Document> iterDoc = collection.find();
+        FindIterable<Document> iterDoc = find(collection, ids);
         MongoCursor<Document> cursor = iterDoc.iterator();
 
         List<Object> objects = new ArrayList<>();
@@ -157,6 +181,71 @@ public class Database
         cursor.close();
 
         return object;
+    }
+
+
+    public FindIterable<Document> find(MongoCollection<Document> collection, List<String> ids)
+    {
+        if (ids == null || ids.size() == 0)
+        {
+            return collection.find();
+        }
+        else
+        {
+            List<ObjectId> identifiers = new ArrayList<>(ids.size());
+            for (String id : ids)
+                identifiers.add(new ObjectId(id));
+
+            return collection.find(in(MONGO_ID, identifiers));
+        }
+    }
+
+
+    public Object[] getLog()
+    {
+        MongoCollection<Document> collection = database.getCollection(LOG_COLLECTION);
+
+        FindIterable<Document> iterDoc = collection.find();
+        MongoCursor<Document> cursor = iterDoc.iterator();
+
+        List<LogRecord> result = new ArrayList<>();
+        while (cursor.hasNext())
+        {
+            Document document = cursor.next();
+            result.add((LogRecord)logMapper.getObject(document));
+        }
+        cursor.close();
+
+        return result.toArray();
+    }
+
+
+    public Object[] getLog(int count)
+    {
+        MongoCollection<Document> collection = database.getCollection(LOG_COLLECTION);
+
+        FindIterable<Document> iterDoc = collection.find().sort(new Document(MONGO_ID, -1)).limit(count);
+        MongoCursor<Document> cursor = iterDoc.iterator();
+
+        List<LogRecord> result = new ArrayList<>();
+        while (cursor.hasNext())
+        {
+            Document document = cursor.next();
+            result.add((LogRecord)logMapper.getObject(document));
+        }
+        cursor.close();
+
+        return result.toArray();
+    }
+
+
+    private void saveLog(String collectionName, String operation, String id, Object before, Object after)
+    {
+        LogRecord logRecord = new LogRecord(collectionName, operation, id, before, after);
+        Document document = logMapper.getDocument(logRecord);
+
+        MongoCollection<Document> collection = database.getCollection(LOG_COLLECTION);
+        collection.insertOne(document);
     }
 }
 
