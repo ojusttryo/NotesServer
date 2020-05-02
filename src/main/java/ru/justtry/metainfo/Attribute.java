@@ -1,7 +1,12 @@
 package ru.justtry.metainfo;
 
+import static java.util.Optional.ofNullable;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import ru.justtry.shared.AttributeConstants.DefaultValue;
 import ru.justtry.shared.AttributeConstants.Method;
@@ -48,7 +53,7 @@ public class Attribute extends Identifiable
      * - int - numeric field
      * - float - number with floating point
      * - select - drop-down list with single selected value, represents enum value
-     * - multiselect - drop-down list that allows multiple selections, represents list of enum selectValues
+     * - multiselect - drop-down list that allows multiple selections, represents list of enum selectOptions
      * - checkbox - boolean value
      * - year - numeric field limited by value and size
      * - inc - incremented number, which has plus sign beside
@@ -110,7 +115,7 @@ public class Attribute extends Identifiable
     /**
      * The values of drop-down list (enum)
      */
-    private List<String> selectValues;
+    private List<String> selectOptions;
 
     /**
      * Get the regular expression.
@@ -121,9 +126,9 @@ public class Attribute extends Identifiable
         return regex;
     }
 
-    public List<String> getSelectValues()
+    public List<String> getSelectOptions()
     {
-        return selectValues;
+        return selectOptions;
     }
 
     /**
@@ -169,9 +174,18 @@ public class Attribute extends Identifiable
         return visible;
     }
 
-    public void setSelectValues(String... selectValues)
+    public void setSelectOptions(List<String> selectOptions)
     {
-        this.selectValues = Arrays.asList(selectValues);
+        if (selectOptions == null)
+            return;
+
+        this.selectOptions = new ArrayList<>();
+        for (String option : selectOptions)
+        {
+            option = option.trim();
+            if (option.length() > 0)
+                this.selectOptions.add(option);
+        }
     }
 
     public void setVisible(boolean visible)
@@ -273,6 +287,15 @@ public class Attribute extends Identifiable
     @Override
     public String toString()
     {
-        return title + " " + name;
+        String options = selectOptions == null ? "null" :
+                Stream.of(selectOptions).map(Object::toString).collect(Collectors.joining(", "));
+
+        return String.format("%s (title=%s; method=%s; visible=%s; required=%s; type=%s; minWidth=%s; maxWidth=%s, "
+                        + "min=%s; max=%s; defaultValue=%s; linesCount=%s; alignment=%s; regex=%s; selectOptions=%s",
+                name, title, method, visible, required, type,
+                ofNullable(minWidth).orElse("null"), ofNullable(maxWidth).orElse("null"),
+                ofNullable(min).orElse("null"), ofNullable(max).orElse("null"),
+                ofNullable(defaultValue).orElse("null"), linesCount == null ? "null" : linesCount.toString(),
+                ofNullable(alignment).orElse("null"), ofNullable(regex).orElse("null"), options);
     }
 }

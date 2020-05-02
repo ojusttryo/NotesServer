@@ -4,6 +4,8 @@ import static ru.justtry.shared.AttributeConstants.*;
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.Constants.NAME;
 
+import java.util.List;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,7 @@ public class AttributeMapper extends Mapper
         attribute.setAlignment(document.get(ALIGNMENT).toString());
         attribute.setLinesCount((Integer)document.get(LINES_COUNT));
         attribute.setType(document.get(TYPE).toString());
+        attribute.setSelectOptions((List<String>)document.get(SELECT_OPTIONS));
         attribute.setVisible((Boolean)document.get(VISIBLE));
         attribute.setMethod(getStringOrNull(document, METHOD));
         attribute.setMaxWidth(getStringOrNull(document, MAX_WIDTH));
@@ -63,6 +66,9 @@ public class AttributeMapper extends Mapper
 
         if (!Strings.isNullOrEmpty(attribute.getId()))
             document.append(MONGO_ID, new ObjectId(attribute.getId()));
+
+        if (attribute.getSelectOptions() != null && !attribute.getSelectOptions().isEmpty())
+            document.append(SELECT_OPTIONS, attribute.getSelectOptions());
 
         return document;
     }

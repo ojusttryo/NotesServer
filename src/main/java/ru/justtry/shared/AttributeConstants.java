@@ -7,6 +7,7 @@ public interface AttributeConstants
     String METHOD = "method";
     String VISIBLE = "visible";
     String TYPE = "type";
+    String SELECT_OPTIONS = "selectOptions";
     String MIN_WIDTH = "minWidth";
     String MAX_WIDTH = "maxWidth";
     String MIN = "min";

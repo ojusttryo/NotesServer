@@ -2,6 +2,8 @@ package ru.justtry.metainfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import ru.justtry.shared.Identifiable;
 
@@ -47,6 +49,6 @@ public class Entity extends Identifiable
     @Override
     public String toString()
     {
-        return title + " " + collection;
+        return String.format("%s (title=%s, attributes=[%s])", collection, title, String.join(", ", attributes));
     }
 }
