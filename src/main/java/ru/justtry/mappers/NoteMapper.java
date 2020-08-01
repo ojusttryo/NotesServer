@@ -1,21 +1,22 @@
 package ru.justtry.mappers;
 
-import com.google.common.base.Strings;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.springframework.stereotype.Component;
-import ru.justtry.notes.Note;
-import ru.justtry.shared.NoteConstants;
+import static ru.justtry.shared.Constants.MONGO_ID;
+import static ru.justtry.shared.NoteConstants.FOLDER_ID;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static ru.justtry.shared.EntityConstants.ATTRIBUTES;
-import static ru.justtry.shared.NoteConstants.*;
-import static ru.justtry.shared.Constants.MONGO_ID;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.springframework.stereotype.Component;
+
+import com.google.common.base.Strings;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+
+import ru.justtry.notes.Note;
+import ru.justtry.shared.NoteConstants;
 
 @Component
 public class NoteMapper extends Mapper

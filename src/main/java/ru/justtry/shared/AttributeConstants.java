@@ -13,6 +13,7 @@ public interface AttributeConstants
     String MIN = "min";
     String MAX = "max";
     String DEFAULT = "default";
+    String STEP = "step";
     String LINES_COUNT = "linesCount";
     String ALIGNMENT = "alignment";
     String LEFT = "left";
@@ -40,6 +41,7 @@ public interface AttributeConstants
     {
         Integer WIDTH = 0;
         Integer LINES_COUNT = 1;
+        Integer STEP = 1;
         String ALIGNMENT = LEFT;
         boolean REQUIRED = false;
         boolean VISIBLE = true;

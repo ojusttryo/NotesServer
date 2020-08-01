@@ -36,6 +36,7 @@ public class AttributeMapper extends Mapper
         attribute.setMin(getStringOrNull(document, MIN));
         attribute.setMax(getStringOrNull(document, MAX));
         attribute.setDefaultValue(getStringOrNull(document, DEFAULT));
+        attribute.setStep(getStringOrNull(document, STEP));
         attribute.setRequired((Boolean)document.get(REQUIRED));
         attribute.setRegex(getStringOrNull(document, REGEX));
 
@@ -59,6 +60,7 @@ public class AttributeMapper extends Mapper
                 .append(LINES_COUNT, attribute.getLinesCount())
                 .append(ALIGNMENT, attribute.getAlignment())
                 .append(DEFAULT, attribute.getDefaultValue())
+                .append(STEP, attribute.getStep())
                 .append(MAX, attribute.getMax())
                 .append(MIN, attribute.getMin())
                 .append(REQUIRED, attribute.getRequired())

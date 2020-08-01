@@ -1,22 +1,17 @@
 package ru.justtry.mappers;
 
-import com.google.common.base.Strings;
+import static ru.justtry.shared.Constants.MONGO_ID;
+import static ru.justtry.shared.Constants.NAME;
+import static ru.justtry.shared.FolderConstants.LEVEL;
+import static ru.justtry.shared.NoteConstants.FOLDER_ID;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
-import ru.justtry.metainfo.Entity;
-import ru.justtry.notes.Note;
+
+import com.google.common.base.Strings;
+
 import ru.justtry.notes.NoteFolder;
-import ru.justtry.shared.FolderConstants;
-
-import java.util.List;
-import java.util.Map;
-
-import static ru.justtry.shared.Constants.MONGO_ID;
-import static ru.justtry.shared.Constants.NAME;
-import static ru.justtry.shared.EntityConstants.ATTRIBUTES;
-import static ru.justtry.shared.FolderConstants.LEVEL;
-import static ru.justtry.shared.NoteConstants.FOLDER_ID;
 
 @Component
 public class FolderMapper extends Mapper

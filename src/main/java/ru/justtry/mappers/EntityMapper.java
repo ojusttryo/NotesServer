@@ -4,6 +4,7 @@ import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.EntityConstants.ATTRIBUTES;
 import static ru.justtry.shared.EntityConstants.COLLECTION;
 import static ru.justtry.shared.EntityConstants.TITLE;
+import static ru.justtry.shared.EntityConstants.VISIBLE;
 
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class EntityMapper extends Mapper
         entity.setId(document.get(MONGO_ID).toString());
         entity.setCollection(document.get(COLLECTION).toString());
         entity.setTitle(document.get(TITLE).toString());
+        entity.setVisible((boolean)document.get(VISIBLE));
         entity.setAttributes((List<String>)document.get(ATTRIBUTES));
 
         return entity;
@@ -38,6 +40,7 @@ public class EntityMapper extends Mapper
         Document document = new Document()
                 .append(COLLECTION, entity.getCollection())
                 .append(TITLE, entity.getTitle())
+                .append(VISIBLE, entity.isVisible())
                 .append(ATTRIBUTES, entity.getAttributes());
 
         if (!Strings.isNullOrEmpty(entity.getId()))
