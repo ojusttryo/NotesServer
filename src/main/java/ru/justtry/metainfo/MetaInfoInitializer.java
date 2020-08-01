@@ -79,7 +79,7 @@ public class MetaInfoInitializer
         attribute.setTitle("State");
         attribute.setSelectOptions(
                 Arrays.asList("Active", "Deleted", "Postponed", "Waiting", "Finished", "Not  defined"));
-        attribute.setDefaultValue("Not selected");
+        attribute.setDefaultValue("Not  defined");
         return attribute;
     }
 
