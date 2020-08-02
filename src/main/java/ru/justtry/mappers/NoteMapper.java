@@ -31,7 +31,7 @@ public class NoteMapper extends Mapper
         for (Document attribute : attributes)
         {
             Map.Entry<String, Object> entry = attribute.entrySet().iterator().next();
-            note.getAttributes().add(entry);
+            note.getAttributes().put(entry.getKey(), entry.getValue());
         }
 
         return note;
@@ -64,10 +64,10 @@ public class NoteMapper extends Mapper
             document.append(MONGO_ID, new ObjectId(note.getId()));
 
         List<DBObject> attributes = new ArrayList<>();
-        for (Map.Entry<String, Object> attribute : note.getAttributes())
+        for (String attrName : note.getAttributes().keySet())
         {
             BasicDBObject attr = new BasicDBObject();
-            attr.put(attribute.getKey(), attribute.getValue());
+            attr.put(attrName, note.getAttributes().get(attrName));
             attributes.add(attr);
         }
         document.append(NoteConstants.ATTRIBUTES, attributes);
