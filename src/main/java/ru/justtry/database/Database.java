@@ -3,16 +3,17 @@ package ru.justtry.database;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.in;
 import static ru.justtry.shared.Constants.MONGO_ID;
-
+import static ru.justtry.shared.Constants.NAME;
+import static ru.justtry.shared.EntityConstants.COLLECTION;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -29,9 +30,11 @@ import com.mongodb.client.result.UpdateResult;
 
 import ru.justtry.mappers.LogMapper;
 import ru.justtry.mappers.Mapper;
+import ru.justtry.metainfo.Attribute;
+import ru.justtry.metainfo.Entity;
+import ru.justtry.rest.AttributesController;
+import ru.justtry.rest.EntitiesController;
 import ru.justtry.validation.Validator;
-
-import org.apache.logging.log4j.Logger;
 
 //@Component
 //@PropertySource("classpath:application.properties")
@@ -53,15 +56,18 @@ public class Database
     private String user;
     private String password;
 
-
-    @Inject
+    @Autowired
     private LogMapper logMapper;
+    @Autowired
+    private AttributesController attributesController;
+    @Autowired
+    private EntitiesController entitiesController;
+
 
     public Database()
     {
         logger.info("Database created");
     }
-
 
     public void init(String host, Integer port, String name, String user, String password)
     {
@@ -82,10 +88,9 @@ public class Database
         credential = MongoCredential.createCredential(user, name, password.toCharArray());
     }
 
-
     public String saveDocument(String collectionName, Validator validator, Mapper mapper, Object object)
     {
-        validator.validate(object);
+        validator.validate(object, collectionName.replace(".notes", ""));
 
         Document document = mapper.getDocument(object);
 
@@ -98,16 +103,14 @@ public class Database
         return id;
     }
 
-
     private String getId(Document document)
     {
         return ((ObjectId)document.get(MONGO_ID)).toString();
     }
 
-
     public void updateDocument(String collectionName, Validator validator, Mapper mapper, Object object)
     {
-        validator.validate(object);
+        validator.validate(object, collectionName.replace(".notes", ""));
 
         Document document = mapper.getDocument(object);
 
@@ -123,7 +126,6 @@ public class Database
                 before.toString(), object.toString());
     }
 
-
     public void deleteDocument(String collectionName, Mapper mapper, String id)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
@@ -135,7 +137,6 @@ public class Database
         saveLog(collectionName.replace(".notes", ""), "DELETE", id, object.toString(), null);
     }
 
-
     public void deleteDocuments(String collectionName)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
@@ -144,7 +145,6 @@ public class Database
 
         saveLog(collectionName.replace(".notes", ""), "DELETE", null, count, 0);
     }
-
 
     public Object[] getObjects(String collectionName, Mapper mapper, List<String> ids)
     {
@@ -164,6 +164,12 @@ public class Database
         return objects.toArray();
     }
 
+    public Object[] getAttributes(String entityCollection)
+    {
+        Entity entity = getEntity(entityCollection);
+        return (entity == null) ? null : getObjects(attributesController.getCollectionName(),
+                attributesController.getMapper(), entity.getAttributes());
+    }
 
     public Object getObject(String collectionName, Mapper mapper, String id)
     {
@@ -184,7 +190,56 @@ public class Database
     }
 
 
-    public FindIterable<Document> find(MongoCollection<Document> collection, List<String> ids)
+    public Attribute getAttribute(String name)
+    {
+        MongoCollection<Document> collection = database.getCollection(attributesController.getCollectionName());
+
+        FindIterable<Document> iterDoc = collection.find(eq(NAME, name)).limit(1);
+        MongoCursor<Document> cursor = iterDoc.iterator();
+
+        Attribute attribute = null;
+        if (cursor.hasNext())
+        {
+            Document document = cursor.next();
+            attribute = (Attribute)attributesController.getMapper().getObject(document);
+        }
+        cursor.close();
+
+        return attribute;
+    }
+
+    public Entity getEntity(String entityCollection)
+    {
+        MongoCollection<Document> collection = database.getCollection(entitiesController.getCollectionName());
+
+        FindIterable<Document> iterDoc = collection.find(eq(COLLECTION, entityCollection)).limit(1);
+        MongoCursor<Document> cursor = iterDoc.iterator();
+
+        Entity entity = null;
+        if (cursor.hasNext())
+        {
+            Document document = cursor.next();
+            entity = (Entity)entitiesController.getMapper().getObject(document);
+        }
+        cursor.close();
+
+        return entity;
+    }
+
+    public boolean isEntityExist(String entityCollection)
+    {
+        MongoCollection<Document> collection = database.getCollection(entitiesController.getCollectionName());
+
+        FindIterable<Document> iterDoc = collection.find(eq(COLLECTION, entityCollection)).limit(1);
+
+        try (MongoCursor<Document> cursor = iterDoc.iterator())
+        {
+            return cursor.hasNext();
+        }
+    }
+
+
+    private FindIterable<Document> find(MongoCollection<Document> collection, List<String> ids)
     {
         if (ids == null || ids.size() == 0)
         {

@@ -1,20 +1,16 @@
 package ru.justtry.springbootapp;
 
 //import org.apache.logging.log4j.Logger;
+import java.net.MalformedURLException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-import ru.justtry.database.DatabaseConfiguration;
-
-import javax.inject.Inject;
-import java.net.MalformedURLException;
 
 @Configuration("application.properties")
 @EnableAutoConfiguration
@@ -41,6 +37,9 @@ public class Application
         //PropertyConfigurator.configure("log4j.properties");
         //showBeans(applicationContext);
         SpringApplication.run(Application.class, args);
+
+        // TODO cache attributes and entities info
+        // TODO do not get collection on every call
     }
 
     public static void showBeans(ApplicationContext applicationContext)

@@ -1,9 +1,28 @@
 package ru.justtry.shared;
 
-public interface ErrorMessages
+public abstract class ErrorMessages
 {
-    String NAME_IS_NOT_SET = "Name is not set";
-    String LEVEL_IS_NOT_SET = "Level is not set";
-    String LEVEL_RANGE_INCORRECT = "Level must be between 1 and 3";
-    String ATTRIBUTES_SIZE_INCORRECT = "There are no attributes";
+    public static String NAME_IS_DUPLICATED = "Attribute with this name is already exists";
+    public static String NOT_ALL_ATTRIBUTES_FOUND = "Some attributes are not found";
+
+
+    public static String getIsNotSet(String attribute)
+    {
+        return attribute + " is not set";
+    }
+
+    public static String getShouldBeInteger(String attribute)
+    {
+        return attribute + " should be integer";
+    }
+
+    public static String getShouldBeNumber(String attribute)
+    {
+        return attribute + " should be numeric type (integer or double)";
+    }
+
+    public static String getIsNotInPredefinedValues(String attribute)
+    {
+        return attribute + " is not one of the predefined values";
+    }
 }

@@ -19,22 +19,14 @@ public interface AttributeConstants
     String LEFT = "left";
     String REQUIRED = "required";
     String REGEX = "regex";
-    String INT = "int";
-    String FLOAT = "float";
+    String EDITABLE_IN_TABLE = "editableInTable";
+    String DATE_FORMAT = "dateFormat";
 
     interface Type
     {
         String TEXT = "text";
         String TEXTAREA = "textarea";
         String SELECT = "select";
-    }
-
-    interface Method
-    {
-        String NONE = "none";
-        String FOLDER_NAME = "folder name";
-        String AVG = "avg";
-        String COUNT = "count";
     }
 
     interface DefaultValue
@@ -45,7 +37,6 @@ public interface AttributeConstants
         String ALIGNMENT = LEFT;
         boolean REQUIRED = false;
         boolean VISIBLE = true;
-        String TYPE = Type.TEXT;
     }
 
     interface PredefinedAttributes

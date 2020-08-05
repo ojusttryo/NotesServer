@@ -54,21 +54,12 @@ public abstract class ObjectsController
         return database.getObject(getCollectionName(entity), getMapper(), id);
     }
 
-//    @GetMapping("/{entity}")
-//    @ResponseBody
-//    public Object[] get(@PathVariable(value = ENTITY) String entity)
-//    {
-//        return database.getObjects(getCollection(entity), getMapper());
-//    }
 
     @GetMapping("/{entity}")
     @ResponseBody
     public ResponseEntity<Object[]> getAll(@PathVariable(value = ENTITY) String entity)
     {
         HttpHeaders headers = new HttpHeaders();
-//        headers.set("Access-Control-Allow-Credentials", "true");
-//        headers.set("Access-Control-Allow-Origin", "*");
-//        headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
         return new ResponseEntity<>(database.getObjects(getCollectionName(entity), getMapper(), null), headers,
                 HttpStatus.OK);
     }

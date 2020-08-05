@@ -1,16 +1,17 @@
 package ru.justtry.validation;
 
-import com.google.common.base.Strings;
 import org.springframework.stereotype.Component;
-import ru.justtry.notes.NoteFolder;
 
-import static ru.justtry.shared.ErrorMessages.*;
+import com.google.common.base.Strings;
+
+import ru.justtry.notes.NoteFolder;
+import ru.justtry.shared.ErrorMessages;
 
 @Component
 public class FolderValidator implements Validator
 {
     @Override
-    public void validate(Object object)
+    public void validate(Object object, String collectionName)
     {
         NoteFolder folder = (NoteFolder)object;
 
@@ -23,15 +24,15 @@ public class FolderValidator implements Validator
     private void checkName(NoteFolder folder)
     {
         if (Strings.isNullOrEmpty(folder.getName()))
-            throw new IllegalArgumentException(NAME_IS_NOT_SET);
+            throw new IllegalArgumentException(ErrorMessages.getIsNotSet("Name"));
     }
 
     private void checkLevel(NoteFolder folder)
     {
         if (folder.getLevel() == null)
-            throw new IllegalArgumentException(LEVEL_IS_NOT_SET);
+            throw new IllegalArgumentException(ErrorMessages.getIsNotSet("Level"));
 
         if (folder.getLevel() < 1 || folder.getLevel() > 3)
-            throw new IllegalArgumentException(LEVEL_RANGE_INCORRECT);
+            throw new IllegalArgumentException("Level must be between 1 and 3");
     }
 }

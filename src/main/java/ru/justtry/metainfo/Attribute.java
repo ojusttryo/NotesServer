@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.validation.constraints.NotNull;
+
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
 import ru.justtry.shared.AttributeConstants.DefaultValue;
-import ru.justtry.shared.AttributeConstants.Method;
 import ru.justtry.shared.Identifiable;
 
 /**
@@ -23,45 +24,163 @@ import ru.justtry.shared.Identifiable;
 @Data
 public class Attribute extends Identifiable
 {
+    public enum Method
+    {
+        NONE("none"),                   // does nothing, just empty field
+        FOLDER_NAME("folder name"),     // the name of the folder containing notes
+        AVG("avg"),                     // the average attributes value from the notes inside folder
+        COUNT("count");                 // count of objects in folder
+
+        public final String title;
+
+        public static Method get(String method)
+        {
+            switch (method)
+            {
+            case "none": return NONE;
+            case "folder name": return FOLDER_NAME;
+            case "avg": return AVG;
+            case "count": return COUNT;
+            default: return null;
+            }
+        }
+
+        Method(String title)
+        {
+            this.title = title;
+        }
+    }
+
+    public enum Type
+    {
+        TEXT("text"),                   // single line string
+        TEXT_AREA("textarea"),          // multiline string
+        NUMBER("number"),               // numeric field (double or integer)
+        SELECT("select"),               // drop-down list with single selected value, represents enum value
+        MULTI_SELECT("multiselect"),    // drop-down list that allows multiple selections
+        CHECKBOX("checkbox"),           // boolean value
+        INC("inc"),                     // incremented number, which has plus sign beside
+        URL("url"),                     // the URL
+        SAVE_TIME("save time"),         // timestamp when the note is saved
+        UPDATE_TIME("update time"),     // timestamp when the note is updated
+        USER_DATE("user date"),         // custom date (yyyy-mm-dd)
+        USER_TIME("user time");         // custom time (hh:mm, 24-hours format)
+
+        public final String title;
+
+        public static boolean isTextType(Type type)
+        {
+            return (type == TEXT || type == TEXT_AREA);
+        }
+
+        public static boolean isTextType(String type)
+        {
+            Type t = get(type);
+            return (t != null) && isTextType(t);
+        }
+
+        public static boolean isNumericType(Type type)
+        {
+            return (type == NUMBER || type == INC);
+        }
+
+        public static boolean isNumericType(String type)
+        {
+            Type t = get(type);
+            return (t != null) && isNumericType(t);
+        }
+
+        public static boolean isSelectType(Type type)
+        {
+            return (type == SELECT || type == MULTI_SELECT);
+        }
+
+        public static boolean isTimestampType(Type type)
+        {
+            return (type == SAVE_TIME || type == UPDATE_TIME);
+        }
+
+        public static Type get(String type)
+        {
+            switch (type)
+            {
+            case "text": return TEXT;
+            case "textarea": return TEXT_AREA;
+            case "number": return NUMBER;
+            case "select": return SELECT;
+            case "multiselect": return MULTI_SELECT;
+            case "checkbox": return CHECKBOX;
+            case "inc": return INC;
+            case "url": return URL;
+            case "save time": return SAVE_TIME;
+            case "update time": return UPDATE_TIME;
+            case "user date": return USER_DATE;
+            case "user time": return USER_TIME;
+            default: return null;
+            }
+        }
+
+        Type(String title)
+        {
+            this.title = title;
+        }
+    }
+
+    public enum Alignment
+    {
+        LEFT("left"),
+        RIGHT("right"),
+        CENTER("center");
+
+        public final String title;
+
+        public static Alignment get(String alignment)
+        {
+            switch (alignment)
+            {
+            case "left": return LEFT;
+            case "right": return RIGHT;
+            case "center": return CENTER;
+            default: return null;
+            }
+        }
+
+        Alignment(String titile)
+        {
+            this.title = titile;
+        }
+    }
+
+
     /**
      * The unique name of attribute.
      */
+    @NotNull(message = "Name cannot be null")
     private String name = "";
 
     /**
      * The title of attribute, which will be displayed on the form.
      */
+    @NotNull(message = "Title cannot be null")
     private String title = "";
 
     /**
      * Method responsible for aggregation operations on folders.
-     * Possible methods:
-     * - none - do nothing, just empty field
-     * - folder name - the name of the folder
-     * - avg - get the average attribute value from the notes inside folder
-     * - count - count of objects in folder
      */
-    private String method = Method.NONE;
+    @NotNull(message = "Method cannot be null")
+    private String method = Method.NONE.title;
 
     /**
      * The visibility of column with this attribute in table
      */
+    @NotNull(message = "Visible cannot be null")
     private Boolean visible = DefaultValue.VISIBLE;
 
     /**
      * Value type.
-     * Possible types:
-     * - text - single line string
-     * - textarea - multiline string
-     * - number - numeric field
-     * - select - drop-down list with single selected value, represents enum value
-     * - multiselect - drop-down list that allows multiple selections, represents list of enum selectOptions
-     * - checkbox - boolean value
-     * - inc - incremented number, which has plus sign beside
-     * - url - the URL
-     * - etc
      */
-    private String type = DefaultValue.TYPE;
+    @NotNull(message = "Type cannot be null")
+    private String type = Type.TEXT.title;
 
     /**
      * Minimum width of the field with this attribute.
@@ -77,15 +196,13 @@ public class Attribute extends Identifiable
 
     /**
      * For number types applies as the lower bound. For text types - as the minimum length.
-     * Could contains different data types, so the field is String
      */
-    private String min = null;
+    private Double min = null;
 
     /**
      * For int types applies as the upper bound. For text types - as the maximum length.
-     * Could contains different data types, so the field is String
      */
-    private String max = null;
+    private Double max = null;
 
     /**
      * Default value of attribute.
@@ -106,11 +223,13 @@ public class Attribute extends Identifiable
     /**
      * The alignment of the attribute in data table.
      */
+    @NotNull(message = "Alignment cannot be null")
     private String alignment = DefaultValue.ALIGNMENT;
 
     /**
      * Specifies if the attribute must be filled.
      */
+    @NotNull(message = "Required cannot be null")
     private Boolean required = DefaultValue.REQUIRED;
 
     /**
@@ -123,6 +242,11 @@ public class Attribute extends Identifiable
      */
     @Setter(AccessLevel.NONE)
     private List<String> selectOptions;
+
+    @NotNull(message = "EditableIntable cannot be null")
+    private Boolean editableInTable = false;
+
+    private String dateFormat;
 
     public void setSelectOptions(List<String> selectOptions)
     {
@@ -145,11 +269,13 @@ public class Attribute extends Identifiable
                 Stream.of(selectOptions).map(Object::toString).collect(Collectors.joining(", "));
 
         return String.format("%s (title=%s; method=%s; visible=%s; required=%s; type=%s; minWidth=%s; maxWidth=%s, "
-                        + "min=%s; max=%s; defaultValue=%s; linesCount=%s; alignment=%s; regex=%s; selectOptions=%s",
+                        + "min=%s; max=%s; defaultValue=%s; linesCount=%s; alignment=%s; regex=%s; selectOptions=%s; "
+                        + "editableInTable=%s",
                 name, title, method, visible, required, type,
                 ofNullable(minWidth).orElse("null"), ofNullable(maxWidth).orElse("null"),
-                ofNullable(min).orElse("null"), ofNullable(max).orElse("null"),
+                min == null ? "null" : min.toString(), max == null ? "null" : max.toString(),
                 ofNullable(defaultValue).orElse("null"), linesCount == null ? "null" : linesCount.toString(),
-                ofNullable(alignment).orElse("null"), ofNullable(regex).orElse("null"), options);
+                ofNullable(alignment).orElse("null"), ofNullable(regex).orElse("null"), options,
+                editableInTable);
     }
 }

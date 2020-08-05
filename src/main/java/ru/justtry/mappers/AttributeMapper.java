@@ -33,12 +33,14 @@ public class AttributeMapper extends Mapper
         attribute.setMethod(getStringOrNull(document, METHOD));
         attribute.setMaxWidth(getStringOrNull(document, MAX_WIDTH));
         attribute.setMinWidth(getStringOrNull(document, MIN_WIDTH));
-        attribute.setMin(getStringOrNull(document, MIN));
-        attribute.setMax(getStringOrNull(document, MAX));
+        attribute.setMin((Double)document.get(MIN));
+        attribute.setMax((Double)document.get(MAX));
         attribute.setDefaultValue(getStringOrNull(document, DEFAULT));
         attribute.setStep(getStringOrNull(document, STEP));
         attribute.setRequired((Boolean)document.get(REQUIRED));
         attribute.setRegex(getStringOrNull(document, REGEX));
+        attribute.setEditableInTable((Boolean)document.get(EDITABLE_IN_TABLE));
+        attribute.setDateFormat(getStringOrNull(document, DATE_FORMAT));
 
         return attribute;
     }
@@ -64,13 +66,13 @@ public class AttributeMapper extends Mapper
                 .append(MAX, attribute.getMax())
                 .append(MIN, attribute.getMin())
                 .append(REQUIRED, attribute.getRequired())
-                .append(REGEX, attribute.getRegex());
+                .append(REGEX, attribute.getRegex())
+                .append(EDITABLE_IN_TABLE, attribute.getEditableInTable())
+                .append(DATE_FORMAT, attribute.getDateFormat())
+                .append(SELECT_OPTIONS, attribute.getSelectOptions());
 
         if (!Strings.isNullOrEmpty(attribute.getId()))
             document.append(MONGO_ID, new ObjectId(attribute.getId()));
-
-        if (attribute.getSelectOptions() != null && !attribute.getSelectOptions().isEmpty())
-            document.append(SELECT_OPTIONS, attribute.getSelectOptions());
 
         return document;
     }

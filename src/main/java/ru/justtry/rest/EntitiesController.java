@@ -4,11 +4,11 @@ import static ru.justtry.shared.Constants.ID;
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
 
 import javax.inject.Inject;
-import javax.websocket.server.PathParam;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.justtry.mappers.EntityMapper;
 import ru.justtry.mappers.Mapper;
 import ru.justtry.metainfo.Entity;
+import ru.justtry.shared.RestError;
 import ru.justtry.validation.EntityValidator;
 import ru.justtry.validation.Validator;
 
@@ -34,46 +35,38 @@ public class EntitiesController extends MetaInfoController
     private EntityValidator entityValidator;
 
 
-    @PostMapping(consumes = "application/json;charset=UTF-8", produces = "text/plain;charset=UTF-8")
+    @PostMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public String save(@RequestBody Entity entity)
-//            @RequestParam(value = NAME) String name,
-//            @RequestParam(value = ATTRIBUTES) String metainfo[])
+    public ResponseEntity<Object> save(@RequestBody Entity entity)
     {
-//        Entity entity = new Entity();
-//
-//        entity.setCollection(name);
-//        entity.setAttributes(Arrays.asList(metainfo));
-//
-//        return database.saveEntity(entity);
-
-//        Map<String, Object> values = new HashMap<>();
-//        values.put(NAME, name);
-//        values.put(ATTRIBUTES, Arrays.asList(metainfo));
-        return database.saveDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
+        HttpHeaders headers = new HttpHeaders();
+        try
+        {
+            String id = database.saveDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
+            return new ResponseEntity<>(id, headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @PutMapping(consumes = "application/json;charset=UTF-8", produces = "text/plain;charset=UTF-8")
+    @PutMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
+    @ResponseBody
     @ResponseStatus(HttpStatus.OK)
-    public String update(@RequestBody Entity entity)
-//            @RequestParam(value = MONGO_ID) String id,
-//            @RequestParam(value = NAME) String name,
-//            @RequestParam(value = ATTRIBUTES) String metainfo[])
+    public ResponseEntity<Object> update(@RequestBody Entity entity)
     {
-//        Map<String, Object> values = new HashMap<>();
-//        values.put(NAME, name);
-//        values.put(ATTRIBUTES, Arrays.asList(metainfo));
-
-        //Document document = entityMapper.getDocument(id, values);
-
-//        entity.setId(id);
-//        entity.setCollection(name);
-//        entity.setAttributes(Arrays.asList(metainfo));
-
-        database.updateDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
-        return entity.getId();
-//        database.updateEntity(document);
+        HttpHeaders headers = new HttpHeaders();
+        try
+        {
+            database.updateDocument(ENTITIES_COLLECTION, entityValidator, entityMapper, entity);
+            return new ResponseEntity<>(entity.getId(), headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 

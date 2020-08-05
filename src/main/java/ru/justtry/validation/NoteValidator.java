@@ -1,8 +1,10 @@
 package ru.justtry.validation;
 
-import static ru.justtry.shared.AttributeConstants.*;
+import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component;
 import ru.justtry.database.Database;
 import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.metainfo.Attribute;
+import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.notes.Note;
 
 @Component
@@ -22,9 +25,23 @@ public class NoteValidator implements Validator
     private AttributeMapper attributeMapper;
 
     @Override
-    public void validate(Object object)
+    public void validate(Object object, String collectionName)
     {
+        if (!database.isEntityExist(collectionName))
+            throw new IllegalArgumentException("Unknown collection " + collectionName);
+
         Note note = (Note)object;
+        Map<String, Attribute> attributes = Arrays.stream(database.getAttributes(collectionName))
+                .collect(Collectors.toMap(attr -> ((Attribute)attr).getName(), attr -> (Attribute)attr));
+
+        for (String name : attributes.keySet())
+        {
+            Attribute.Type type = Attribute.Type.get(attributes.get(name).getType());
+
+
+        }
+
+        // TODO set save and updae date
 
         validateFolder(note);
         validateAttributes(note);
@@ -43,16 +60,17 @@ public class NoteValidator implements Validator
         // TODO: здесь надо получить все атрибуты для заметки и проверить уже по полному списку, а не тому, что пришло
         // с клиента
 
+
         if (true)
             return;
 
-        for (Map.Entry<String, Object> value : note.getAttributes())
+        for (String id : note.getAttributes().keySet())
         {
-            Attribute attribute = (Attribute)database.getObject(ATTRIBUTES_COLLECTION, attributeMapper, value.getKey());
+            Attribute attribute = (Attribute)database.getObject(ATTRIBUTES_COLLECTION, attributeMapper, id);
 
-            checkExists(value, attribute);
-            checkByRegex(value, attribute);
-            checkRange(value, attribute);
+//            checkExists(value, attribute);
+//            checkByRegex(value, attribute);
+//            checkRange(value, attribute);
         }
     }
 
@@ -67,45 +85,29 @@ public class NoteValidator implements Validator
 
     private void checkRange(Map.Entry<String, Object> value, Attribute attribute)
     {
-        String min = attribute.getMin();
-        String max = attribute.getMax();
+        Double min = attribute.getMin();
+        Double max = attribute.getMax();
 
         if (min == null && max == null)
             return;
 
-        if (attribute.getType() == Type.TEXT || attribute.getType() == Type.TEXTAREA)
+        if (Type.isTextType(attribute.getType()))
         {
             String string = (String)value.getValue();
 
-            if (min != null)
-            {
-                Integer minLength = Integer.parseInt(min);
-                if (string.length() < minLength)
-                    throwIllegalArg("The length of the %s is too small", value.getKey());
-            }
-            if (max != null)
-            {
-                Integer maxLength = Integer.parseInt(max);
-                if (string.length() > maxLength)
-                    throwIllegalArg("The length of the %s is too big", value.getKey());
-            }
+            if (min != null && string.length() < min)
+                throwIllegalArg("The length of the %s is too small", value.getKey());
+            if (max != null && string.length() > max)
+                throwIllegalArg("The length of the %s is too big", value.getKey());
         }
-        else if (attribute.getType() == INT || attribute.getType() == FLOAT)
+        else if (Type.isNumericType(attribute.getType()))
         {
             Double number = (Double)value.getValue();
 
-            if (min != null)
-            {
-                Double minValue = Double.parseDouble(min);
-                if (number < minValue)
-                    throwIllegalArg("The value of the %s is less than min value %s", value.getKey(), min);
-            }
-            if (max != null)
-            {
-                Double maxValue = Double.parseDouble(max);
-                if (number > maxValue)
-                    throwIllegalArg("The value of the %s is bigger than max value %s", value.getKey(), max);
-            }
+            if (min != null && number < min)
+                throwIllegalArg("The value of the %s is less than min value %s", value.getKey(), min);
+            if (max != null && number > max)
+                throwIllegalArg("The value of the %s is bigger than max value %s", value.getKey(), max);
         }
     }
 

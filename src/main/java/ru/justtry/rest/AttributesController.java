@@ -5,9 +5,10 @@ import static ru.justtry.shared.Constants.ID;
 import static ru.justtry.shared.RestConstants.REST_ATTRIBUTES;
 
 import javax.inject.Inject;
-import javax.websocket.server.PathParam;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,6 +23,7 @@ import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.mappers.Mapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Entity;
+import ru.justtry.shared.RestError;
 import ru.justtry.validation.AttributeValidator;
 import ru.justtry.validation.Validator;
 
@@ -38,20 +40,37 @@ public class AttributesController extends MetaInfoController
     private EntitiesController entitiesController;
 
 
-    @PostMapping(consumes = "application/json;charset=UTF-8", produces = "text/plain;charset=UTF-8")
+    @PostMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public String save(@RequestBody Attribute attribute)
+    public ResponseEntity<Object> save(@RequestBody Attribute attribute)
     {
-        return database.saveDocument(ATTRIBUTES_COLLECTION, getValidator(), getMapper(), attribute);
+        HttpHeaders headers = new HttpHeaders();
+        try
+        {
+            String id = database.saveDocument(ATTRIBUTES_COLLECTION, getValidator(), getMapper(), attribute);
+            return new ResponseEntity<>(id, headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @PutMapping(consumes = "application/json;charset=UTF-8", produces = "text/plain;charset=UTF-8")
+    @PutMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
     @ResponseStatus(HttpStatus.OK)
-    public String update(@RequestBody Attribute attribute)
+    public ResponseEntity<Object> update(@RequestBody Attribute attribute)
     {
-        database.updateDocument(ATTRIBUTES_COLLECTION, getValidator(), getMapper(), attribute);
-        return attribute.getId();
+        HttpHeaders headers = new HttpHeaders();
+        try
+        {
+            database.updateDocument(ATTRIBUTES_COLLECTION, getValidator(), getMapper(), attribute);
+            return new ResponseEntity<>(attribute.getId(), headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 

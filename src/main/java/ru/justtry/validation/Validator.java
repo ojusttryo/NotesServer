@@ -1,8 +1,6 @@
 package ru.justtry.validation;
 
-import org.bson.Document;
-
 public interface Validator
 {
-    void validate(Object object);
+    void validate(Object object, String collectionName);
 }
