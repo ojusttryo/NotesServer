@@ -6,6 +6,7 @@ import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.Constants.NAME;
 import static ru.justtry.shared.EntityConstants.COLLECTION;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,8 @@ import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -25,6 +28,11 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.GridFSFindIterable;
+import com.mongodb.client.gridfs.model.GridFSFile;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
@@ -45,6 +53,7 @@ public class Database
 {
     final static Logger logger = LogManager.getLogger(Database.class);
     final static String LOG_COLLECTION = "log";
+    final static String FILES_COLLECTION = "files";
 
     private MongoClient mongo;
     private MongoDatabase database;
@@ -301,6 +310,65 @@ public class Database
 
         MongoCollection<Document> collection = database.getCollection(LOG_COLLECTION);
         collection.insertOne(document);
+    }
+
+
+    public String saveFile(MultipartFile file) throws IOException
+    {
+        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+
+        Document metaData = new Document();
+        metaData.put("type", file.getContentType());
+        metaData.put("title", file.getOriginalFilename());
+        metaData.put("size", file.getSize());
+
+        GridFSUploadOptions options = new GridFSUploadOptions().chunkSizeBytes(8192).metadata(metaData);
+
+        ObjectId id = bucket.uploadFromStream(file.getOriginalFilename(), file.getInputStream(), options);
+
+        return id.toString();
+    }
+
+
+    public GridFsResource getFile(String id)
+    {
+        ObjectId fileId = new ObjectId(id);
+
+        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+
+        GridFSFindIterable iterable = bucket.find(eq(MONGO_ID, fileId)).limit(1);
+        GridFSFile file = iterable.first();
+
+
+
+        return new GridFsResource(file, bucket.openDownloadStream(file.getObjectId()));
+
+        //return bucket.openDownloadStream(fileId);
+
+
+/*
+        GridFSFile file = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(id)));
+        Video video = new Video();
+        video.setTitle(file.getMetadata().get("title").toString());
+        video.setStream(operations.getResource(file).getInputStream());
+
+        FileOutputStream streamToDownloadTo = new FileOutputStream("/tmp/mongodb-tutorial.pdf");
+        gridFSBucket.downloadToStream(fileId, streamToDownloadTo);
+        streamToDownloadTo.close();
+        System.out.println(streamToDownloadTo.toString());*/
+    }
+
+
+    public Object getMetadata(String id)
+    {
+        ObjectId fileId = new ObjectId(id);
+
+        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+
+        GridFSFindIterable iterable = bucket.find(eq(MONGO_ID, fileId)).limit(1);
+        GridFSFile file = iterable.first();
+
+        return file.getMetadata();
     }
 }
 

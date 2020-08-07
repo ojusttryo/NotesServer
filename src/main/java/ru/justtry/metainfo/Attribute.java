@@ -15,6 +15,7 @@ import lombok.Setter;
 import ru.justtry.shared.AttributeConstants.DefaultValue;
 import ru.justtry.shared.Identifiable;
 
+
 /**
  * The meta information about some field of the note. This class describes how to use fields of notes.
  *
@@ -64,7 +65,8 @@ public class Attribute extends Identifiable
         SAVE_TIME("save time"),         // timestamp when the note is saved
         UPDATE_TIME("update time"),     // timestamp when the note is updated
         USER_DATE("user date"),         // custom date (yyyy-mm-dd)
-        USER_TIME("user time");         // custom time (hh:mm, 24-hours format)
+        USER_TIME("user time"),         // custom time (hh:mm, 24-hours format)
+        FILE("file");
 
         public final String title;
 
@@ -116,6 +118,7 @@ public class Attribute extends Identifiable
             case "update time": return UPDATE_TIME;
             case "user date": return USER_DATE;
             case "user time": return USER_TIME;
+            case "file": return FILE;
             default: return null;
             }
         }

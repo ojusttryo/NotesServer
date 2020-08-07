@@ -145,6 +145,7 @@ public class AttributeValidator implements Validator
             case SAVE_TIME:
             case UPDATE_TIME:
             case USER_TIME:
+            case FILE:
                 break;
             case TEXT:
             case TEXT_AREA:
