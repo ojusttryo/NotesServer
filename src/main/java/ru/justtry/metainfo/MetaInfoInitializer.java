@@ -1,5 +1,7 @@
 package ru.justtry.metainfo;
 
+import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
+
 import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
@@ -10,9 +12,11 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
+import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.rest.AttributesController;
 import ru.justtry.shared.AttributeConstants.PredefinedAttributes;
 import ru.justtry.shared.AttributeConstants.Type;
+import ru.justtry.shared.Identifiable;
 
 /**
  * Creates and saves default attributes for all entities.
@@ -28,6 +32,8 @@ public class MetaInfoInitializer
 //    private static Database database;
     @Autowired
     private ApplicationContext context;
+    @Autowired
+    private AttributeMapper attributeMapper;
 
     @PostConstruct
     public void createDefaultMetaInfo()
@@ -35,7 +41,7 @@ public class MetaInfoInitializer
         Database database = (Database)context.getBean("database");
         AttributesController attributesController = (AttributesController)context.getBean("attributesController");
 
-        Object[] attrs = database.getObjects(attributesController.getCollectionName(), attributesController, null);
+        Identifiable[] attrs = attributeMapper.getObjects(database.getDocuments(ATTRIBUTES_COLLECTION, null));
 
         if (!containsAttribute(attrs, PredefinedAttributes.NAME))
             attributesController.save(getAttributeName());

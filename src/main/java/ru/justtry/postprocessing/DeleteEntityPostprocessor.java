@@ -2,11 +2,12 @@ package ru.justtry.postprocessing;
 
 import org.springframework.stereotype.Component;
 
+import ru.justtry.metainfo.Entity;
+
 @Component
-public class DeleteEntityPostprocessor extends Postprocessor
+public class DeleteEntityPostprocessor
 {
-    @Override
-    public void process(Object object, String entity)
+    public void process(Entity entity)
     {
 
     }

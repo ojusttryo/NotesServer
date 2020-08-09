@@ -4,6 +4,7 @@ import static ru.justtry.shared.AttributeConstants.*;
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.Constants.NAME;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
@@ -13,12 +14,13 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Strings;
 
 import ru.justtry.metainfo.Attribute;
+import ru.justtry.shared.Identifiable;
 
 @Component
 public class AttributeMapper extends Mapper
 {
     @Override
-    public Object getObject(Document document)
+    public Identifiable getObject(Document document)
     {
         Attribute attribute = new Attribute();
 
@@ -47,7 +49,17 @@ public class AttributeMapper extends Mapper
 
 
     @Override
-    public Document getDocument(Object object)
+    public Identifiable[] getObjects(List<Document> documents)
+    {
+        List<Identifiable> objects = new ArrayList<>();
+        for (Document document : documents)
+            objects.add(getObject(document));
+        return objects.toArray(new Identifiable[0]);
+    }
+
+
+    @Override
+    public Document getDocument(Identifiable object)
     {
         Attribute attribute = (Attribute)object;
 

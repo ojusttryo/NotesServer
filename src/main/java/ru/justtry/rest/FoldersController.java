@@ -17,7 +17,6 @@ import ru.justtry.database.Database;
 import ru.justtry.mappers.FolderMapper;
 import ru.justtry.mappers.Mapper;
 import ru.justtry.notes.NoteFolder;
-import ru.justtry.postprocessing.Postprocessor;
 import ru.justtry.validation.FolderValidator;
 import ru.justtry.validation.Validator;
 
@@ -38,7 +37,8 @@ public class FoldersController extends ObjectsController
     public String save(@PathVariable(value = ENTITY) String entity,
                        @RequestBody NoteFolder folder)
     {
-        return database.saveDocument(getCollectionName(entity), this, folder);
+        //return database.saveDocument(getCollectionName(entity), this, folder);
+        return null;
     }
 
 
@@ -47,7 +47,7 @@ public class FoldersController extends ObjectsController
     public void update(@PathVariable(value = ENTITY) String entity,
                        @RequestBody NoteFolder folder)
     {
-        database.updateDocument(getCollectionName(entity), this, folder);
+        //database.updateDocument(getCollectionName(entity), this, folder);
     }
 
 
@@ -69,17 +69,5 @@ public class FoldersController extends ObjectsController
     public String getCollectionName(String entity)
     {
         return entity + ".folders";
-    }
-
-    @Override
-    public Postprocessor getSavePostprocessor()
-    {
-        return null;
-    }
-
-    @Override
-    public Postprocessor getDeletePostprocessor()
-    {
-        return null;
     }
 }

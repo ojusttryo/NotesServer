@@ -6,6 +6,7 @@ import static ru.justtry.shared.EntityConstants.COLLECTION;
 import static ru.justtry.shared.EntityConstants.TITLE;
 import static ru.justtry.shared.EntityConstants.VISIBLE;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
@@ -15,12 +16,13 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Strings;
 
 import ru.justtry.metainfo.Entity;
+import ru.justtry.shared.Identifiable;
 
 @Component
 public class EntityMapper extends Mapper
 {
     @Override
-    public Object getObject(Document document)
+    public Identifiable getObject(Document document)
     {
         Entity entity = new Entity();
         entity.setId(document.get(MONGO_ID).toString());
@@ -32,8 +34,19 @@ public class EntityMapper extends Mapper
         return entity;
     }
 
+
     @Override
-    public Document getDocument(Object object)
+    public Identifiable[] getObjects(List<Document> documents)
+    {
+        List<Identifiable> objects = new ArrayList<>();
+        for (Document document : documents)
+            objects.add(getObject(document));
+        return objects.toArray(new Identifiable[0]);
+    }
+
+
+    @Override
+    public Document getDocument(Identifiable object)
     {
         Entity entity = (Entity)object;
 

@@ -2,11 +2,12 @@ package ru.justtry.postprocessing;
 
 import org.springframework.stereotype.Component;
 
+import ru.justtry.metainfo.Attribute;
+
 @Component
-public class SaveAttributePostprocessor extends Postprocessor
+public class SaveAttributePostprocessor
 {
-    @Override
-    public void process(Object object, String entity)
+    public void process(Attribute attribute)
     {
 
     }

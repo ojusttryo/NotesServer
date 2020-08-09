@@ -1,20 +1,23 @@
 package ru.justtry.validation;
 
+import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.ErrorMessages.NAME_IS_DUPLICATED;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
+import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Method;
 import ru.justtry.metainfo.Attribute.Type;
-import ru.justtry.rest.AttributesController;
 import ru.justtry.shared.ErrorMessages;
+import ru.justtry.shared.Identifiable;
 
 @Component
 public class AttributeValidator implements Validator
@@ -26,7 +29,7 @@ public class AttributeValidator implements Validator
     @Autowired
     private Database database;
     @Autowired
-    private AttributesController attributesController;
+    private AttributeMapper attributeMapper;
 
     @Override
     public void validate(Object object, String collectionName)
@@ -39,8 +42,8 @@ public class AttributeValidator implements Validator
         Attribute attributeWithSameId = null;
         if (attribute.getId() != null)
         {
-            attributeWithSameId = (Attribute)database.getObject(
-                    attributesController.getCollectionName(), attributesController, attribute.getId());
+            attributeWithSameId = (Attribute)attributeMapper.getObject(
+                    database.getDocument(ATTRIBUTES_COLLECTION, attribute.getId()));
         }
 
         attribute.setName(attribute.getName().trim());
@@ -48,7 +51,9 @@ public class AttributeValidator implements Validator
             throw new IllegalArgumentException("Name should start with latin letter and contains latin letters,"
                     + " numbers and dashes");
 
-        Attribute attributeWithSameName = database.getAttribute(attribute.getName());
+        Document attributeWithSameNameDoc = database.getAttribute(attribute.getName());
+        Identifiable attributeWithSameName = attributeWithSameNameDoc == null ? null
+                : attributeMapper.getObject(attributeWithSameNameDoc);
 
         if (attribute.getId() == null && attributeWithSameName != null)
             throw new IllegalArgumentException(NAME_IS_DUPLICATED);

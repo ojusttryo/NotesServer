@@ -5,6 +5,9 @@ import static ru.justtry.shared.Constants.NAME;
 import static ru.justtry.shared.FolderConstants.LEVEL;
 import static ru.justtry.shared.NoteConstants.FOLDER_ID;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
@@ -12,12 +15,13 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Strings;
 
 import ru.justtry.notes.NoteFolder;
+import ru.justtry.shared.Identifiable;
 
 @Component
 public class FolderMapper extends Mapper
 {
     @Override
-    public Object getObject(Document document)
+    public Identifiable getObject(Document document)
     {
         NoteFolder folder = new NoteFolder();
 
@@ -31,7 +35,17 @@ public class FolderMapper extends Mapper
 
 
     @Override
-    public Document getDocument(Object object)
+    public Identifiable[] getObjects(List<Document> documents)
+    {
+        List<Identifiable> objects = new ArrayList<>();
+        for (Document document : documents)
+            objects.add(getObject(document));
+        return objects.toArray(new Identifiable[0]);
+    }
+
+
+    @Override
+    public Document getDocument(Identifiable object)
     {
         NoteFolder folder = (NoteFolder)object;
 

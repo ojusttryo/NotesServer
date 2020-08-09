@@ -3,20 +3,24 @@ package ru.justtry.validation;
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
 import ru.justtry.mappers.AttributeMapper;
+import ru.justtry.mappers.EntityMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.Entity;
 import ru.justtry.notes.Note;
-import ru.justtry.rest.AttributesController;
+import ru.justtry.shared.Identifiable;
 
 @Component
 public class NoteValidator implements Validator
@@ -26,7 +30,7 @@ public class NoteValidator implements Validator
     @Inject
     private AttributeMapper attributeMapper;
     @Autowired
-    private AttributesController attributesController;
+    private EntityMapper entityMapper;
 
     @Override
     public void validate(Object object, String collectionName)
@@ -35,7 +39,10 @@ public class NoteValidator implements Validator
             throw new IllegalArgumentException("Unknown collection " + collectionName);
 
         Note note = (Note)object;
-        Map<String, Attribute> attributes = Arrays.stream(database.getAttributes(collectionName))
+        Entity entity = (Entity)entityMapper.getObject(database.getEntity(collectionName));
+        List<Document> documents = database.getDocuments(ATTRIBUTES_COLLECTION, entity.getAttributes());
+        Identifiable[] objects = attributeMapper.getObjects(documents);
+        Map<String, Attribute> attributes = Arrays.stream(objects)
                 .collect(Collectors.toMap(attr -> ((Attribute)attr).getName(), attr -> (Attribute)attr));
 
         for (String name : attributes.keySet())
@@ -70,7 +77,7 @@ public class NoteValidator implements Validator
 
         for (String id : note.getAttributes().keySet())
         {
-            Attribute attribute = (Attribute)database.getObject(ATTRIBUTES_COLLECTION, attributesController, id);
+           // Attribute attribute = (Attribute)database.getDocument(ATTRIBUTES_COLLECTION, id);
 
 //            checkExists(value, attribute);
 //            checkByRegex(value, attribute);

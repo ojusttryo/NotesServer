@@ -16,13 +16,14 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import ru.justtry.notes.Note;
+import ru.justtry.shared.Identifiable;
 import ru.justtry.shared.NoteConstants;
 
 @Component
 public class NoteMapper extends Mapper
 {
     @Override
-    public Object getObject(Document document)
+    public Identifiable getObject(Document document)
     {
         Note note = new Note();
         note.setId(document.get(MONGO_ID).toString());
@@ -37,9 +38,17 @@ public class NoteMapper extends Mapper
         return note;
     }
 
+    @Override
+    public Identifiable[] getObjects(List<Document> documents)
+    {
+        List<Identifiable> objects = new ArrayList<>();
+        for (Document document : documents)
+            objects.add(getObject(document));
+        return objects.toArray(new Identifiable[0]);
+    }
 
     @Override
-    public Document getDocument(Object object)
+    public Document getDocument(Identifiable object)
     {
         /**
          * For now the document saved like this:

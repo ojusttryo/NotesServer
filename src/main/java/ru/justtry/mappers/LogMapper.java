@@ -14,9 +14,8 @@ import org.springframework.stereotype.Component;
 import ru.justtry.database.LogRecord;
 
 @Component
-public class LogMapper extends Mapper
+public class LogMapper
 {
-    @Override
     public Object getObject(Document document)
     {
         LogRecord logRecord = new LogRecord();
@@ -29,7 +28,6 @@ public class LogMapper extends Mapper
         return logRecord;
     }
 
-    @Override
     public Document getDocument(Object object)
     {
         LogRecord logRecord = (LogRecord)object;
@@ -49,5 +47,11 @@ public class LogMapper extends Mapper
             document.append(AFTER, logRecord.getAfter());
 
         return document;
+    }
+
+
+    protected String getStringOrNull(Document document, String key)
+    {
+        return (document.containsKey(key) && document.get(key) != null) ? document.get(key).toString() : null;
     }
 }

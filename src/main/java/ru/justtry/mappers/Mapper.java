@@ -1,13 +1,16 @@
 package ru.justtry.mappers;
 
+import java.util.List;
+
 import org.bson.Document;
 
-import java.util.Map;
+import ru.justtry.shared.Identifiable;
 
 public abstract class Mapper
 {
-    public abstract Object getObject(Document document);
-    public abstract Document getDocument(Object object);
+    public abstract Identifiable getObject(Document document);
+    public abstract Identifiable[] getObjects(List<Document> documents);
+    public abstract Document getDocument(Identifiable object);
 
 
     protected String getStringOrNull(Document document, String key)

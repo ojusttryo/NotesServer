@@ -2,11 +2,12 @@ package ru.justtry.postprocessing;
 
 import org.springframework.stereotype.Component;
 
+import ru.justtry.metainfo.Attribute;
+
 @Component
-public class DeleteAttributePostprocessor extends Postprocessor
+public class DeleteAttributePostprocessor
 {
-    @Override
-    public void process(Object object, String entity)
+    public void process(Attribute attribute)
     {
 
     }

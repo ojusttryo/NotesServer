@@ -2,11 +2,12 @@ package ru.justtry.postprocessing;
 
 import org.springframework.stereotype.Component;
 
+import ru.justtry.shared.Identifiable;
+
 @Component
-public class SaveEntityPostprocessor extends Postprocessor
+public class SaveEntityPostprocessor
 {
-    @Override
-    public void process(Object object, String entity)
+    public void process(Identifiable object)
     {
 
     }
