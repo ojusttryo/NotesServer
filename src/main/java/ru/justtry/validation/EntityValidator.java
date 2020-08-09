@@ -37,7 +37,7 @@ public class EntityValidator implements Validator
         try
         {
             int actualCount = database.getObjects(attributesController.getCollectionName(),
-                    attributesController.getMapper(), entity.getAttributes()).length;
+                    attributesController, entity.getAttributes()).length;
             if (actualCount != entity.getAttributes().size())
                 throw new IllegalArgumentException(NOT_ALL_ATTRIBUTES_FOUND);
         }

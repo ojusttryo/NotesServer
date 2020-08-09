@@ -2,13 +2,18 @@ package ru.justtry.database;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.in;
+import static com.mongodb.client.model.Filters.lt;
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.Constants.NAME;
 import static ru.justtry.shared.EntityConstants.COLLECTION;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
@@ -33,16 +39,17 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSFindIterable;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
 import ru.justtry.mappers.LogMapper;
-import ru.justtry.mappers.Mapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.rest.AttributesController;
+import ru.justtry.rest.Controller;
 import ru.justtry.rest.EntitiesController;
-import ru.justtry.validation.Validator;
+import ru.justtry.shared.Identifiable;
 
 //@Component
 //@PropertySource("classpath:application.properties")
@@ -51,9 +58,10 @@ import ru.justtry.validation.Validator;
 //@Named("database")
 public class Database
 {
-    final static Logger logger = LogManager.getLogger(Database.class);
-    final static String LOG_COLLECTION = "log";
-    final static String FILES_COLLECTION = "files";
+    private static final Logger logger = LogManager.getLogger(Database.class);
+    private static final String LOG_COLLECTION = "log";
+    private static final String FILES_COLLECTION = "files";
+    private static final String NOTES_FILES_COLLECTION = "notes.files";
 
     private MongoClient mongo;
     private MongoDatabase database;
@@ -95,19 +103,32 @@ public class Database
         mongo = new MongoClient(address, options);
         database = mongo.getDatabase(name);
         credential = MongoCredential.createCredential(user, name, password.toCharArray());
+
+        MongoCollection<Document> filesCollection = database.getCollection(FILES_COLLECTION + ".files");
+        filesCollection.createIndex(new BasicDBObject("md5", 1), new IndexOptions().unique(true));
+
+        MongoCollection<Document> notesFilesCollection = database.getCollection(NOTES_FILES_COLLECTION);
+        BasicDBObject notesFilesRestriction = new BasicDBObject()
+                .append("noteId", 1)
+                .append("attributeName", 1)
+                .append("fileId", 1);
+        notesFilesCollection.createIndex(notesFilesRestriction, new IndexOptions().unique(true));
     }
 
-    public String saveDocument(String collectionName, Validator validator, Mapper mapper, Object object)
+    public String saveDocument(String collectionName, Controller controller, Object object)
     {
-        validator.validate(object, collectionName.replace(".notes", ""));
-
-        Document document = mapper.getDocument(object);
+        String entity = getEntityName(collectionName);
+        controller.getValidator().validate(object, entity);
+        Document document = controller.getMapper().getDocument(object);
 
         MongoCollection<Document> collection = database.getCollection(collectionName);
         collection.insertOne(document);
         String id = getId(document);
+        ((Identifiable)object).setId(id);
 
-        saveLog(collectionName.replace(".notes", ""), "CREATE", id, null, object.toString());
+        controller.getSavePostprocessor().process(object, entity);
+
+        saveLog(entity, "CREATE", id, null, object.toString());
 
         return id;
     }
@@ -117,13 +138,12 @@ public class Database
         return ((ObjectId)document.get(MONGO_ID)).toString();
     }
 
-    public void updateDocument(String collectionName, Validator validator, Mapper mapper, Object object)
+    public void updateDocument(String collectionName, Controller controller, Object object)
     {
-        validator.validate(object, collectionName.replace(".notes", ""));
-
-        Document document = mapper.getDocument(object);
-
-        Object before = getObject(collectionName, mapper, document.get(MONGO_ID).toString());
+        String entity = getEntityName(collectionName);
+        controller.getValidator().validate(object, entity);
+        Document document = controller.getMapper().getDocument(object);
+        Object before = getObject(collectionName, controller, document.get(MONGO_ID).toString());
 
         MongoCollection<Document> collection = database.getCollection(collectionName);
         UpdateResult result = collection.updateOne(
@@ -131,45 +151,48 @@ public class Database
         if (result.getMatchedCount() != 1)
             throw new RuntimeException("There are no object with id " + document.get(MONGO_ID));
 
-        saveLog(collectionName.replace(".notes", ""), "UPDATE", document.get(MONGO_ID).toString(),
-                before.toString(), object.toString());
+        controller.getSavePostprocessor().process(object, entity);
+
+        saveLog(entity, "UPDATE", document.get(MONGO_ID).toString(), before.toString(), object.toString());
     }
 
-    public void deleteDocument(String collectionName, Mapper mapper, String id)
+    public void deleteDocument(String collectionName, Controller controller, String id)
     {
+        String entity = getEntityName(collectionName);
         MongoCollection<Document> collection = database.getCollection(collectionName);
-        Object object = getObject(collectionName, mapper, id);
+        Object object = getObject(collectionName, controller, id);
         DeleteResult result = collection.deleteOne(eq(MONGO_ID, new ObjectId(id)));
         if (result.getDeletedCount() != 1)
             throw new RuntimeException(String.format("Cannot delete %s: document not found", name));
 
-        saveLog(collectionName.replace(".notes", ""), "DELETE", id, object.toString(), null);
+        controller.getDeletePostprocessor().process(object, entity);
+
+        saveLog(entity, "DELETE", id, object.toString(), null);
     }
 
     public void deleteDocuments(String collectionName)
     {
+        String entity = getEntityName(collectionName);
         MongoCollection<Document> collection = database.getCollection(collectionName);
         long count = collection.estimatedDocumentCount();
         collection.drop();
 
-        saveLog(collectionName.replace(".notes", ""), "DELETE", null, count, 0);
+        saveLog(entity, "DELETE", null, count, 0);
     }
 
-    public Object[] getObjects(String collectionName, Mapper mapper, List<String> ids)
+    public Object[] getObjects(String collectionName, Controller controller, List<String> ids)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
-
         FindIterable<Document> iterDoc = find(collection, ids);
-        MongoCursor<Document> cursor = iterDoc.iterator();
-
         List<Object> objects = new ArrayList<>();
-        while (cursor.hasNext())
+        try (MongoCursor<Document> cursor = iterDoc.iterator())
         {
-            Document document = cursor.next();
-            objects.add(mapper.getObject(document));
+            while (cursor.hasNext())
+            {
+                Document document = cursor.next();
+                objects.add(controller.getMapper().getObject(document));
+            }
         }
-        cursor.close();
-
         return objects.toArray();
     }
 
@@ -177,24 +200,22 @@ public class Database
     {
         Entity entity = getEntity(entityCollection);
         return (entity == null) ? null : getObjects(attributesController.getCollectionName(),
-                attributesController.getMapper(), entity.getAttributes());
+                attributesController, entity.getAttributes());
     }
 
-    public Object getObject(String collectionName, Mapper mapper, String id)
+    public Object getObject(String collectionName, Controller controller, String id)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
-
         FindIterable<Document> iterDoc = collection.find(eq(MONGO_ID, new ObjectId(id))).limit(1);
-        MongoCursor<Document> cursor = iterDoc.iterator();
-
         Object object = null;
-        if (cursor.hasNext())
+        try (MongoCursor<Document> cursor = iterDoc.iterator())
         {
-            Document document = cursor.next();
-            object = mapper.getObject(document);
+            if (cursor.hasNext())
+            {
+                Document document = cursor.next();
+                object = controller.getMapper().getObject(document);
+            }
         }
-        cursor.close();
-
         return object;
     }
 
@@ -204,16 +225,15 @@ public class Database
         MongoCollection<Document> collection = database.getCollection(attributesController.getCollectionName());
 
         FindIterable<Document> iterDoc = collection.find(eq(NAME, name)).limit(1);
-        MongoCursor<Document> cursor = iterDoc.iterator();
-
         Attribute attribute = null;
-        if (cursor.hasNext())
+        try (MongoCursor<Document> cursor = iterDoc.iterator())
         {
-            Document document = cursor.next();
-            attribute = (Attribute)attributesController.getMapper().getObject(document);
+            if (cursor.hasNext())
+            {
+                Document document = cursor.next();
+                attribute = (Attribute)attributesController.getMapper().getObject(document);
+            }
         }
-        cursor.close();
-
         return attribute;
     }
 
@@ -222,16 +242,15 @@ public class Database
         MongoCollection<Document> collection = database.getCollection(entitiesController.getCollectionName());
 
         FindIterable<Document> iterDoc = collection.find(eq(COLLECTION, entityCollection)).limit(1);
-        MongoCursor<Document> cursor = iterDoc.iterator();
-
         Entity entity = null;
-        if (cursor.hasNext())
+        try (MongoCursor<Document> cursor = iterDoc.iterator())
         {
-            Document document = cursor.next();
-            entity = (Entity)entitiesController.getMapper().getObject(document);
+            if (cursor.hasNext())
+            {
+                Document document = cursor.next();
+                entity = (Entity)entitiesController.getMapper().getObject(document);
+            }
         }
-        cursor.close();
-
         return entity;
     }
 
@@ -270,16 +289,15 @@ public class Database
         MongoCollection<Document> collection = database.getCollection(LOG_COLLECTION);
 
         FindIterable<Document> iterDoc = collection.find();
-        MongoCursor<Document> cursor = iterDoc.iterator();
-
         List<LogRecord> result = new ArrayList<>();
-        while (cursor.hasNext())
+        try (MongoCursor<Document> cursor = iterDoc.iterator())
         {
-            Document document = cursor.next();
-            result.add((LogRecord)logMapper.getObject(document));
+            while (cursor.hasNext())
+            {
+                Document document = cursor.next();
+                result.add((LogRecord)logMapper.getObject(document));
+            }
         }
-        cursor.close();
-
         return result.toArray();
     }
 
@@ -287,18 +305,16 @@ public class Database
     public Object[] getLog(int count)
     {
         MongoCollection<Document> collection = database.getCollection(LOG_COLLECTION);
-
         FindIterable<Document> iterDoc = collection.find().sort(new Document(MONGO_ID, -1)).limit(count);
-        MongoCursor<Document> cursor = iterDoc.iterator();
-
         List<LogRecord> result = new ArrayList<>();
-        while (cursor.hasNext())
+        try (MongoCursor<Document> cursor = iterDoc.iterator())
         {
-            Document document = cursor.next();
-            result.add((LogRecord)logMapper.getObject(document));
+            while (cursor.hasNext())
+            {
+                Document document = cursor.next();
+                result.add((LogRecord)logMapper.getObject(document));
+            }
         }
-        cursor.close();
-
         return result.toArray();
     }
 
@@ -318,15 +334,109 @@ public class Database
         GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
 
         Document metaData = new Document();
-        metaData.put("type", file.getContentType());
+        metaData.put("contentType", file.getContentType());
         metaData.put("title", file.getOriginalFilename());
         metaData.put("size", file.getSize());
+        metaData.put("uploaded", Instant.now().getEpochSecond());
 
-        GridFSUploadOptions options = new GridFSUploadOptions().chunkSizeBytes(8192).metadata(metaData);
+        GridFSUploadOptions options = new GridFSUploadOptions().metadata(metaData);
 
         ObjectId id = bucket.uploadFromStream(file.getOriginalFilename(), file.getInputStream(), options);
-
         return id.toString();
+    }
+
+
+    public void linkFilesAndNote(String noteId, String attributeName, List<String> fileIds)
+    {
+        MongoCollection<Document> collection = database.getCollection(NOTES_FILES_COLLECTION);
+
+        for (String fileId : fileIds)
+        {
+            try
+            {
+                Document document = new Document()
+                        .append("noteId", noteId)
+                        .append("attributeName", attributeName)
+                        .append("fileId", fileId);
+                collection.insertOne(document);
+            }
+            catch (Exception e)
+            {
+                // Maybe we connect the same note attribute to the same file
+                logger.error(e);
+            }
+        }
+    }
+
+
+    public void unlinkFilesAndNote(String noteId, String attributeName)
+    {
+        MongoCollection<Document> collection = database.getCollection(NOTES_FILES_COLLECTION);
+        Document document = new Document()
+                .append("noteId", noteId)
+                .append("attributeName", attributeName);
+        collection.deleteOne(document);
+    }
+
+
+    public int linkNoteToFile(String notesCollection, String noteId, List<String> fileIds)
+    {
+        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+
+        List<ObjectId> identifiers = new ArrayList<>(fileIds.size());
+        for (String fileId : fileIds)
+            identifiers.add(new ObjectId(fileId));
+
+        GridFSFindIterable iterable = bucket.find(in(MONGO_ID, identifiers));
+        int count = 0;
+        try (MongoCursor<GridFSFile> iterator = iterable.iterator())
+        {
+            while (iterator.hasNext())
+            {
+
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+
+    public String getFileId(String md5)
+    {
+        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+
+        GridFSFindIterable iterable = bucket.find(eq("md5", md5)).limit(1);
+        GridFSFile file = iterable.first();
+
+        if (file == null)
+            throw new NoSuchElementException("Cannot find file with md5 " + md5);
+
+        return file.getObjectId().toString();
+    }
+
+
+    public int removeFilesOlderThan(long time)
+    {
+        MongoCollection notesFiles = database.getCollection(NOTES_FILES_COLLECTION);
+        Set<String> usedIds = (HashSet<String>)notesFiles
+                .distinct("fileId", String.class).into(new HashSet<String>());
+
+        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+
+        GridFSFindIterable iterable = bucket.find(lt("metadata.uploaded", time));
+        MongoCursor cursor = iterable.iterator();
+        int count = 0;
+        while (cursor.hasNext())
+        {
+            GridFSFile file = (GridFSFile)cursor.next();
+            if (!usedIds.contains(file.getObjectId().toString()))
+            {
+                bucket.delete(file.getObjectId());
+                count++;
+            }
+        }
+        return count;
     }
 
 
@@ -369,6 +479,11 @@ public class Database
         GridFSFile file = iterable.first();
 
         return file.getMetadata();
+    }
+
+    private String getEntityName(String collectionName)
+    {
+        return collectionName.replace(".notes", "").replace(".folders", "");
     }
 }
 

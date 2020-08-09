@@ -13,15 +13,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import ru.justtry.database.Database;
-import ru.justtry.mappers.Mapper;
-import ru.justtry.validation.Validator;
 
 @CrossOrigin(maxAge = 3600)
-public abstract class MetaInfoController
+public abstract class MetaInfoController implements Controller
 {
-    public abstract Mapper getMapper();
-    public abstract Validator getValidator();
-    public abstract String getCollectionName();
+    abstract String getCollectionName();
 
     @Inject
     protected Database database;
@@ -30,7 +26,7 @@ public abstract class MetaInfoController
     @ResponseStatus(HttpStatus.OK)
     public Boolean delete(@PathVariable(value = ID) String id)
     {
-        database.deleteDocument(getCollectionName(), getMapper(), id);
+        database.deleteDocument(getCollectionName(), this, id);
         return true;
     }
 
@@ -46,6 +42,6 @@ public abstract class MetaInfoController
     @ResponseBody
     public Object get()
     {
-        return database.getObjects(getCollectionName(), getMapper(), null);
+        return database.getObjects(getCollectionName(), this, null);
     }
 }

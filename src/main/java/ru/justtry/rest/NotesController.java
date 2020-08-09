@@ -5,8 +5,9 @@ import static ru.justtry.shared.NoteConstants.ENTITY;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,9 @@ import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.notes.Note;
+import ru.justtry.postprocessing.Postprocessor;
+import ru.justtry.postprocessing.DeleteNotePostprocessor;
+import ru.justtry.postprocessing.SaveNotePostprocessor;
 import ru.justtry.shared.RestError;
 import ru.justtry.validation.NoteValidator;
 import ru.justtry.validation.Validator;
@@ -36,12 +40,18 @@ import ru.justtry.validation.Validator;
 @RequestMapping("/rest/notes")
 public class NotesController extends ObjectsController
 {
-    @Inject
+    final static Logger logger = LogManager.getLogger(NotesController.class);
+
+    @Autowired
     private NoteValidator noteValidator;
-    @Inject
+    @Autowired
     private NoteMapper noteMapper;
-    @Inject
+    @Autowired
     protected Database database;
+    @Autowired
+    private SaveNotePostprocessor savePostprocessor;
+    @Autowired
+    private DeleteNotePostprocessor deletePostprocessor;
 
 
     @PostMapping(value = "/{entity}", consumes = "application/json;charset=UTF-8")
@@ -53,11 +63,12 @@ public class NotesController extends ObjectsController
         HttpHeaders headers = new HttpHeaders();
         try
         {
-            String id = database.saveDocument(getCollectionName(entity), noteValidator, noteMapper, note);
+            String id = database.saveDocument(getCollectionName(entity), this, note);
             return new ResponseEntity<>(id, headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
+            logger.error(e);
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -72,11 +83,12 @@ public class NotesController extends ObjectsController
         HttpHeaders headers = new HttpHeaders();
         try
         {
-            database.updateDocument(getCollectionName(entity), noteValidator, noteMapper, note);
+            database.updateDocument(getCollectionName(entity), this, note);
             return new ResponseEntity<>(note.getId(), headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
+            logger.error(e);
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -93,7 +105,7 @@ public class NotesController extends ObjectsController
         {
             Map<String, Object> params = new ObjectMapper().readValue(json, HashMap.class);
 
-            Note note = (Note)database.getObject(getCollectionName(entity), noteMapper, id);
+            Note note = (Note)database.getObject(getCollectionName(entity), this, id);
             if (note == null)
                 throw new IllegalArgumentException("Wrong note id");
 
@@ -103,11 +115,12 @@ public class NotesController extends ObjectsController
                     note.getAttributes().put(param, params.get(param));
             }
 
-            database.updateDocument(getCollectionName(entity), noteValidator, noteMapper, note);
+            database.updateDocument(getCollectionName(entity), this, note);
             return new ResponseEntity<>(note.getId(), headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
+            logger.error(e);
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -123,7 +136,7 @@ public class NotesController extends ObjectsController
         HttpHeaders headers = new HttpHeaders();
         try
         {
-            Note note = (Note)database.getObject(getCollectionName(entity), noteMapper, id);
+            Note note = (Note)database.getObject(getCollectionName(entity), this, id);
             if (note == null)
                 throw new IllegalArgumentException("Wrong note id");
 
@@ -150,33 +163,46 @@ public class NotesController extends ObjectsController
             value += Double.parseDouble(attribute.getStep());
 
             note.getAttributes().put(attributeName, value);
-            database.updateDocument(getCollectionName(entity), noteValidator, noteMapper, note);
+            database.updateDocument(getCollectionName(entity), this, note);
             return new ResponseEntity<>(value.toString(), headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
+            logger.error(e);
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
 
     @Override
-    protected Validator getValidator()
+    public Validator getValidator()
     {
         return noteValidator;
     }
 
 
     @Override
-    protected Mapper getMapper()
+    public Mapper getMapper()
     {
         return noteMapper;
     }
 
 
     @Override
-    protected String getCollectionName(String entity)
+    public String getCollectionName(String entity)
     {
-        return String.format("%s.notes", entity);
+        return entity + ".notes" ;
+    }
+
+    @Override
+    public Postprocessor getSavePostprocessor()
+    {
+        return savePostprocessor;
+    }
+
+    @Override
+    public Postprocessor getDeletePostprocessor()
+    {
+        return deletePostprocessor;
     }
 }

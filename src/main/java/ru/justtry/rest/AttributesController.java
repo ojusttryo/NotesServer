@@ -4,8 +4,9 @@ import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.Constants.ID;
 import static ru.justtry.shared.RestConstants.REST_ATTRIBUTES;
 
-import javax.inject.Inject;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,9 @@ import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.mappers.Mapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Entity;
+import ru.justtry.postprocessing.DeleteAttributePostprocessor;
+import ru.justtry.postprocessing.Postprocessor;
+import ru.justtry.postprocessing.SaveAttributePostprocessor;
 import ru.justtry.shared.RestError;
 import ru.justtry.validation.AttributeValidator;
 import ru.justtry.validation.Validator;
@@ -32,12 +36,18 @@ import ru.justtry.validation.Validator;
 @RequestMapping(REST_ATTRIBUTES)
 public class AttributesController extends MetaInfoController
 {
-    @Inject
+    final static Logger logger = LogManager.getLogger(AttributesController.class);
+
+    @Autowired
     private AttributeValidator attributeValidator;
-    @Inject
+    @Autowired
     private AttributeMapper attributeMapper;
-    @Inject
+    @Autowired
     private EntitiesController entitiesController;
+    @Autowired
+    private SaveAttributePostprocessor savePostprocessor;
+    @Autowired
+    private DeleteAttributePostprocessor deletePostprocessor;
 
 
     @PostMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
@@ -48,11 +58,12 @@ public class AttributesController extends MetaInfoController
         HttpHeaders headers = new HttpHeaders();
         try
         {
-            String id = database.saveDocument(ATTRIBUTES_COLLECTION, getValidator(), getMapper(), attribute);
+            String id = database.saveDocument(ATTRIBUTES_COLLECTION, this, attribute);
             return new ResponseEntity<>(id, headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
+            logger.error(e);
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -64,11 +75,12 @@ public class AttributesController extends MetaInfoController
         HttpHeaders headers = new HttpHeaders();
         try
         {
-            database.updateDocument(ATTRIBUTES_COLLECTION, getValidator(), getMapper(), attribute);
+            database.updateDocument(ATTRIBUTES_COLLECTION, this, attribute);
             return new ResponseEntity<>(attribute.getId(), headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
+            logger.error(e);
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -84,15 +96,15 @@ public class AttributesController extends MetaInfoController
         if (entityId != null)
         {
             Entity entity = (Entity)entitiesController.get(entityId);
-            return database.getObjects(ATTRIBUTES_COLLECTION, getMapper(), entity.getAttributes());
+            return database.getObjects(ATTRIBUTES_COLLECTION, this, entity.getAttributes());
         }
         else if (id != null)
         {
-            return database.getObject(getCollectionName(), getMapper(), id);
+            return database.getObject(getCollectionName(), this, id);
         }
         else
         {
-            return database.getObjects(getCollectionName(), getMapper(), null);
+            return database.getObjects(getCollectionName(), this, null);
         }
     }
 
@@ -112,5 +124,17 @@ public class AttributesController extends MetaInfoController
     public String getCollectionName()
     {
         return ATTRIBUTES_COLLECTION;
+    }
+
+    @Override
+    public Postprocessor getSavePostprocessor()
+    {
+        return savePostprocessor;
+    }
+
+    @Override
+    public Postprocessor getDeletePostprocessor()
+    {
+        return deletePostprocessor;
     }
 }

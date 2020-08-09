@@ -40,7 +40,7 @@ public class AttributeValidator implements Validator
         if (attribute.getId() != null)
         {
             attributeWithSameId = (Attribute)database.getObject(
-                    attributesController.getCollectionName(), attributesController.getMapper(), attribute.getId());
+                    attributesController.getCollectionName(), attributesController, attribute.getId());
         }
 
         attribute.setName(attribute.getName().trim());

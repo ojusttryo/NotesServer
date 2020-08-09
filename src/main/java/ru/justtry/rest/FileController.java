@@ -2,6 +2,8 @@ package ru.justtry.rest;
 
 import javax.inject.Inject;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,6 +26,8 @@ import ru.justtry.shared.RestError;
 @RequestMapping("/rest/file")
 public class FileController
 {
+    final static Logger logger = LogManager.getLogger(FileController.class);
+
     @Inject
     protected Database database;
 
@@ -42,6 +46,27 @@ public class FileController
         }
         catch (Exception e)
         {
+            logger.error(e);
+            // If we already have file, we should extract his md5 from error message and find id
+            // E11000 duplicate key error collection: notes.files.files index: md5_1 dup key:
+            // { md5: "daa94cc58fdc27b5762aa610ebd4e593" }
+            if (e.getMessage().contains("duplicate key error"))
+            {
+                try
+                {
+                    logger.info("Trying to get id by md5");
+                    String message = e.getMessage();
+                    // Regex [a-f0-9]{32} in some reason doesn't want to work
+                    String md5 = message.substring(message.indexOf("\"") + 1, message.lastIndexOf("\""));
+                    return new ResponseEntity<>(database.getFileId(md5), headers, HttpStatus.OK);
+                }
+                catch (Exception x)
+                {
+                    logger.error(x);
+                    return new ResponseEntity<>(new RestError(x.getMessage()), headers,
+                            HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -59,6 +84,7 @@ public class FileController
         }
         catch (Exception e)
         {
+            logger.error(e);
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -76,6 +102,7 @@ public class FileController
         }
         catch (Exception e)
         {
+            logger.error(e);
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

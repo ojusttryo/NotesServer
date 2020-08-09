@@ -1,18 +1,25 @@
 package ru.justtry.rest;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import ru.justtry.database.Database;
-import ru.justtry.mappers.FolderMapper;
-import ru.justtry.mappers.Mapper;
-import ru.justtry.notes.Note;
-import ru.justtry.notes.NoteFolder;
-import ru.justtry.validation.FolderValidator;
-import ru.justtry.validation.Validator;
+import static ru.justtry.shared.NoteConstants.ENTITY;
 
 import javax.inject.Inject;
 
-import static ru.justtry.shared.NoteConstants.ENTITY;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import ru.justtry.database.Database;
+import ru.justtry.mappers.FolderMapper;
+import ru.justtry.mappers.Mapper;
+import ru.justtry.notes.NoteFolder;
+import ru.justtry.postprocessing.Postprocessor;
+import ru.justtry.validation.FolderValidator;
+import ru.justtry.validation.Validator;
 
 @RestController
 @RequestMapping("/rest/folders")
@@ -31,7 +38,7 @@ public class FoldersController extends ObjectsController
     public String save(@PathVariable(value = ENTITY) String entity,
                        @RequestBody NoteFolder folder)
     {
-        return database.saveDocument(getCollectionName(entity), getValidator(), getMapper(), folder);
+        return database.saveDocument(getCollectionName(entity), this, folder);
     }
 
 
@@ -40,27 +47,39 @@ public class FoldersController extends ObjectsController
     public void update(@PathVariable(value = ENTITY) String entity,
                        @RequestBody NoteFolder folder)
     {
-        database.updateDocument(getCollectionName(entity), getValidator(), getMapper(), folder);
+        database.updateDocument(getCollectionName(entity), this, folder);
     }
 
 
     @Override
-    protected Validator getValidator()
+    public Validator getValidator()
     {
         return folderValidator;
     }
 
 
     @Override
-    protected Mapper getMapper()
+    public Mapper getMapper()
     {
         return folderMapper;
     }
 
 
     @Override
-    protected String getCollectionName(String entity)
+    public String getCollectionName(String entity)
     {
-        return String.format("%s.folder", entity);
+        return entity + ".folders";
+    }
+
+    @Override
+    public Postprocessor getSavePostprocessor()
+    {
+        return null;
+    }
+
+    @Override
+    public Postprocessor getDeletePostprocessor()
+    {
+        return null;
     }
 }

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
@@ -15,6 +16,7 @@ import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.notes.Note;
+import ru.justtry.rest.AttributesController;
 
 @Component
 public class NoteValidator implements Validator
@@ -23,6 +25,8 @@ public class NoteValidator implements Validator
     private Database database;
     @Inject
     private AttributeMapper attributeMapper;
+    @Autowired
+    private AttributesController attributesController;
 
     @Override
     public void validate(Object object, String collectionName)
@@ -38,7 +42,7 @@ public class NoteValidator implements Validator
         {
             Attribute.Type type = Attribute.Type.get(attributes.get(name).getType());
 
-
+            // validate length of file ID (32)
         }
 
         // TODO set save and updae date
@@ -66,7 +70,7 @@ public class NoteValidator implements Validator
 
         for (String id : note.getAttributes().keySet())
         {
-            Attribute attribute = (Attribute)database.getObject(ATTRIBUTES_COLLECTION, attributeMapper, id);
+            Attribute attribute = (Attribute)database.getObject(ATTRIBUTES_COLLECTION, attributesController, id);
 
 //            checkExists(value, attribute);
 //            checkByRegex(value, attribute);

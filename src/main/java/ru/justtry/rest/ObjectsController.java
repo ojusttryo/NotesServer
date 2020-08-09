@@ -16,16 +16,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import ru.justtry.database.Database;
-import ru.justtry.mappers.Mapper;
-import ru.justtry.validation.Validator;
 
 
 @CrossOrigin(maxAge = 3600)
-public abstract class ObjectsController
+public abstract class ObjectsController implements Controller
 {
-    protected abstract Validator getValidator();
-    protected abstract Mapper getMapper();
-    protected abstract String getCollectionName(String entity);
+    abstract String getCollectionName(String entity);
 
     @Inject
     protected Database database;
@@ -36,7 +32,7 @@ public abstract class ObjectsController
     public void delete(@PathVariable(value = ENTITY) String entity,
                        @PathVariable(value = ID) String id)
     {
-        database.deleteDocument(getCollectionName(entity), getMapper(), id);
+        database.deleteDocument(getCollectionName(entity), this, id);
     }
 
     @DeleteMapping("/{entity}")
@@ -51,7 +47,7 @@ public abstract class ObjectsController
     public Object get(@PathVariable(value = ENTITY) String entity,
                       @PathVariable(value = ID) String id)
     {
-        return database.getObject(getCollectionName(entity), getMapper(), id);
+        return database.getObject(getCollectionName(entity), this, id);
     }
 
 
@@ -60,7 +56,7 @@ public abstract class ObjectsController
     public ResponseEntity<Object[]> getAll(@PathVariable(value = ENTITY) String entity)
     {
         HttpHeaders headers = new HttpHeaders();
-        return new ResponseEntity<>(database.getObjects(getCollectionName(entity), getMapper(), null), headers,
+        return new ResponseEntity<>(database.getObjects(getCollectionName(entity), this, null), headers,
                 HttpStatus.OK);
     }
 }
