@@ -66,7 +66,8 @@ public class Attribute extends Identifiable
         UPDATE_TIME("update time"),     // timestamp when the note is updated
         USER_DATE("user date"),         // custom date (yyyy-mm-dd)
         USER_TIME("user time"),         // custom time (hh:mm, 24-hours format)
-        FILE("file");
+        FILE("file"),
+        IMAGE("image");
 
         public final String title;
 
@@ -119,6 +120,7 @@ public class Attribute extends Identifiable
             case "user date": return USER_DATE;
             case "user time": return USER_TIME;
             case "file": return FILE;
+            case "image": return IMAGE;
             default: return null;
             }
         }

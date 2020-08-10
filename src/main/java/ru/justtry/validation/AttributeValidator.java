@@ -86,43 +86,6 @@ public class AttributeValidator implements Validator
         if (method == Method.AVG && type != Type.NUMBER)
             throw new IllegalStateException("Method avg should be used only for numeric type of attribute");
 
-        Integer minWidth = null;
-        if (attribute.getMinWidth() != null)
-        {
-            attribute.setMinWidth(attribute.getMinWidth());
-            try
-            {
-                minWidth = Integer.parseInt(attribute.getMinWidth());
-            }
-            catch (Exception e)
-            {
-                throw new IllegalArgumentException(ErrorMessages.getShouldBeInteger("minWidth"));
-            }
-
-            if (minWidth < 0)
-                throw new IllegalArgumentException("minWidth should be greater or equals to zero");
-        }
-
-        Integer maxWidth = null;
-        if (attribute.getMaxWidth() != null)
-        {
-            attribute.setMaxWidth(attribute.getMaxWidth());
-            try
-            {
-                maxWidth = Integer.parseInt(attribute.getMaxWidth());
-            }
-            catch (Exception e)
-            {
-                throw new IllegalArgumentException(ErrorMessages.getShouldBeInteger("maxWidth"));
-            }
-
-            if (maxWidth < 0)
-                throw new IllegalArgumentException("maxWidth should be greater or equals to zero");
-        }
-
-        if (maxWidth != null && minWidth != null && minWidth > maxWidth)
-            throw new IllegalArgumentException("maxWidth should be greater or equals to minWidth");
-
         Double min = attribute.getMin();
         Double max = attribute.getMax();
         if (max != null && min != null && min > max)
