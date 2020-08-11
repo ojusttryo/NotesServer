@@ -71,6 +71,7 @@ public class AttributesController extends MetaInfoController
         }
         catch (Exception e)
         {
+            // TODO roll back actions (delete note, etc)
             logger.error(e);
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }

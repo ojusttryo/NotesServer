@@ -103,6 +103,11 @@ public class Attribute extends Identifiable
             return (type == SAVE_TIME || type == UPDATE_TIME);
         }
 
+        public static boolean isFile(Type type)
+        {
+            return (type == FILE || type == IMAGE);
+        }
+
         public static Type get(String type)
         {
             switch (type)

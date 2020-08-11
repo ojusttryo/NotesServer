@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
@@ -19,6 +20,7 @@ import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.notes.Note;
+import ru.justtry.rest.NotesController;
 import ru.justtry.shared.Identifiable;
 
 @Component
@@ -32,8 +34,11 @@ public class SaveNotePostprocessor
     private AttributeMapper attributeMapper;
     @Autowired
     private EntityMapper entityMapper;
+    @Autowired
+    @Lazy
+    private NotesController notesController;
 
-    public void process(Note note, String entityName)
+    public void process(Note note, Note oldNote, String entityName)
     {
         Entity entity = (Entity)entityMapper.getObject(database.getEntity(entityName));
         List<Document> documents = database.getDocuments(ATTRIBUTES_COLLECTION, entity.getAttributes());
@@ -45,11 +50,20 @@ public class SaveNotePostprocessor
         {
             Attribute.Type type = Attribute.Type.get(attributes.get(attributeName).getType());
 
-            if (type == Type.FILE)
+            if (Type.isFile(type))
             {
-                String fileId = (String)note.getAttributes().get(attributeName);
-                if (fileId != null && fileId.length() > 0)
-                    database.linkFilesAndNote(note.getId(), attributeName, Arrays.asList(fileId));
+                String oldFileId = oldNote == null ? null : (String)oldNote.getAttributes().get(attributeName);
+                String newFileId = (String)note.getAttributes().get(attributeName);
+
+                // TODO check here if new file exists
+
+                boolean fileIsDeleted = (newFileId == null && oldFileId != null);
+                boolean fileIsChanged = (newFileId != null && oldFileId != null && !newFileId.contentEquals(oldFileId));
+                boolean fileIsAdded = (oldFileId == null && newFileId != null);
+                if (fileIsDeleted || fileIsChanged)
+                    database.unlinkFilesAndNote(note.getId(), attributeName);
+                if (fileIsAdded || fileIsChanged)
+                    database.linkFilesAndNote(note.getId(), attributeName, Arrays.asList(newFileId));
             }
         }
     }

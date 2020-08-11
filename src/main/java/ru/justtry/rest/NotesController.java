@@ -77,7 +77,7 @@ public class NotesController extends ObjectsController
             Document document = noteMapper.getDocument(note);
             String id = database.saveDocument(getCollectionName(entity), document);
             note.setId(id);
-            savePostprocessor.process(note, entity);
+            savePostprocessor.process(note, null, entity);
             database.saveLog(getCollectionName(entity), "CREATE", id, null, note.toString());
             return new ResponseEntity<>(id, headers, HttpStatus.OK);
         }
@@ -103,7 +103,7 @@ public class NotesController extends ObjectsController
             Document document = noteMapper.getDocument(note);
             Identifiable before = noteMapper.getObject(database.getDocument(getCollectionName(entity), note.getId()));
             database.updateDocument(getCollectionName(entity), document);
-            savePostprocessor.process(note, entity);
+            savePostprocessor.process(note, (Note)before, entity);
             database.saveLog(entity, "UPDATE", note.getId(), before.toString(), note.toString());
             return new ResponseEntity<>(note.getId(), headers, HttpStatus.OK);
         }
@@ -129,6 +129,8 @@ public class NotesController extends ObjectsController
             Note note = (Note)noteMapper.getObject(database.getDocument(getCollectionName(entity), id));
             if (note == null)
                 throw new IllegalArgumentException(String.format("Note with id=%s in %s not found", id, entity));
+
+            // TODO make a deep copy and use savePostprocessor
 
             for (String param : params.keySet())
             {
