@@ -1,5 +1,6 @@
 package ru.justtry.database;
 
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.in;
 import static com.mongodb.client.model.Filters.lt;
@@ -8,10 +9,13 @@ import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.Constants.NAME;
 import static ru.justtry.shared.EntityConstants.COLLECTION;
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
+import static ru.justtry.shared.ScaledImageConstants.ORIGINAL_ID;
+import static ru.justtry.shared.ScaledImageConstants.SIZE;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -48,13 +52,13 @@ import ru.justtry.mappers.LogMapper;
 import ru.justtry.rest.AttributesController;
 import ru.justtry.rest.EntitiesController;
 
-
 public class Database
 {
     private static final Logger logger = LogManager.getLogger(Database.class);
     private static final String LOG_COLLECTION = "log";
     private static final String FILES_COLLECTION = "files";
     private static final String NOTES_FILES_COLLECTION = "notes.files";
+    private static final String IMAGES_COLLECTION = "notes.images";
 
     private MongoDatabase database;
     @Autowired
@@ -264,7 +268,7 @@ public class Database
     }
 
 
-    public void linkFilesAndNote(String noteId, String attributeName, List<String> fileIds)
+    public void linkFilesAndNote(String noteId, String attributeName, Collection<String> fileIds)
     {
         MongoCollection<Document> collection = database.getCollection(NOTES_FILES_COLLECTION);
 
@@ -297,26 +301,16 @@ public class Database
     }
 
 
-    public int linkNoteToFile(String notesCollection, String noteId, List<String> fileIds)
+    public void unlinkFilesAndNote(String noteId, String attributeName, Collection<String> fileIds)
     {
-        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
-
-        List<ObjectId> identifiers = new ArrayList<>(fileIds.size());
-        for (String fileId : fileIds)
-            identifiers.add(new ObjectId(fileId));
-
-        GridFSFindIterable iterable = bucket.find(in(MONGO_ID, identifiers));
-        int count = 0;
-        try (MongoCursor<GridFSFile> iterator = iterable.iterator())
+        if (fileIds != null && fileIds.size() > 0)
         {
-            while (iterator.hasNext())
-            {
-
-                count++;
-            }
+            MongoCollection<Document> collection = database.getCollection(NOTES_FILES_COLLECTION);
+            Document document = new Document()
+                    .append("noteId", noteId)
+                    .append("attributeName", attributeName);
+            collection.deleteOne(and(document, in("fileId", fileIds)));
         }
-
-        return count;
     }
 
 
@@ -340,21 +334,34 @@ public class Database
         Set<String> usedIds = (HashSet<String>)notesFiles
                 .distinct("fileId", String.class).into(new HashSet<String>());
 
+        MongoCollection imagesCollection = database.getCollection(IMAGES_COLLECTION);
+
         GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
 
         GridFSFindIterable iterable = bucket.find(lt("metadata.uploaded", time));
-        MongoCursor cursor = iterable.iterator();
-        int count = 0;
-        while (cursor.hasNext())
+        try (MongoCursor cursor = iterable.iterator())
         {
-            GridFSFile file = (GridFSFile)cursor.next();
-            if (!usedIds.contains(file.getObjectId().toString()))
+            int count = 0;
+            while (cursor.hasNext())
             {
-                bucket.delete(file.getObjectId());
-                count++;
+                GridFSFile file = (GridFSFile)cursor.next();
+                if (!usedIds.contains(file.getObjectId().toString()))
+                {
+                    // Removing scaled duplicates of images
+                    String contentType = (String)file.getMetadata().get("contentType");
+                    if (contentType != null && contentType.startsWith("image"))
+                    {
+                        Document document = new Document().append(ORIGINAL_ID, file.getObjectId().toString());
+                        imagesCollection.deleteMany(document);
+                    }
+
+                    // Removing image itself
+                    bucket.delete(file.getObjectId());
+                    count++;
+                }
             }
+            return count;
         }
-        return count;
     }
 
 
@@ -366,7 +373,6 @@ public class Database
 
         GridFSFindIterable iterable = bucket.find(eq(MONGO_ID, fileId)).limit(1);
         GridFSFile file = iterable.first();
-
 
 
         return new GridFsResource(file, bucket.openDownloadStream(file.getObjectId()));
@@ -399,9 +405,36 @@ public class Database
         return file.getMetadata();
     }
 
-    private String getEntityName(String collectionName)
+
+    public String saveImage(Document image)
     {
-        return collectionName.replace(".notes", "").replace(".folders", "");
+        MongoCollection<Document> collection = database.getCollection(IMAGES_COLLECTION);
+        collection.insertOne(image);
+        return ((ObjectId)image.get(MONGO_ID)).toString();
+    }
+
+    public List<Document> getImages(List<String> identifiers, int size)
+    {
+        MongoCollection<Document> collection = database.getCollection(IMAGES_COLLECTION);
+        FindIterable<Document> iterable = collection.find(and(in(ORIGINAL_ID, identifiers), eq(SIZE, size)));
+        List<Document> images = new ArrayList<>();
+        try (MongoCursor<Document> iterator = iterable.iterator())
+        {
+            while (iterator.hasNext())
+                images.add(iterator.next());
+
+            return images;
+        }
+    }
+
+    public Document getImage(String identifier, int size)
+    {
+        MongoCollection<Document> collection = database.getCollection(IMAGES_COLLECTION);
+        FindIterable<Document> iterable = collection.find(and(eq(ORIGINAL_ID, identifier), eq(SIZE, size)));
+        try (MongoCursor<Document> iterator = iterable.iterator())
+        {
+            return (iterator.hasNext()) ? iterator.next() : null;
+        }
     }
 }
 

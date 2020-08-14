@@ -6,7 +6,6 @@ import static ru.justtry.shared.EntityConstants.COLLECTION;
 import static ru.justtry.shared.EntityConstants.TITLE;
 import static ru.justtry.shared.EntityConstants.VISIBLE;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
@@ -32,16 +31,6 @@ public class EntityMapper extends Mapper
         entity.setAttributes((List<String>)document.get(ATTRIBUTES));
 
         return entity;
-    }
-
-
-    @Override
-    public Identifiable[] getObjects(List<Document> documents)
-    {
-        List<Identifiable> objects = new ArrayList<>();
-        for (Document document : documents)
-            objects.add(getObject(document));
-        return objects.toArray(new Identifiable[0]);
     }
 
 

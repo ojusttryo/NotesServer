@@ -1,4 +1,4 @@
-package ru.justtry.database;
+package ru.justtry.fileprocessing;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -9,6 +9,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import ru.justtry.database.Database;
 
 @Component
 public class FileCleaner

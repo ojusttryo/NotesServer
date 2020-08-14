@@ -5,9 +5,6 @@ import static ru.justtry.shared.Constants.NAME;
 import static ru.justtry.shared.FolderConstants.LEVEL;
 import static ru.justtry.shared.NoteConstants.FOLDER_ID;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
@@ -31,16 +28,6 @@ public class FolderMapper extends Mapper
         folder.setLevel((Integer)document.get(LEVEL));
 
         return folder;
-    }
-
-
-    @Override
-    public Identifiable[] getObjects(List<Document> documents)
-    {
-        List<Identifiable> objects = new ArrayList<>();
-        for (Document document : documents)
-            objects.add(getObject(document));
-        return objects.toArray(new Identifiable[0]);
     }
 
 

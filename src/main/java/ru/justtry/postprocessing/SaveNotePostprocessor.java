@@ -2,9 +2,12 @@ package ru.justtry.postprocessing;
 
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bson.Document;
@@ -64,6 +67,23 @@ public class SaveNotePostprocessor
                     database.unlinkFilesAndNote(note.getId(), attributeName);
                 if (fileIsAdded || fileIsChanged)
                     database.linkFilesAndNote(note.getId(), attributeName, Arrays.asList(newFileId));
+            }
+
+            if (type == Type.GALLERY)
+            {
+                ArrayList<String> noteImages = note.getAttributes().get(attributeName) == null ? new ArrayList<>()
+                        : (ArrayList<String>)note.getAttributes().get(attributeName);
+                ArrayList<String> oldNoteImages = oldNote == null || oldNote.getAttributes().get(attributeName) == null
+                        ? new ArrayList<>() : (ArrayList<String>)oldNote.getAttributes().get(attributeName);
+
+                Set<String> newImages = new HashSet<>(noteImages);
+                Set<String> oldImages = new HashSet<>(oldNoteImages);
+                Set<String> intersection = newImages.stream().filter(oldImages::contains).collect(Collectors.toSet());
+                newImages = noteImages.stream().filter(x -> !intersection.contains(x)).collect(Collectors.toSet());
+                oldImages = oldImages.stream().filter(x -> !intersection.contains(x)).collect(Collectors.toSet());
+
+                database.linkFilesAndNote(note.getId(), attributeName, newImages);
+                database.unlinkFilesAndNote(note.getId(), attributeName, oldImages);
             }
         }
     }

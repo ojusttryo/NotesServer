@@ -4,7 +4,6 @@ import static ru.justtry.shared.AttributeConstants.*;
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.Constants.NAME;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
@@ -45,16 +44,6 @@ public class AttributeMapper extends Mapper
         attribute.setDateFormat(getStringOrNull(document, DATE_FORMAT));
 
         return attribute;
-    }
-
-
-    @Override
-    public Identifiable[] getObjects(List<Document> documents)
-    {
-        List<Identifiable> objects = new ArrayList<>();
-        for (Document document : documents)
-            objects.add(getObject(document));
-        return objects.toArray(new Identifiable[0]);
     }
 
 

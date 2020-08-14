@@ -38,14 +38,6 @@ public class NoteMapper extends Mapper
         return note;
     }
 
-    @Override
-    public Identifiable[] getObjects(List<Document> documents)
-    {
-        List<Identifiable> objects = new ArrayList<>();
-        for (Document document : documents)
-            objects.add(getObject(document));
-        return objects.toArray(new Identifiable[0]);
-    }
 
     @Override
     public Document getDocument(Identifiable object)

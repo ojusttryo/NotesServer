@@ -67,7 +67,9 @@ public class Attribute extends Identifiable
         USER_DATE("user date"),         // custom date (yyyy-mm-dd)
         USER_TIME("user time"),         // custom time (hh:mm, 24-hours format)
         FILE("file"),
-        IMAGE("image");
+        IMAGE("image"),
+        FILES("files"),
+        GALLERY("gallery");
 
         public final String title;
 
@@ -126,6 +128,8 @@ public class Attribute extends Identifiable
             case "user time": return USER_TIME;
             case "file": return FILE;
             case "image": return IMAGE;
+            case "files": return FILES;
+            case "gallery": return GALLERY;
             default: return null;
             }
         }
