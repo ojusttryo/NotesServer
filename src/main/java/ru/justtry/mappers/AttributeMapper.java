@@ -34,6 +34,8 @@ public class AttributeMapper extends Mapper
         attribute.setMethod(getStringOrNull(document, METHOD));
         attribute.setMaxWidth(getStringOrNull(document, MAX_WIDTH));
         attribute.setMinWidth(getStringOrNull(document, MIN_WIDTH));
+        attribute.setMaxHeight(getStringOrNull(document, MAX_HEIGHT));
+        attribute.setMinHeight(getStringOrNull(document, MIN_HEIGHT));
         attribute.setMin((Double)document.get(MIN));
         attribute.setMax((Double)document.get(MAX));
         attribute.setDefaultValue(getStringOrNull(document, DEFAULT));
@@ -60,6 +62,8 @@ public class AttributeMapper extends Mapper
                 .append(TYPE, attribute.getType())
                 .append(MIN_WIDTH, attribute.getMinWidth())
                 .append(MAX_WIDTH, attribute.getMaxWidth())
+                .append(MIN_HEIGHT, attribute.getMinHeight())
+                .append(MAX_HEIGHT, attribute.getMaxHeight())
                 .append(LINES_COUNT, attribute.getLinesCount())
                 .append(ALIGNMENT, attribute.getAlignment())
                 .append(DEFAULT, attribute.getDefaultValue())

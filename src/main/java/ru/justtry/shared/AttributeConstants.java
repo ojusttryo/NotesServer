@@ -10,6 +10,8 @@ public interface AttributeConstants
     String SELECT_OPTIONS = "selectOptions";
     String MIN_WIDTH = "minWidth";
     String MAX_WIDTH = "maxWidth";
+    String MIN_HEIGHT = "minHeight";
+    String MAX_HEIGHT = "maxHeight";
     String MIN = "min";
     String MAX = "max";
     String DEFAULT = "default";

@@ -197,16 +197,28 @@ public class Attribute extends Identifiable
     private String type = Type.TEXT.title;
 
     /**
-     * Minimum width of the field with this attribute.
+     * Minimum width of the field with this attribute or the while input at form (like gallery).
      * Could keep value like "200" and "20em"
      */
     private String minWidth = null;
 
     /**
-     * Maximum width of the field with this attribute.
+     * Maximum width of the field with this attribute  or the while input at form (like gallery).
      * Could keep value like "200" and "20em".
      */
     private String maxWidth = null;
+
+    /**
+     * Minimum height of input at form (like gallery).
+     * Could keep value like "200" and "20em"
+     */
+    private String minHeight = null;
+
+    /**
+     * Maximum height of input at form (like gallery).
+     * Could keep value like "200" and "20em"
+     */
+    private String maxHeight = null;
 
     /**
      * For number types applies as the lower bound. For text types - as the minimum length.
