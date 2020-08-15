@@ -38,6 +38,7 @@ import ru.justtry.postprocessing.DeleteNotePostprocessor;
 import ru.justtry.postprocessing.SaveNotePostprocessor;
 import ru.justtry.shared.Identifiable;
 import ru.justtry.shared.RestError;
+import ru.justtry.shared.Utils;
 import ru.justtry.validation.NoteValidator;
 import ru.justtry.validation.Validator;
 
@@ -61,6 +62,8 @@ public class NotesController extends ObjectsController
     private SaveNotePostprocessor savePostprocessor;
     @Autowired
     private DeleteNotePostprocessor deletePostprocessor;
+    @Autowired
+    private Utils utils;
 
 
     @PostMapping(value = "/{entity}", consumes = "application/json;charset=UTF-8")
@@ -132,10 +135,13 @@ public class NotesController extends ObjectsController
 
             // TODO make a deep copy and use savePostprocessor
 
+            Map<String, Attribute> noteAttributes = utils.getAttributes(entity);
             for (String param : params.keySet())
             {
-                if (note.getAttributes().containsKey(param))
-                    note.getAttributes().put(param, params.get(param));
+                if (!noteAttributes.containsKey(param))
+                    throw new IllegalArgumentException("Note does not contain attribute " + param);
+
+                note.getAttributes().put(param, params.get(param));
             }
 
             database.updateDocument(getCollectionName(entity), noteMapper.getDocument(note));

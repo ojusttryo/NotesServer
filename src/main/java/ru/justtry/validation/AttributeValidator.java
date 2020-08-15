@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import ru.justtry.database.Database;
 import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.metainfo.Attribute;
+import ru.justtry.metainfo.Attribute.ImageSize;
 import ru.justtry.metainfo.Attribute.Method;
 import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.shared.ErrorMessages;
@@ -202,5 +203,9 @@ public class AttributeValidator implements Validator
 
         if ((type == Type.INC || type == Type.SELECT) && attribute.getEditableInTable() == null)
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("editableInTable"));
+
+        Integer imgSize = attribute.getImagesSize();
+        if (type == Type.GALLERY && (imgSize == null || ImageSize.get(imgSize) == null))
+            throw new IllegalArgumentException((ErrorMessages.getIsNotInPredefinedValues("images size")));
     }
 }

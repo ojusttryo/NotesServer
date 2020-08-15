@@ -18,6 +18,7 @@ public interface AttributeConstants
     String STEP = "step";
     String LINES_COUNT = "linesCount";
     String ALIGNMENT = "alignment";
+    String IMAGES_SIZE = "imagesSize";
     String LEFT = "left";
     String REQUIRED = "required";
     String REGEX = "regex";

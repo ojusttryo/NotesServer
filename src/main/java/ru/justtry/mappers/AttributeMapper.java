@@ -27,6 +27,7 @@ public class AttributeMapper extends Mapper
         attribute.setName(document.get(NAME).toString());
         attribute.setTitle(document.get(TITLE).toString());
         attribute.setAlignment(document.get(ALIGNMENT).toString());
+        attribute.setImagesSize((Integer)document.get(IMAGES_SIZE));
         attribute.setLinesCount((Integer)document.get(LINES_COUNT));
         attribute.setType(document.get(TYPE).toString());
         attribute.setSelectOptions((List<String>)document.get(SELECT_OPTIONS));
@@ -64,6 +65,7 @@ public class AttributeMapper extends Mapper
                 .append(MAX_WIDTH, attribute.getMaxWidth())
                 .append(MIN_HEIGHT, attribute.getMinHeight())
                 .append(MAX_HEIGHT, attribute.getMaxHeight())
+                .append(IMAGES_SIZE, attribute.getImagesSize())
                 .append(LINES_COUNT, attribute.getLinesCount())
                 .append(ALIGNMENT, attribute.getAlignment())
                 .append(DEFAULT, attribute.getDefaultValue())

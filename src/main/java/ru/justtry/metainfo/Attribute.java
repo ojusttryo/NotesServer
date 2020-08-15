@@ -166,6 +166,32 @@ public class Attribute extends Identifiable
     }
 
 
+    public enum ImageSize
+    {
+        SIZE_50(50),
+        SIZE_100(100),
+        SIZE_200(200);
+
+        public final int size;
+
+        public static ImageSize get(int size)
+        {
+            switch (size)
+            {
+            case 50: return SIZE_50;
+            case 100: return SIZE_100;
+            case 200: return SIZE_200;
+            default: return null;
+            }
+        }
+
+        ImageSize(int size)
+        {
+            this.size = size;
+        }
+    }
+
+
     /**
      * The unique name of attribute.
      */
@@ -245,6 +271,8 @@ public class Attribute extends Identifiable
      * Except textarea the value is ignored.
      */
     private Integer linesCount = DefaultValue.LINES_COUNT;
+
+    private Integer imagesSize = ImageSize.SIZE_100.size;
 
     /**
      * The alignment of the attribute in data table.
