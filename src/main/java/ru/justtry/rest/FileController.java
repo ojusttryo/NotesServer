@@ -76,7 +76,6 @@ public class FileController
         }
         catch (Exception e)
         {
-            logger.error(e);
             // If we already have file, we should extract his md5 from error message and find id
             // E11000 duplicate key error collection: notes.files.files index: md5_1 dup key:
             // { md5: "daa94cc58fdc27b5762aa610ebd4e593" }
@@ -97,6 +96,11 @@ public class FileController
                             HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
+            else
+            {
+                logger.error(e);
+            }
+
             return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

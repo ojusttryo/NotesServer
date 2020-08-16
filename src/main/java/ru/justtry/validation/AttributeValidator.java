@@ -4,6 +4,8 @@ import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.ErrorMessages.NAME_IS_DUPLICATED;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -140,9 +142,17 @@ public class AttributeValidator implements Validator
                     throw new IllegalArgumentException("defaultValue should be not greater than " + max);
                 break;
             case SELECT:
-            case MULTI_SELECT:
                 if (attribute.getSelectOptions().stream().allMatch(option -> !option.contentEquals(attribute.getDefaultValue())))
                     throw new IllegalArgumentException("defaultValue is not one of the options for select");
+                break;
+            case MULTI_SELECT:
+                List<String> defaultOptions = Arrays.stream(attribute.getDefaultValue().split(";"))
+                        .map(String::trim).collect(Collectors.toList());
+                for (String defaultOption : defaultOptions)
+                {
+                    if (attribute.getSelectOptions().stream().allMatch(option -> !option.contentEquals(defaultOption)))
+                        throw new IllegalArgumentException("defaultValue is not one of the options for multiselect");
+                }
                 break;
             case CHECKBOX:
                 if (!attribute.getDefaultValue().contentEquals("true")
