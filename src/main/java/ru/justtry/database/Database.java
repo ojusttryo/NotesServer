@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -402,7 +403,32 @@ public class Database
         GridFSFindIterable iterable = bucket.find(eq(MONGO_ID, fileId)).limit(1);
         GridFSFile file = iterable.first();
 
-        return file.getMetadata();
+        Document metadata = file.getMetadata();
+        metadata.put("id", id);
+        return metadata;
+    }
+
+
+    public List<Document> getMetadata(Collection<String> ids)
+    {
+        List<ObjectId> fileIds = ids.stream().map(ObjectId::new).collect(Collectors.toList());
+
+        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+
+        GridFSFindIterable iterable = bucket.find(in(MONGO_ID, fileIds));
+        List<Document> metadata = new ArrayList<>();
+        try (MongoCursor<GridFSFile> iterator = iterable.iterator())
+        {
+            while (iterator.hasNext())
+            {
+                GridFSFile file = iterator.next();
+                Document meta = file.getMetadata();
+                meta.put("id", file.getObjectId().toString());
+                metadata.add(meta);
+            }
+        }
+
+        return metadata;
     }
 
 

@@ -2,6 +2,7 @@ package ru.justtry.rest;
 
 import java.awt.image.BufferedImage;
 import java.nio.file.NoSuchFileException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.justtry.database.Database;
 import ru.justtry.fileprocessing.ImageEditor;
@@ -172,7 +175,8 @@ public class FileController
     }
 
 
-    @GetMapping(path = "/{id}/metadata", consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
+    @GetMapping(path = "/metadata/{id}", consumes = "application/json;charset=UTF-8",
+            produces = "application/json;charset=UTF-8")
     @ResponseBody
     public ResponseEntity<Object> getMetadata(@PathVariable String id)
     {
@@ -181,6 +185,26 @@ public class FileController
         try
         {
             return new ResponseEntity<>(database.getMetadata(id), headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            logger.error(e);
+            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @PostMapping(path = "/metadata", consumes = "application/json;charset=UTF-8",
+            produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public ResponseEntity<Object> getMultipleMetadata(@RequestBody String json)
+    {
+        HttpHeaders headers = new HttpHeaders();
+
+        try
+        {
+            List<String> identifiers = new ObjectMapper().readValue(json, ArrayList.class);
+            return new ResponseEntity<>(database.getMetadata(identifiers), headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
