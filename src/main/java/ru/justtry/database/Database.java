@@ -16,8 +16,10 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
@@ -50,8 +53,6 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
 import ru.justtry.mappers.LogMapper;
-import ru.justtry.rest.AttributesController;
-import ru.justtry.rest.EntitiesController;
 
 public class Database
 {
@@ -64,10 +65,6 @@ public class Database
     private MongoDatabase database;
     @Autowired
     private LogMapper logMapper;
-    @Autowired
-    private AttributesController attributesController;
-    @Autowired
-    private EntitiesController entitiesController;
 
 
     public Database()
@@ -118,6 +115,7 @@ public class Database
             throw new RuntimeException("There are no object with id " + document.get(MONGO_ID));
     }
 
+
     public void deleteDocument(String collectionName, String id)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
@@ -154,6 +152,33 @@ public class Database
             while (cursor.hasNext())
                 documents.add(cursor.next());
         }
+
+        if (ids == null || ids.size() == 0)
+            return documents;
+
+        // Sort documents by requested list of ids
+        Map<String, Document> documentMap = new HashMap<>();
+        for (Document document : documents)
+            documentMap.put(document.get(MONGO_ID).toString(), document);
+
+        documents.clear();
+        for (String id : ids)
+            documents.add(documentMap.get(id));
+
+        return documents;
+    }
+
+
+    public List<Document> getDocuments(String collectionName, Bson filter)
+    {
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        FindIterable<Document> iterable = collection.find(filter);
+        List<Document> documents = new ArrayList<>();
+        try (MongoCursor<Document> cursor = iterable.iterator())
+        {
+            while (cursor.hasNext())
+                documents.add(cursor.next());
+        }
         return documents;
     }
 
@@ -171,7 +196,7 @@ public class Database
 
     public Document getEntity(String entityCollection)
     {
-        MongoCollection<Document> collection = database.getCollection(entitiesController.getCollectionName());
+        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
         FindIterable<Document> iterable = collection.find(eq(COLLECTION, entityCollection)).limit(1);
         try (MongoCursor<Document> cursor = iterable.iterator())
         {
@@ -384,7 +409,7 @@ public class Database
 /*
         GridFSFile file = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(id)));
         Video video = new Video();
-        video.setTitle(file.getMetadata().get("title").toString());
+        video.setTitle(file.getMetadata().getById("title").toString());
         video.setStream(operations.getResource(file).getInputStream());
 
         FileOutputStream streamToDownloadTo = new FileOutputStream("/tmp/mongodb-tutorial.pdf");

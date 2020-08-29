@@ -1,10 +1,7 @@
 package ru.justtry.mappers;
 
 import static ru.justtry.shared.Constants.MONGO_ID;
-import static ru.justtry.shared.EntityConstants.ATTRIBUTES;
-import static ru.justtry.shared.EntityConstants.COLLECTION;
-import static ru.justtry.shared.EntityConstants.TITLE;
-import static ru.justtry.shared.EntityConstants.VISIBLE;
+import static ru.justtry.shared.EntityConstants.*;
 
 import java.util.List;
 
@@ -28,6 +25,7 @@ public class EntityMapper extends Mapper
         entity.setCollection(document.get(COLLECTION).toString());
         entity.setTitle(document.get(TITLE).toString());
         entity.setVisible((boolean)document.get(VISIBLE));
+        entity.setKeyAttribute(document.get(KEY_ATTRIBUTE).toString());
         entity.setAttributes((List<String>)document.get(ATTRIBUTES));
 
         return entity;
@@ -43,6 +41,7 @@ public class EntityMapper extends Mapper
                 .append(COLLECTION, entity.getCollection())
                 .append(TITLE, entity.getTitle())
                 .append(VISIBLE, entity.isVisible())
+                .append(KEY_ATTRIBUTE, entity.getKeyAttribute())
                 .append(ATTRIBUTES, entity.getAttributes());
 
         if (!Strings.isNullOrEmpty(entity.getId()))

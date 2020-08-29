@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,18 +25,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.justtry.database.Database;
-import ru.justtry.mappers.AttributeMapper;
-import ru.justtry.mappers.EntityMapper;
 import ru.justtry.mappers.Mapper;
 import ru.justtry.mappers.NoteMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
+import ru.justtry.metainfo.EntityService;
 import ru.justtry.notes.Note;
+import ru.justtry.notes.NoteService;
 import ru.justtry.postprocessing.DeleteNotePostprocessor;
 import ru.justtry.postprocessing.SaveNotePostprocessor;
-import ru.justtry.shared.Identifiable;
-import ru.justtry.shared.RestError;
 import ru.justtry.shared.Utils;
 import ru.justtry.validation.NoteValidator;
 import ru.justtry.validation.Validator;
@@ -53,9 +51,7 @@ public class NotesController extends ObjectsController
     @Autowired
     private NoteMapper noteMapper;
     @Autowired
-    private AttributeMapper attributeMapper;
-    @Autowired
-    private EntityMapper entityMapper;
+    private NoteService noteService;
     @Autowired
     protected Database database;
     @Autowired
@@ -64,6 +60,10 @@ public class NotesController extends ObjectsController
     private DeleteNotePostprocessor deletePostprocessor;
     @Autowired
     private Utils utils;
+    @Autowired
+    private AttributeService attributeService;
+    @Autowired
+    private EntityService entityService;
 
 
     @PostMapping(value = "/{entity}", consumes = "application/json;charset=UTF-8")
@@ -77,17 +77,15 @@ public class NotesController extends ObjectsController
         try
         {
             noteValidator.validate(note, entity);
-            Document document = noteMapper.getDocument(note);
-            String id = database.saveDocument(getCollectionName(entity), document);
-            note.setId(id);
+            noteService.save(getCollectionName(entity), note);
             savePostprocessor.process(note, null, entity);
-            database.saveLog(getCollectionName(entity), "CREATE", id, null, note.toString());
-            return new ResponseEntity<>(id, headers, HttpStatus.OK);
+            database.saveLog(getCollectionName(entity), "CREATE", note.getId(), null, note.toString());
+            return new ResponseEntity<>(note.getId(), headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -103,17 +101,20 @@ public class NotesController extends ObjectsController
         try
         {
             noteValidator.validate(note, entity);
-            Document document = noteMapper.getDocument(note);
-            Identifiable before = noteMapper.getObject(database.getDocument(getCollectionName(entity), note.getId()));
-            database.updateDocument(getCollectionName(entity), document);
-            savePostprocessor.process(note, (Note)before, entity);
+
+            Note before = noteService.get(getCollectionName(entity), note.getId());
+
+            noteService.copyUnusedAttributes(note, before);
+            noteService.update(getCollectionName(entity), note);
+
+            savePostprocessor.process(note, before, entity);
             database.saveLog(entity, "UPDATE", note.getId(), before.toString(), note.toString());
             return new ResponseEntity<>(note.getId(), headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -128,14 +129,13 @@ public class NotesController extends ObjectsController
         try
         {
             Map<String, Object> params = new ObjectMapper().readValue(json, HashMap.class);
-
-            Note note = (Note)noteMapper.getObject(database.getDocument(getCollectionName(entity), id));
+            Note note = noteService.get(getCollectionName(entity), id);
             if (note == null)
                 throw new IllegalArgumentException(String.format("Note with id=%s in %s not found", id, entity));
 
-            // TODO make a deep copy and use savePostprocessor
+            // TODO use savePostprocessor
 
-            Map<String, Attribute> noteAttributes = utils.getAttributes(entity);
+            Map<String, Attribute> noteAttributes = attributeService.getAttributesAsMap(entity);
             for (String param : params.keySet())
             {
                 if (!noteAttributes.containsKey(param))
@@ -143,14 +143,13 @@ public class NotesController extends ObjectsController
 
                 note.getAttributes().put(param, params.get(param));
             }
-
-            database.updateDocument(getCollectionName(entity), noteMapper.getDocument(note));
+            noteService.update(getCollectionName(entity), note);
             return new ResponseEntity<>(note.getId(), headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -165,19 +164,18 @@ public class NotesController extends ObjectsController
         HttpHeaders headers = new HttpHeaders();
         try
         {
-            Note note = (Note)noteMapper.getObject(database.getDocument(getCollectionName(entity), id));
+            Note note = noteService.get(getCollectionName(entity), id);
             if (note == null)
                 throw new IllegalArgumentException("Wrong note id");
 
-            Document attributeDoc = database.getAttribute(attributeName);
-            Attribute attribute = (Attribute)attributeMapper.getObject(attributeDoc);
+            Attribute attribute = attributeService.getByName(attributeName);
             if (attribute == null || !attribute.getType().contentEquals(Type.INC.title))
                 throw new IllegalArgumentException("Wrong attribute name");
 
             if (!note.getAttributes().containsKey(attributeName))
             {
-                Entity e = (Entity)entityMapper.getObject(database.getEntity(entity));
-                if (e == null || e.getAttributes().stream().allMatch(x -> !x.contentEquals(attribute.getId())))
+                Entity e = entityService.getByName(entity);
+                if (e == null || !e.hasAttribute(attribute.getId()))
                     throw new IllegalArgumentException("This entity has no such attribute");
             }
 
@@ -187,19 +185,23 @@ public class NotesController extends ObjectsController
                 throw new IllegalArgumentException("Current and default values are absent");
             else if (valueObject == null)
                 value = Double.parseDouble(attribute.getDefaultValue());
+            else if (valueObject instanceof Double)
+                value = (Double)valueObject;
+            else if (valueObject instanceof Integer)
+                value = Double.parseDouble(((Integer)valueObject).toString());
             else
-                value = (valueObject instanceof Double) ? (Double)valueObject : Double.parseDouble((String)valueObject);
+                value = Double.parseDouble((String)valueObject);
 
             value += Double.parseDouble(attribute.getStep());
 
             note.getAttributes().put(attributeName, value);
-            database.updateDocument(getCollectionName(entity), noteMapper.getDocument(note));
+            noteService.update(getCollectionName(entity), note);
             return new ResponseEntity<>(value.toString(), headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -210,7 +212,7 @@ public class NotesController extends ObjectsController
             @PathVariable(value = ENTITY) String entity,
             @PathVariable(value = ID) String id)
     {
-        Note before = (Note)noteMapper.getObject(database.getDocument(getCollectionName(entity), id));
+        Note before = noteService.get(getCollectionName(entity), id);
         database.deleteDocument(getCollectionName(entity), id);
         deletePostprocessor.process(before, entity);
         database.saveLog(getCollectionName(entity), "DELETE", id, before.toString(), null);
@@ -224,6 +226,48 @@ public class NotesController extends ObjectsController
         long count = database.dropCollection(getCollectionName(entity));
         // TODO unlink here all files related to entity (new DB method)
         database.saveLog(entity, "DELETE", null, count, 0);
+    }
+
+    @PostMapping(path = "/{entity}/{attributeName}/search", produces = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Object search(
+            @RequestBody String requestString,
+            @PathVariable(value = ENTITY) String entity,
+            @PathVariable(value = "attributeName") String attributeName)
+    {
+        HttpHeaders headers = new HttpHeaders();
+        try
+        {
+            String request = new ObjectMapper().readValue(requestString, String.class);
+            Attribute attribute = attributeService.getByName(attributeName);
+            Attribute.Type type = Attribute.Type.get(attribute.getType());
+            Object response = null;
+            switch (type)
+            {
+            case TEXT:
+            case TEXT_AREA:
+            case URL:
+                response = noteService.searchBySubstring(request, getCollectionName(entity), attribute); break;
+            case NUMBER:
+            case INC:
+                response = noteService.searchByNumber(request, getCollectionName(entity), attribute); break;
+            case SELECT:
+                response = noteService.searchByExactString(request, getCollectionName(entity), attribute); break;
+            case CHECKBOX:
+                response = noteService.searchByBoolean(request, getCollectionName(entity), attribute); break;
+            case MULTI_SELECT:
+                response = noteService.searchByIngoing(request, getCollectionName(entity), attribute); break;
+            default:
+                break;
+            }
+            return new ResponseEntity<>(response, headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            logger.error(e);
+            return utils.getResponseForError(headers, e);
+        }
     }
 
 

@@ -17,6 +17,7 @@ import ru.justtry.mappers.EntityMapper;
 import ru.justtry.mappers.NoteMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.AttributeService;
 import ru.justtry.notes.Note;
 import ru.justtry.rest.NotesController;
 import ru.justtry.shared.Utils;
@@ -37,10 +38,12 @@ public class SaveNotePostprocessor
     private NotesController notesController;
     @Autowired
     private Utils utils;
+    @Autowired
+    private AttributeService attributeService;
 
     public void process(Note note, Note oldNote, String entityName)
     {
-        Map<String, Attribute> attributes = utils.getAttributes(entityName);
+        Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entityName);
         for (String attributeName : attributes.keySet())
         {
             Attribute.Type type = Attribute.Type.get(attributes.get(attributeName).getType());

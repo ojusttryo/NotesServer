@@ -10,6 +10,7 @@ import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.mappers.EntityMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.AttributeService;
 import ru.justtry.notes.Note;
 import ru.justtry.shared.Utils;
 
@@ -24,6 +25,8 @@ public class NoteValidator implements Validator
     private EntityMapper entityMapper;
     @Autowired
     private Utils utils;
+    @Autowired
+    private AttributeService attributeService;
 
     @Override
     public void validate(Object object, String collectionName)
@@ -32,7 +35,7 @@ public class NoteValidator implements Validator
             throw new IllegalArgumentException("Unknown collection " + collectionName);
 
         Note note = (Note)object;
-        Map<String, Attribute> attributes = utils.getAttributes(collectionName);
+        Map<String, Attribute> attributes = attributeService.getAttributesAsMap(collectionName);
 
         for (String name : attributes.keySet())
         {

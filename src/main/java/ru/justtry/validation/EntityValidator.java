@@ -31,6 +31,9 @@ public class EntityValidator implements Validator
         if (entity.getAttributes() == null || entity.getAttributes().size() < 1)
             throw new IllegalArgumentException("Entity should have at least 1 attribute");
 
+        if (Strings.isNullOrEmpty(entity.getKeyAttribute()))
+            throw new IllegalArgumentException(ErrorMessages.getIsNotSet("keyAttribute"));
+
         if (database.isEntityExist(collectionName))
             throw new IllegalArgumentException("Collection already exists");
 

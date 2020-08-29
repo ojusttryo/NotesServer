@@ -35,6 +35,7 @@ import ru.justtry.fileprocessing.ScaledImage;
 import ru.justtry.mappers.ScaledImageMapper;
 import ru.justtry.shared.Identifiable;
 import ru.justtry.shared.RestError;
+import ru.justtry.shared.Utils;
 
 @CrossOrigin(maxAge = 3600, origins = "*")
 @RestController
@@ -49,6 +50,8 @@ public class FileController
     private ImageEditor imageEditor;
     @Autowired
     private ScaledImageMapper imageMapper;
+    @Autowired
+    private Utils utils;
 
     @PostMapping(produces = "application/json;charset=UTF-8", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
@@ -86,7 +89,7 @@ public class FileController
             {
                 try
                 {
-                    logger.info("Trying to get id by md5");
+                    logger.info("Trying to getById id by md5");
                     String message = e.getMessage();
                     // Regex [a-f0-9]{32} in some reason doesn't want to work
                     String md5 = message.substring(message.indexOf("\"") + 1, message.lastIndexOf("\""));
@@ -104,7 +107,7 @@ public class FileController
                 logger.error(e);
             }
 
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -128,7 +131,7 @@ public class FileController
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -152,7 +155,7 @@ public class FileController
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -170,7 +173,7 @@ public class FileController
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -189,7 +192,7 @@ public class FileController
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -209,7 +212,7 @@ public class FileController
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 

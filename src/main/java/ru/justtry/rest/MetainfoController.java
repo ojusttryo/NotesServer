@@ -1,5 +1,7 @@
 package ru.justtry.rest;
 
+import java.util.ArrayList;
+
 import javax.inject.Inject;
 
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,6 @@ public abstract class MetaInfoController implements Controller
     @ResponseBody
     public Identifiable[] get()
     {
-        return getMapper().getObjects(database.getDocuments(getCollectionName(), null));
+        return getMapper().getObjects(database.getDocuments(getCollectionName(), new ArrayList<>()));
     }
 }

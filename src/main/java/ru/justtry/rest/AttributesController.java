@@ -6,7 +6,6 @@ import static ru.justtry.shared.RestConstants.REST_ATTRIBUTES;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,11 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.mappers.Mapper;
 import ru.justtry.metainfo.Attribute;
+import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
+import ru.justtry.metainfo.EntityService;
 import ru.justtry.postprocessing.DeleteAttributePostprocessor;
 import ru.justtry.postprocessing.SaveAttributePostprocessor;
-import ru.justtry.shared.Identifiable;
-import ru.justtry.shared.RestError;
+import ru.justtry.shared.Utils;
 import ru.justtry.validation.AttributeValidator;
 import ru.justtry.validation.Validator;
 
@@ -46,11 +46,15 @@ public class AttributesController extends MetaInfoController
     @Autowired
     private AttributeMapper attributeMapper;
     @Autowired
-    private EntitiesController entitiesController;
-    @Autowired
     private SaveAttributePostprocessor savePostprocessor;
     @Autowired
     private DeleteAttributePostprocessor deletePostprocessor;
+    @Autowired
+    private AttributeService attributeService;
+    @Autowired
+    private EntityService entityService;
+    @Autowired
+    private Utils utils;
 
 
     @PostMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
@@ -62,18 +66,16 @@ public class AttributesController extends MetaInfoController
         try
         {
             attributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
-            Document document = attributeMapper.getDocument(attribute);
-            String id = database.saveDocument(ATTRIBUTES_COLLECTION, document);
-            attribute.setId(id);
+            attributeService.save(attribute);
             savePostprocessor.process(attribute);
-            database.saveLog(ATTRIBUTES_COLLECTION, "CREATE", id, null, attribute.toString());
-            return new ResponseEntity<>(id, headers, HttpStatus.OK);
+            database.saveLog(ATTRIBUTES_COLLECTION, "CREATE", attribute.getId(), null, attribute.toString());
+            return new ResponseEntity<>(attribute.getId(), headers, HttpStatus.OK);
         }
         catch (Exception e)
         {
             // TODO roll back actions (delete note, etc)
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -85,9 +87,8 @@ public class AttributesController extends MetaInfoController
         try
         {
             attributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
-            Document document = attributeMapper.getDocument(attribute);
-            Identifiable before = attributeMapper.getObject(database.getDocument(ATTRIBUTES_COLLECTION, attribute.getId()));
-            database.updateDocument(ATTRIBUTES_COLLECTION, document);
+            Attribute before = attributeService.getById(attribute.getId());
+            attributeService.update(attribute);
             savePostprocessor.process(attribute);
             database.saveLog(ATTRIBUTES_COLLECTION, "UPDATE", attribute.getId(), before.toString(), attribute.toString());
             return new ResponseEntity<>(attribute.getId(), headers, HttpStatus.OK);
@@ -95,7 +96,7 @@ public class AttributesController extends MetaInfoController
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -109,16 +110,16 @@ public class AttributesController extends MetaInfoController
     {
         if (entityId != null)
         {
-            Entity entity = (Entity)entitiesController.get(entityId);
-            return attributeMapper.getObjects(database.getDocuments(ATTRIBUTES_COLLECTION, entity.getAttributes()));
+            Entity entity = entityService.getById(entityId);
+            return attributeService.get(entity.getAttributes());
         }
         else if (id != null)
         {
-            return attributeMapper.getObject(database.getDocument(ATTRIBUTES_COLLECTION, id));
+            return attributeService.getById(id);
         }
         else
         {
-            return attributeMapper.getObjects(database.getDocuments(ATTRIBUTES_COLLECTION, null));
+            return attributeService.getAll();
         }
     }
 
@@ -127,7 +128,7 @@ public class AttributesController extends MetaInfoController
     @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable(value = ID) String id)
     {
-        Attribute before = (Attribute)attributeMapper.getObject(database.getDocument(ATTRIBUTES_COLLECTION, id));
+        Attribute before = attributeService.getById(id);
         database.deleteDocument(ATTRIBUTES_COLLECTION, id);
         deletePostprocessor.process(before);
         database.saveLog(ATTRIBUTES_COLLECTION, "DELETE", id, before.toString(), null);

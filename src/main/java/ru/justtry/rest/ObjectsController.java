@@ -3,6 +3,7 @@ package ru.justtry.rest;
 import static ru.justtry.shared.Constants.ID;
 import static ru.justtry.shared.NoteConstants.ENTITY;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -42,7 +43,7 @@ public abstract class ObjectsController implements Controller
     public ResponseEntity<Identifiable[]> getAll(@PathVariable(value = ENTITY) String entity)
     {
         HttpHeaders headers = new HttpHeaders();
-        List<Document> documents = database.getDocuments(getCollectionName(entity), null);
+        List<Document> documents = database.getDocuments(getCollectionName(entity), new ArrayList<>());
         return new ResponseEntity<>(getMapper().getObjects(documents), headers, HttpStatus.OK);
     }
 }

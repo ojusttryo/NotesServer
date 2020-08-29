@@ -15,12 +15,19 @@ public class Entity extends Identifiable
     private String collection;
     private String title;
     private boolean visible;
+    private String keyAttribute;
     private List<String> attributes = new ArrayList<>();    // identifiers
 
     @Override
     public String toString()
     {
-        return String.format("%s (title=%s, visible=%s attributes=[%s])", collection, title,
-                String.valueOf(visible), String.join(", ", attributes));
+        return String.format("%s (title=%s, visible=%s, keyAttribute=%s attributes=[%s])", collection, title,
+                String.valueOf(visible), keyAttribute, String.join(", ", attributes));
+    }
+
+
+    public boolean hasAttribute(String attributeId)
+    {
+        return attributes.stream().anyMatch(x -> x.contentEquals(attributeId));
     }
 }

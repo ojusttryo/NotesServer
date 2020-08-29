@@ -10,6 +10,7 @@ import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.mappers.EntityMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.AttributeService;
 import ru.justtry.notes.Note;
 import ru.justtry.shared.Utils;
 
@@ -24,11 +25,13 @@ public class DeleteNotePostprocessor
     private EntityMapper entityMapper;
     @Autowired
     private Utils utils;
+    @Autowired
+    private AttributeService attributeService;
 
 
     public void process(Note note, String entityName)
     {
-        Map<String, Attribute> attributes = utils.getAttributes(entityName);
+        Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entityName);
         for (String attributeName : attributes.keySet())
         {
             Attribute.Type type = Attribute.Type.get(attributes.get(attributeName).getType());

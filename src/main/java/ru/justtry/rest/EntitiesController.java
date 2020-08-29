@@ -1,6 +1,7 @@
 package ru.justtry.rest;
 
 import static ru.justtry.shared.Constants.ID;
+import static ru.justtry.shared.EntityConstants.COLLECTION;
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
 
 import org.apache.logging.log4j.LogManager;
@@ -25,10 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.justtry.mappers.EntityMapper;
 import ru.justtry.mappers.Mapper;
 import ru.justtry.metainfo.Entity;
+import ru.justtry.metainfo.EntityService;
 import ru.justtry.postprocessing.DeleteEntityPostprocessor;
 import ru.justtry.postprocessing.SaveEntityPostprocessor;
 import ru.justtry.shared.Identifiable;
-import ru.justtry.shared.RestError;
+import ru.justtry.shared.Utils;
 import ru.justtry.validation.EntityValidator;
 import ru.justtry.validation.Validator;
 
@@ -46,6 +48,10 @@ public class EntitiesController extends MetaInfoController
     private SaveEntityPostprocessor savePostprocessor;
     @Autowired
     private DeleteEntityPostprocessor deletePostprocessor;
+    @Autowired
+    private EntityService entityService;
+    @Autowired
+    private Utils utils;
 
 
     @PostMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
@@ -67,7 +73,7 @@ public class EntitiesController extends MetaInfoController
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -80,9 +86,8 @@ public class EntitiesController extends MetaInfoController
         try
         {
             entityValidator.validate(entity, ENTITIES_COLLECTION);
-            Document document = entityMapper.getDocument(entity);
-            Identifiable before = entityMapper.getObject(database.getDocument(ENTITIES_COLLECTION, entity.getId()));
-            database.updateDocument(ENTITIES_COLLECTION, document);
+            Identifiable before = entityService.getById(entity.getId());
+            entityService.update(entity);
             savePostprocessor.process(entity);
             database.saveLog(ENTITIES_COLLECTION, "UPDATE", entity.getId(), before.toString(), entity.toString());
             return new ResponseEntity<>(entity.getId(), headers, HttpStatus.OK);
@@ -90,7 +95,7 @@ public class EntitiesController extends MetaInfoController
         catch (Exception e)
         {
             logger.error(e);
-            return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return utils.getResponseForError(headers, e);
         }
     }
 
@@ -98,9 +103,16 @@ public class EntitiesController extends MetaInfoController
     @GetMapping(path = "/search", produces = "application/json;charset=UTF-8")
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
-    public Object get(@RequestParam(value = ID) String id)
+    public Object get(
+            @RequestParam(value = ID, required = false) String id,
+            @RequestParam(value = COLLECTION, required = false) String name)
     {
-        return entityMapper.getObject(database.getDocument(getCollectionName(), id));
+        if (id != null)
+            return entityService.getById(id);
+        else if (name != null)
+            return entityService.getByName(name);
+        else
+            return get();
     }
 
 
@@ -108,7 +120,7 @@ public class EntitiesController extends MetaInfoController
     @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable(value = ID) String id)
     {
-        Entity before = (Entity)entityMapper.getObject(database.getDocument(ENTITIES_COLLECTION, id));
+        Entity before = entityService.getById(id);
         database.deleteDocument(ENTITIES_COLLECTION, id);
         deletePostprocessor.process(before);
         database.saveLog(ENTITIES_COLLECTION, "DELETE", id, before.toString(), null);

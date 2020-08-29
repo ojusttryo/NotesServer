@@ -7,4 +7,5 @@ public interface EntityConstants
     String COLLECTION = "collection";
     String TITLE = "title";
     String VISIBLE = "visible";
+    String KEY_ATTRIBUTE = "keyAttribute";
 }
