@@ -2,6 +2,7 @@ package ru.justtry.mappers;
 
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.NoteConstants.FOLDER_ID;
+import static ru.justtry.shared.NoteConstants.HIDDEN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class NoteMapper extends Mapper
         Note note = new Note();
         note.setId(document.get(MONGO_ID).toString());
         note.setFolderId(getStringOrNull(document, FOLDER_ID));
+        note.setHidden((boolean)document.get(HIDDEN));
         List<Document> attributes = (List<Document>)document.get(NoteConstants.ATTRIBUTES);
         for (Document attribute : attributes)
         {
@@ -43,24 +45,23 @@ public class NoteMapper extends Mapper
     public Document getDocument(Identifiable object)
     {
         /**
-         * For now the document saved like this:
+         * The document saved like this:
          * {
          *     "id": "5d8ad8ad43e02d58f3a59945",
          *     "folderId": null,
-         *     "metainfo": [
-         *       { "5d8a5a87602f051474ea6a4e": "Avengers 5" },
-         *       { "5d8a5b17602f051474ea6a50": "Finished" },
-         *       { "5d8a6035afa6f80313f050c3": 2025 }
+         *     "attributes": [
+         *       { "name": "Avengers 5" },
+         *       { "state": "Finished" },
+         *       { "year": 2025 }
          *     ]
          * }
-         * In the future metainfo could be redone to a single object with properties or it could be just
-         * properties of the note object.
          */
 
         Note note = (Note)object;
 
         Document document = new Document();
         document.append(FOLDER_ID, note.getFolderId());
+        document.append(HIDDEN, note.isHidden());
         if (!Strings.isNullOrEmpty(note.getId()))
             document.append(MONGO_ID, new ObjectId(note.getId()));
 

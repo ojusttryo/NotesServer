@@ -1,8 +1,8 @@
 package ru.justtry.rest;
 
 import static ru.justtry.shared.Constants.ID;
-import static ru.justtry.shared.EntityConstants.COLLECTION;
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
+import static ru.justtry.shared.EntityConstants.NAME;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,8 +24,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import ru.justtry.database.Database;
 import ru.justtry.mappers.EntityMapper;
-import ru.justtry.mappers.Mapper;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
 import ru.justtry.postprocessing.DeleteEntityPostprocessor;
@@ -32,14 +33,16 @@ import ru.justtry.postprocessing.SaveEntityPostprocessor;
 import ru.justtry.shared.Identifiable;
 import ru.justtry.shared.Utils;
 import ru.justtry.validation.EntityValidator;
-import ru.justtry.validation.Validator;
 
 @RestController
+@CrossOrigin(maxAge = 3600)
 @RequestMapping("/rest/entities")
-public class EntitiesController extends MetaInfoController
+public class EntitiesController
 {
     final static Logger logger = LogManager.getLogger(EntitiesController.class);
 
+    @Autowired
+    private Database database;
     @Autowired
     private EntityMapper entityMapper;
     @Autowired
@@ -105,14 +108,23 @@ public class EntitiesController extends MetaInfoController
     @ResponseStatus(HttpStatus.OK)
     public Object get(
             @RequestParam(value = ID, required = false) String id,
-            @RequestParam(value = COLLECTION, required = false) String name)
+            @RequestParam(value = NAME, required = false) String name)
     {
         if (id != null)
             return entityService.getById(id);
         else if (name != null)
             return entityService.getByName(name);
         else
-            return get();
+            return entityService.getAll();
+    }
+
+
+    @GetMapping(produces = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Entity[] get()
+    {
+        return entityService.getAll();
     }
 
 
@@ -124,25 +136,5 @@ public class EntitiesController extends MetaInfoController
         database.deleteDocument(ENTITIES_COLLECTION, id);
         deletePostprocessor.process(before);
         database.saveLog(ENTITIES_COLLECTION, "DELETE", id, before.toString(), null);
-    }
-
-
-
-    @Override
-    public Mapper getMapper()
-    {
-        return entityMapper;
-    }
-
-    @Override
-    public Validator getValidator()
-    {
-        return entityValidator;
-    }
-
-    @Override
-    public String getCollectionName()
-    {
-        return ENTITIES_COLLECTION;
     }
 }

@@ -12,17 +12,21 @@ import ru.justtry.shared.Identifiable;
 @Data
 public class Entity extends Identifiable
 {
-    private String collection;
+    private String name;
     private String title;
     private boolean visible;
     private String keyAttribute;
+    private String sortAttribute;
+    private String sortDirection;
     private List<String> attributes = new ArrayList<>();    // identifiers
 
     @Override
     public String toString()
     {
-        return String.format("%s (title=%s, visible=%s, keyAttribute=%s attributes=[%s])", collection, title,
-                String.valueOf(visible), keyAttribute, String.join(", ", attributes));
+        return String.format(
+                "%s (title=%s, visible=%s, keyAttribute=%s, sortAttribute=%s, sortDirection=%s, attributes=[%s])",
+                name, title, String.valueOf(visible), keyAttribute, sortAttribute, sortDirection,
+                String.join(", ", attributes));
     }
 
 

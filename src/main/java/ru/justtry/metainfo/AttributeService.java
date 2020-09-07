@@ -1,8 +1,8 @@
 package ru.justtry.metainfo;
 
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
+import static ru.justtry.shared.AttributeConstants.NAME;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -43,19 +43,27 @@ public class AttributeService
     }
 
 
-    public Identifiable[] get(List<String> ids)
+    public Attribute[] get(List<String> ids)
     {
         List<Document> documents = database.getDocuments(ATTRIBUTES_COLLECTION, ids);
         Identifiable[] attributes = attributeMapper.getObjects(documents);
-        return attributes;
+        return toAttributesArray(attributes);
     }
 
 
-    public Identifiable[] getAll()
+    public Attribute[] get(String entityName)
     {
-        List<Document> documents = database.getDocuments(ATTRIBUTES_COLLECTION, new ArrayList<>());
+        Entity entity = entityService.getByName(entityName);
+        Identifiable[] attributes = get(entity.getAttributes());
+        return toAttributesArray(attributes);
+    }
+
+
+    public Attribute[] getAll()
+    {
+        List<Document> documents = database.getDocuments(ATTRIBUTES_COLLECTION, NAME);
         Identifiable[] attributes = attributeMapper.getObjects(documents);
-        return attributes;
+        return toAttributesArray(attributes);
     }
 
 
@@ -76,12 +84,15 @@ public class AttributeService
 
     public Map<String, Attribute> getAttributesAsMap(String entityName)
     {
-        Entity entity = entityService.getByName(entityName);
-        Identifiable[] objects = get(entity.getAttributes());
+        Attribute[] objects = get(entityName);
         Map<String, Attribute> attributes = Arrays.stream(objects)
-                .collect(Collectors.toMap(attr ->
-                        ((Attribute)attr).getName(),
-                        attr -> (Attribute)attr));
+                .collect(Collectors.toMap(attr -> attr.getName(), attr -> attr));
         return attributes;
+    }
+
+
+    private Attribute[] toAttributesArray(Identifiable[] attributes)
+    {
+        return Arrays.stream(attributes).map(x -> (Attribute)x).toArray(Attribute[]::new);
     }
 }

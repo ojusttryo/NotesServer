@@ -10,12 +10,14 @@ import ru.justtry.shared.Identifiable;
 public class Note extends Identifiable
 {
     private String folderId;
+    private boolean hidden = false;
     private Map<String, Object> attributes = new HashMap<>();
 
     @Override
     public String toString()
     {
         StringBuffer buffer = new StringBuffer();
+        buffer.append("hidden=" + hidden + " ");
         for (String name : attributes.keySet())
         {
             Object value = (attributes.get(name) == null) ? "" : attributes.get(name);

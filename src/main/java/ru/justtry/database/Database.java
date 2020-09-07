@@ -4,11 +4,11 @@ import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.in;
 import static com.mongodb.client.model.Filters.lt;
+import static com.mongodb.client.model.Sorts.ascending;
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.Constants.MONGO_ID;
-import static ru.justtry.shared.Constants.NAME;
-import static ru.justtry.shared.EntityConstants.COLLECTION;
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
+import static ru.justtry.shared.EntityConstants.NAME;
 import static ru.justtry.shared.ScaledImageConstants.ORIGINAL_ID;
 import static ru.justtry.shared.ScaledImageConstants.SIZE;
 
@@ -62,9 +62,12 @@ public class Database
     private static final String NOTES_FILES_COLLECTION = "notes.files";
     private static final String IMAGES_COLLECTION = "notes.images";
 
+
     private MongoDatabase database;
     @Autowired
     private LogMapper logMapper;
+    @Autowired
+    private Sort sort;
 
 
     public Database()
@@ -142,10 +145,19 @@ public class Database
         }
     }
 
+    /**
+     * Get documents from requested collection ordering them by specified order in ids collection
+     */
     public List<Document> getDocuments(String collectionName, List<String> ids)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
-        FindIterable<Document> iterable = find(collection, ids);
+
+        List<ObjectId> identifiers = new ArrayList<>(ids.size());
+        for (String id : ids)
+            identifiers.add(new ObjectId(id));
+
+        FindIterable<Document> iterable = collection.find(in(MONGO_ID, identifiers));
+
         List<Document> documents = new ArrayList<>();
         try (MongoCursor<Document> cursor = iterable.iterator())
         {
@@ -153,10 +165,7 @@ public class Database
                 documents.add(cursor.next());
         }
 
-        if (ids == null || ids.size() == 0)
-            return documents;
-
-        // Sort documents by requested list of ids
+        // SortInfo documents by requested list of ids
         Map<String, Document> documentMap = new HashMap<>();
         for (Document document : documents)
             documentMap.put(document.get(MONGO_ID).toString(), document);
@@ -169,7 +178,22 @@ public class Database
     }
 
 
-    public List<Document> getDocuments(String collectionName, Bson filter)
+    public List<Document> getDocuments(String collectionName, String sortField)
+    {
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        FindIterable<Document> iterable = collection.find().sort(ascending(sortField));
+        List<Document> documents = new ArrayList<>();
+        try (MongoCursor<Document> cursor = iterable.iterator())
+        {
+            while (cursor.hasNext())
+                documents.add(cursor.next());
+        }
+
+        return documents;
+    }
+
+
+    public List<Document> getDocuments(String collectionName, Bson filter, SortInfo sortInfo)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
         FindIterable<Document> iterable = collection.find(filter);
@@ -179,6 +203,12 @@ public class Database
             while (cursor.hasNext())
                 documents.add(cursor.next());
         }
+
+        // Inner mongodb sort wasn't good cause I had to explicitly $group result from many documents into one with
+        // dynamic number of fields after $match, $unwind and $sort. I.e. there were several documents for the same
+        // note, one for each attribute.
+        sort.run(documents, sortInfo);
+
         return documents;
     }
 
@@ -194,10 +224,10 @@ public class Database
     }
 
 
-    public Document getEntity(String entityCollection)
+    public Document getEntity(String entityName)
     {
         MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
-        FindIterable<Document> iterable = collection.find(eq(COLLECTION, entityCollection)).limit(1);
+        FindIterable<Document> iterable = collection.find(eq(NAME, entityName)).limit(1);
         try (MongoCursor<Document> cursor = iterable.iterator())
         {
             return cursor.hasNext() ? cursor.next() : null;
@@ -207,27 +237,10 @@ public class Database
     public boolean isEntityExist(String entityCollection)
     {
         MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
-        FindIterable<Document> iterable = collection.find(eq(COLLECTION, entityCollection)).limit(1);
+        FindIterable<Document> iterable = collection.find(eq(NAME, entityCollection)).limit(1);
         try (MongoCursor<Document> cursor = iterable.iterator())
         {
             return cursor.hasNext();
-        }
-    }
-
-
-    private FindIterable<Document> find(MongoCollection<Document> collection, List<String> ids)
-    {
-        if (ids == null || ids.size() == 0)
-        {
-            return collection.find();
-        }
-        else
-        {
-            List<ObjectId> identifiers = new ArrayList<>(ids.size());
-            for (String id : ids)
-                identifiers.add(new ObjectId(id));
-
-            return collection.find(in(MONGO_ID, identifiers));
         }
     }
 
@@ -464,19 +477,6 @@ public class Database
         return ((ObjectId)image.get(MONGO_ID)).toString();
     }
 
-    public List<Document> getImages(List<String> identifiers, int size)
-    {
-        MongoCollection<Document> collection = database.getCollection(IMAGES_COLLECTION);
-        FindIterable<Document> iterable = collection.find(and(in(ORIGINAL_ID, identifiers), eq(SIZE, size)));
-        List<Document> images = new ArrayList<>();
-        try (MongoCursor<Document> iterator = iterable.iterator())
-        {
-            while (iterator.hasNext())
-                images.add(iterator.next());
-
-            return images;
-        }
-    }
 
     public Document getImage(String identifier, int size)
     {

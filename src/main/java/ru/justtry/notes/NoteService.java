@@ -1,20 +1,26 @@
 package ru.justtry.notes;
 
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.exists;
-import static com.mongodb.client.model.Filters.in;
-import static com.mongodb.client.model.Filters.or;
+import static com.mongodb.client.model.Filters.*;
+import static ru.justtry.shared.NoteConstants.HIDDEN;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
+import ru.justtry.database.SortInfo;
 import ru.justtry.mappers.NoteMapper;
 import ru.justtry.metainfo.Attribute;
+import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.AttributeService;
+import ru.justtry.metainfo.Entity;
+import ru.justtry.metainfo.EntityService;
+import ru.justtry.rest.NotesController;
 import ru.justtry.shared.Identifiable;
 import ru.justtry.shared.NoteConstants;
 import ru.justtry.shared.Utils;
@@ -22,12 +28,21 @@ import ru.justtry.shared.Utils;
 @Component
 public class NoteService
 {
+    private static final Bson NOT_HIDDEN_FILTER = eq(HIDDEN, false);
+    private static final Bson HIDDEN_FILTER = eq(HIDDEN, true);
+
     @Autowired
     private NoteMapper noteMapper;
+    @Autowired
+    private NotesController notesController;
     @Autowired
     private Database database;
     @Autowired
     private Utils utils;
+    @Autowired
+    private AttributeService attributeService;
+    @Autowired
+    private EntityService entityService;
 
 
     public Note get(String collection, String id)
@@ -38,18 +53,83 @@ public class NoteService
     }
 
 
-    public void save(String collection, Note note)
+    public Identifiable[] get(String entity)
     {
+        Entity e = entityService.getByName(entity);
+        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), NOT_HIDDEN_FILTER,
+                createSortInfo(e));
+        Identifiable[] objects = noteMapper.getObjects(documents);
+        return objects;
+    }
+
+
+    public void save(String entity, Note note)
+    {
+        saveTimeAttributes(attributeService.get(entity), note);
         Document document = noteMapper.getDocument(note);
-        String id = database.saveDocument(collection, document);
+        String id = database.saveDocument(notesController.getCollectionName(entity), document);
         note.setId(id);
     }
 
 
-    public void update(String collection, Note note)
+    public void update(String entity, Note note)
     {
+        updateTimeAttributes(attributeService.get(entity), note);
         Document doc = noteMapper.getDocument(note);
-        database.updateDocument(collection, doc);
+        database.updateDocument(notesController.getCollectionName(entity), doc);
+    }
+
+
+    public void updateTimeAttributes(Iterable<Attribute> attributes, Note note)
+    {
+        long now = utils.getTimeInMs();
+        for (Attribute attribute : attributes)
+            updateTimeAttribute(attribute, note, now);
+    }
+
+
+    public void updateTimeAttributes(Attribute[] attributes, Note note)
+    {
+        long now = utils.getTimeInMs();
+        for (Attribute attribute : attributes)
+            updateTimeAttribute(attribute, note, now);
+    }
+
+
+    public void saveTimeAttributes(Attribute[] attributes, Note note)
+    {
+        long now = utils.getTimeInMs();
+        for (Attribute attribute : attributes)
+        {
+            if (Attribute.Type.isTimestampType(attribute.getType()))
+                note.getAttributes().put(attribute.getName(), now);
+        }
+    }
+
+
+    private void updateTimeAttribute(Attribute attribute, Note note, long time)
+    {
+        boolean isUpdateTime = (attribute.getTypeAsEnum() == Type.UPDATE_TIME);
+        boolean isSaveTime = (attribute.getTypeAsEnum() == Type.SAVE_TIME);
+        boolean saveTimeIsAbsent = isSaveTime && (note.getAttributes().get(attribute.getName()) == null);
+        if (isUpdateTime || saveTimeIsAbsent)
+            note.getAttributes().put(attribute.getName(), time);
+    }
+
+
+    public void hide(String entity, String id)
+    {
+        Note note = get(notesController.getCollectionName(entity), id);
+        note.setHidden(true);
+        update(entity, note);
+    }
+
+
+    public void reveal(String entity, String id)
+    {
+        Note note = get(notesController.getCollectionName(entity), id);
+        note.setHidden(false);
+        update(entity, note);
     }
 
 
@@ -67,7 +147,7 @@ public class NoteService
     }
 
 
-    public Identifiable[] searchBySubstring(String substring, String collection, Attribute attr)
+    public Identifiable[] searchBySubstring(String substring, String collection, Attribute attr, SortInfo sortInfo)
     {
         String substringPattern = ".*" + Pattern.quote(substring) + ".*";
         Pattern pattern = Pattern.compile(substringPattern, Pattern.CASE_INSENSITIVE);
@@ -75,18 +155,25 @@ public class NoteService
         Document search = new Document();
         search.put(field, pattern);
 
-        List<Document> docs = database.getDocuments(collection, search);
-        pattern.matcher(substring).reset();
+        List<Document> docs;
         // If some notes haven't this attribute, but default value is similar to requested string,
         // response should contains all notes without specified attribute.
         if (attr.getDefaultValue() != null && pattern.matcher(attr.getDefaultValue()).find())
-            docs.addAll(database.getDocuments(collection, exists(field, false)));
+        {
+            pattern.matcher(substring).reset();
+            Bson filter = and(or(exists(field, false), search), NOT_HIDDEN_FILTER);
+            docs = database.getDocuments(collection, filter, sortInfo);
+        }
+        else
+        {
+            docs = database.getDocuments(collection, and(search, NOT_HIDDEN_FILTER), sortInfo);
+        }
 
         return docs == null ? null : noteMapper.getObjects(docs);
     }
 
 
-    public Identifiable[] searchByNumber(String number, String collection, Attribute attr)
+    public Identifiable[] searchByNumber(String number, String collection, Attribute attr, SortInfo sortInfo)
     {
         Double doubleValue = Double.parseDouble(number);
         Double defaultNumber = attr.getDefaultValue() == null ? null
@@ -95,28 +182,38 @@ public class NoteService
         String field = getDbFieldName(attr.getName());
         List<Document> docs;
         if (defaultNumber != null && utils.equals(doubleValue, defaultNumber, step != null ? step : 0.00001))
-            docs = database.getDocuments(collection, or(eq(field, doubleValue), exists(field, false)));
+        {
+            docs = database.getDocuments(collection,
+                    and(or(eq(field, doubleValue), exists(field, false)), NOT_HIDDEN_FILTER), sortInfo);
+        }
         else
-            docs = database.getDocuments(collection, eq(field, doubleValue));
+        {
+            docs = database.getDocuments(collection, and(eq(field, doubleValue), NOT_HIDDEN_FILTER), sortInfo);
+        }
 
         return docs == null ? null : noteMapper.getObjects(docs);
     }
 
 
-    public Identifiable[] searchByExactString(String string, String collection, Attribute attr)
+    public Identifiable[] searchByExactString(String string, String collection, Attribute attr, SortInfo sortInfo)
     {
         String field = getDbFieldName(attr.getName());
         List<Document> documents;
         if (attr.getDefaultValue() != null && attr.getDefaultValue().contentEquals(string))
-            documents = database.getDocuments(collection, or(eq(field, string), exists(field, false)));
+        {
+            documents = database.getDocuments(collection,
+                    and(or(eq(field, string), exists(field, false)), NOT_HIDDEN_FILTER), sortInfo);
+        }
         else
-            documents = database.getDocuments(collection, eq(field, string));
+        {
+            documents = database.getDocuments(collection, and(eq(field, string), NOT_HIDDEN_FILTER), sortInfo);
+        }
 
         return documents == null ? null : noteMapper.getObjects(documents);
     }
 
 
-    public Identifiable[] searchByBoolean(String value, String collection, Attribute attr)
+    public Identifiable[] searchByBoolean(String value, String collection, Attribute attr, SortInfo sortInfo)
     {
         String field = getDbFieldName(attr.getName());
         boolean booleanValue = Boolean.parseBoolean(value);
@@ -128,17 +225,30 @@ public class NoteService
 
         List<Document> documents;
         if ((!booleanValue && (!isSet || isFalse)) || (booleanValue && isTrue))
-            documents = database.getDocuments(collection, or(eq(field, booleanValue), exists(field, false)));
+        {
+            documents = database.getDocuments(collection,
+                    and(or(eq(field, booleanValue), exists(field, false)), NOT_HIDDEN_FILTER), sortInfo);
+        }
         else
-            documents = database.getDocuments(collection, eq(field, booleanValue));
+        {
+            documents = database.getDocuments(collection, and(eq(field, booleanValue), NOT_HIDDEN_FILTER), sortInfo);
+        }
 
         return documents == null ? null : noteMapper.getObjects(documents);
     }
 
 
-    public Identifiable[] searchByIngoing(String value, String collection, Attribute attr)
+    public Identifiable[] searchByIngoing(String value, String collection, Attribute attr, SortInfo sortInfo)
     {
-        List<Document> documents = database.getDocuments(collection, in(getDbFieldName(attr.getName()), value));
+        List<Document> documents = database.getDocuments(collection,
+                and(in(getDbFieldName(attr.getName()), value), NOT_HIDDEN_FILTER), sortInfo);
+        return documents == null ? null : noteMapper.getObjects(documents);
+    }
+
+
+    public Identifiable[] searchByHidden(String collection, Boolean hidden, SortInfo sortInfo)
+    {
+        List<Document> documents = database.getDocuments(collection, hidden ? HIDDEN_FILTER : NOT_HIDDEN_FILTER, sortInfo);
         return documents == null ? null : noteMapper.getObjects(documents);
     }
 
@@ -146,5 +256,19 @@ public class NoteService
     private String getDbFieldName(String attributeName)
     {
         return String.format("%s.%s", NoteConstants.ATTRIBUTES, attributeName);
+    }
+
+
+    private long getTimeInMs()
+    {
+        return Instant.now().getEpochSecond() * 1000;
+    }
+
+
+    public SortInfo createSortInfo(Entity entity)
+    {
+        Attribute attribute = attributeService.getById(entity.getSortAttribute());
+        SortInfo sortInfo = new SortInfo(attribute, entity.getSortDirection());
+        return sortInfo;
     }
 }

@@ -22,10 +22,12 @@ public class EntityMapper extends Mapper
     {
         Entity entity = new Entity();
         entity.setId(document.get(MONGO_ID).toString());
-        entity.setCollection(document.get(COLLECTION).toString());
+        entity.setName(document.get(NAME).toString());
         entity.setTitle(document.get(TITLE).toString());
         entity.setVisible((boolean)document.get(VISIBLE));
         entity.setKeyAttribute(document.get(KEY_ATTRIBUTE).toString());
+        entity.setSortAttribute(document.get(SORT_ATTRIBUTE).toString());
+        entity.setSortDirection(document.get(SORT_DIRECTION).toString());
         entity.setAttributes((List<String>)document.get(ATTRIBUTES));
 
         return entity;
@@ -38,10 +40,12 @@ public class EntityMapper extends Mapper
         Entity entity = (Entity)object;
 
         Document document = new Document()
-                .append(COLLECTION, entity.getCollection())
+                .append(NAME, entity.getName())
                 .append(TITLE, entity.getTitle())
                 .append(VISIBLE, entity.isVisible())
                 .append(KEY_ATTRIBUTE, entity.getKeyAttribute())
+                .append(SORT_ATTRIBUTE, entity.getSortAttribute())
+                .append(SORT_DIRECTION, entity.getSortDirection())
                 .append(ATTRIBUTES, entity.getAttributes());
 
         if (!Strings.isNullOrEmpty(entity.getId()))

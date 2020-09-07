@@ -82,7 +82,7 @@ public class AttributeValidator implements Validator
         if (attribute.getType() == null)
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("Type"));
 
-        Attribute.Type type = Attribute.Type.get(attribute.getType());
+        Attribute.Type type = attribute.getTypeAsEnum();
         if (type == null)
             throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("type"));
 
@@ -217,5 +217,8 @@ public class AttributeValidator implements Validator
         Integer imgSize = attribute.getImagesSize();
         if (type == Type.GALLERY && (imgSize == null || ImageSize.get(imgSize) == null))
             throw new IllegalArgumentException((ErrorMessages.getIsNotInPredefinedValues("images size")));
+
+        if (type == Type.DELIMITED_TEXT && (attribute.getDelimiter() == null || attribute.getDelimiter().length() == 0))
+            throw new IllegalArgumentException(ErrorMessages.getIsNotSet("delimiter"));
     }
 }

@@ -39,7 +39,7 @@ public class NoteValidator implements Validator
 
         for (String name : attributes.keySet())
         {
-            Attribute.Type type = Attribute.Type.get(attributes.get(name).getType());
+            Attribute.Type type = attributes.get(name).getTypeAsEnum();
 
             // validate length of file ID (32)
         }

@@ -54,18 +54,19 @@ public class Attribute extends Identifiable
 
     public enum Type
     {
-        TEXT("text"),                   // single line string
-        TEXT_AREA("textarea"),          // multiline string
-        NUMBER("number"),               // numeric field (double or integer)
-        SELECT("select"),               // drop-down list with single selected value, represents enum value
-        MULTI_SELECT("multiselect"),    // drop-down list that allows multiple selections
-        CHECKBOX("checkbox"),           // boolean value
-        INC("inc"),                     // incremented number, which has plus sign beside
-        URL("url"),                     // the URL
-        SAVE_TIME("save time"),         // timestamp when the note is saved
-        UPDATE_TIME("update time"),     // timestamp when the note is updated
-        USER_DATE("user date"),         // custom date (yyyy-mm-dd)
-        USER_TIME("user time"),         // custom time (hh:mm, 24-hours format)
+        TEXT("text"),                       // single line string
+        TEXT_AREA("textarea"),              // multiline string
+        DELIMITED_TEXT("delimited text"),   // string with delimited like ;
+        NUMBER("number"),                   // numeric field (double or integer)
+        SELECT("select"),                   // drop-down list with single selected value, represents enum value
+        MULTI_SELECT("multiselect"),        // drop-down list that allows multiple selections
+        CHECKBOX("checkbox"),               // boolean value
+        INC("inc"),                         // incremented number, which has plus sign beside
+        URL("url"),                         // the URL
+        SAVE_TIME("save time"),             // timestamp when the note is saved
+        UPDATE_TIME("update time"),         // timestamp when the note is updated
+        USER_DATE("user date"),             // custom date (yyyy-mm-dd)
+        USER_TIME("user time"),             // custom time (hh:mm, 24-hours format)
         FILE("file"),
         IMAGE("image"),
         FILES("files"),
@@ -75,7 +76,7 @@ public class Attribute extends Identifiable
 
         public static boolean isTextType(Type type)
         {
-            return (type == TEXT || type == TEXT_AREA);
+            return (type == TEXT || type == TEXT_AREA || type == DELIMITED_TEXT);
         }
 
         public static boolean isTextType(String type)
@@ -105,6 +106,12 @@ public class Attribute extends Identifiable
             return (type == SAVE_TIME || type == UPDATE_TIME);
         }
 
+        public static boolean isTimestampType(String type)
+        {
+            Type t = get(type);
+            return (t != null) && isTimestampType(t);
+        }
+
         public static boolean isFile(Type type)
         {
             return (type == FILE || type == IMAGE);
@@ -116,6 +123,7 @@ public class Attribute extends Identifiable
             {
             case "text": return TEXT;
             case "textarea": return TEXT_AREA;
+            case "delimited text": return DELIMITED_TEXT;
             case "number": return NUMBER;
             case "select": return SELECT;
             case "multiselect": return MULTI_SELECT;
@@ -291,6 +299,10 @@ public class Attribute extends Identifiable
      */
     private String regex;
 
+
+    private String delimiter = null;
+
+
     /**
      * The values of drop-down list (enum)
      */
@@ -315,6 +327,16 @@ public class Attribute extends Identifiable
                 this.selectOptions.add(option);
         }
     }
+
+
+    public Type getTypeAsEnum()
+    {
+        Type t = Type.get(this.getType());
+        if (t == null)
+            throw new IllegalStateException("Current type is not one of the specified types");
+        return t;
+    }
+
 
     @Override
     public String toString()

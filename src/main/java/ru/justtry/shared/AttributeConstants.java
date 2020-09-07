@@ -2,6 +2,7 @@ package ru.justtry.shared;
 
 public interface AttributeConstants
 {
+    String NAME = "name";
     String TITLE = "title";
     String ATTRIBUTES_COLLECTION = "attributes";
     String METHOD = "method";
@@ -22,6 +23,7 @@ public interface AttributeConstants
     String LEFT = "left";
     String REQUIRED = "required";
     String REGEX = "regex";
+    String DELIMITER = "delimiter";
     String EDITABLE_IN_TABLE = "editableInTable";
     String DATE_FORMAT = "dateFormat";
 

@@ -1,8 +1,8 @@
 package ru.justtry.metainfo;
 
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
+import static ru.justtry.shared.AttributeConstants.NAME;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
@@ -42,7 +42,7 @@ public class MetaInfoInitializer
         Database database = (Database)context.getBean("database");
         AttributesController attributesController = (AttributesController)context.getBean("attributesController");
 
-        Identifiable[] attrs = attributeMapper.getObjects(database.getDocuments(ATTRIBUTES_COLLECTION, new ArrayList<>()));
+        Identifiable[] attrs = attributeMapper.getObjects(database.getDocuments(ATTRIBUTES_COLLECTION, NAME));
 
         if (!containsAttribute(attrs, PredefinedAttributes.NAME))
             attributesController.save(getAttributeName());

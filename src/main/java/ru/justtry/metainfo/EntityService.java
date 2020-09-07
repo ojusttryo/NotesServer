@@ -1,6 +1,10 @@
 package ru.justtry.metainfo;
 
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
+import static ru.justtry.shared.EntityConstants.NAME;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
 import ru.justtry.mappers.EntityMapper;
+import ru.justtry.shared.Identifiable;
 
 @Component
 public class EntityService
@@ -17,9 +22,21 @@ public class EntityService
     @Autowired
     protected Database database;
 
+
+    public Entity[] getAll()
+    {
+        List<Document> docs = database.getDocuments(ENTITIES_COLLECTION, NAME);
+        Identifiable[] entities = entityMapper.getObjects(docs);
+        return toEntitiesArray(entities);
+    }
+
+
     public Entity getByName(String name)
     {
         Document doc = database.getEntity(name);
+        if (doc == null)
+            throw new IllegalArgumentException("Wrong entity name");
+
         Entity entity = (Entity)entityMapper.getObject(doc);
         return entity;
     }
@@ -37,5 +54,11 @@ public class EntityService
     {
         Document document = entityMapper.getDocument(entity);
         database.updateDocument(ENTITIES_COLLECTION, document);
+    }
+
+
+    private Entity[] toEntitiesArray(Identifiable[] entities)
+    {
+        return Arrays.stream(entities).map(x -> (Entity)x).toArray(Entity[]::new);
     }
 }

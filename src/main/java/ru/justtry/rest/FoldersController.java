@@ -15,10 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ru.justtry.database.Database;
 import ru.justtry.mappers.FolderMapper;
-import ru.justtry.mappers.Mapper;
 import ru.justtry.notes.NoteFolder;
 import ru.justtry.validation.FolderValidator;
-import ru.justtry.validation.Validator;
 
 @RestController
 @RequestMapping("/rest/folders")
@@ -50,19 +48,6 @@ public class FoldersController extends ObjectsController
         //database.updateDocument(getCollectionName(entity), this, folder);
     }
 
-
-    @Override
-    public Validator getValidator()
-    {
-        return folderValidator;
-    }
-
-
-    @Override
-    public Mapper getMapper()
-    {
-        return folderMapper;
-    }
 
 
     @Override

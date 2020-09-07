@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,8 +23,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import ru.justtry.database.Database;
 import ru.justtry.mappers.AttributeMapper;
-import ru.justtry.mappers.Mapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
@@ -32,15 +33,17 @@ import ru.justtry.postprocessing.DeleteAttributePostprocessor;
 import ru.justtry.postprocessing.SaveAttributePostprocessor;
 import ru.justtry.shared.Utils;
 import ru.justtry.validation.AttributeValidator;
-import ru.justtry.validation.Validator;
 
 
 @RestController
+@CrossOrigin(maxAge = 3600)
 @RequestMapping(REST_ATTRIBUTES)
-public class AttributesController extends MetaInfoController
+public class AttributesController
 {
     final static Logger logger = LogManager.getLogger(AttributesController.class);
 
+    @Autowired
+    private Database database;
     @Autowired
     private AttributeValidator attributeValidator;
     @Autowired
@@ -124,6 +127,15 @@ public class AttributesController extends MetaInfoController
     }
 
 
+    @GetMapping(produces = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Attribute[] get()
+    {
+        return attributeService.getAll();
+    }
+
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable(value = ID) String id)
@@ -132,23 +144,5 @@ public class AttributesController extends MetaInfoController
         database.deleteDocument(ATTRIBUTES_COLLECTION, id);
         deletePostprocessor.process(before);
         database.saveLog(ATTRIBUTES_COLLECTION, "DELETE", id, before.toString(), null);
-    }
-
-    @Override
-    public Mapper getMapper()
-    {
-        return attributeMapper;
-    }
-
-    @Override
-    public Validator getValidator()
-    {
-        return attributeValidator;
-    }
-
-    @Override
-    public String getCollectionName()
-    {
-        return ATTRIBUTES_COLLECTION;
     }
 }

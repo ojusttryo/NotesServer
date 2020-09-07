@@ -1,5 +1,6 @@
 package ru.justtry.validation;
 
+import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.ErrorMessages.NOT_ALL_ATTRIBUTES_FOUND;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,24 +9,26 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Strings;
 
 import ru.justtry.database.Database;
+import ru.justtry.database.SortInfo;
+import ru.justtry.database.SortInfo.Direction;
+import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
-import ru.justtry.rest.AttributesController;
 import ru.justtry.shared.ErrorMessages;
 
 @Component
 public class EntityValidator implements Validator
 {
     @Autowired
-    private AttributesController attributesController;
+    private AttributeService attributeService;
     @Autowired
     private Database database;
 
     @Override
-    public void validate(Object object, String collectionName)
+    public void validate(Object object, String name)
     {
         Entity entity = (Entity)object;
 
-        if (Strings.isNullOrEmpty(entity.getCollection()))
+        if (Strings.isNullOrEmpty(entity.getName()))
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("Name"));
 
         if (entity.getAttributes() == null || entity.getAttributes().size() < 1)
@@ -33,13 +36,24 @@ public class EntityValidator implements Validator
 
         if (Strings.isNullOrEmpty(entity.getKeyAttribute()))
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("keyAttribute"));
+        if (attributeService.getById(entity.getKeyAttribute()) == null)
+            throw new IllegalArgumentException("Attribute specified as ket attribute is not found");
 
-        if (database.isEntityExist(collectionName))
-            throw new IllegalArgumentException("Collection already exists");
+        if (Strings.isNullOrEmpty(entity.getSortAttribute()))
+            throw new IllegalArgumentException(ErrorMessages.getIsNotSet("sortAttribute"));
+        if (attributeService.getById(entity.getSortAttribute()) == null)
+            throw new IllegalArgumentException("Attribute specified as sort attribute is not found");
+
+        Direction direction = SortInfo.Direction.get(entity.getSortDirection());
+        if (direction == null)
+            throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("sortDirection"));
+
+        if (database.isEntityExist(name))
+            throw new IllegalArgumentException("Collection with this name already exists");
 
         try
         {
-            int actualCount = database.getDocuments(attributesController.getCollectionName(), entity.getAttributes()).size();
+            int actualCount = database.getDocuments(ATTRIBUTES_COLLECTION, entity.getAttributes()).size();
             if (actualCount != entity.getAttributes().size())
                 throw new IllegalArgumentException(NOT_ALL_ATTRIBUTES_FOUND);
         }

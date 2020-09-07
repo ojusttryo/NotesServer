@@ -1,5 +1,7 @@
 package ru.justtry.shared;
 
+import java.time.Instant;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,5 +19,11 @@ public class Utils
     public ResponseEntity<Object> getResponseForError(HttpHeaders headers, Exception e)
     {
         return new ResponseEntity<>(new RestError(e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    public long getTimeInMs()
+    {
+        return Instant.now().getEpochSecond() * 1000;
     }
 }

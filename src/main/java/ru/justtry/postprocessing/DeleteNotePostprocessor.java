@@ -34,7 +34,7 @@ public class DeleteNotePostprocessor
         Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entityName);
         for (String attributeName : attributes.keySet())
         {
-            Attribute.Type type = Attribute.Type.get(attributes.get(attributeName).getType());
+            Attribute.Type type = attributes.get(attributeName).getTypeAsEnum();
 
             if (type == Type.FILE)
             {

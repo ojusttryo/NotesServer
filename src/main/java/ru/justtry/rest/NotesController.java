@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.justtry.database.Database;
-import ru.justtry.mappers.Mapper;
+import ru.justtry.database.SortInfo;
 import ru.justtry.mappers.NoteMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
@@ -36,9 +37,9 @@ import ru.justtry.notes.Note;
 import ru.justtry.notes.NoteService;
 import ru.justtry.postprocessing.DeleteNotePostprocessor;
 import ru.justtry.postprocessing.SaveNotePostprocessor;
+import ru.justtry.shared.Identifiable;
 import ru.justtry.shared.Utils;
 import ru.justtry.validation.NoteValidator;
-import ru.justtry.validation.Validator;
 
 @RestController
 @RequestMapping("/rest/notes")
@@ -77,7 +78,7 @@ public class NotesController extends ObjectsController
         try
         {
             noteValidator.validate(note, entity);
-            noteService.save(getCollectionName(entity), note);
+            noteService.save(entity, note);
             savePostprocessor.process(note, null, entity);
             database.saveLog(getCollectionName(entity), "CREATE", note.getId(), null, note.toString());
             return new ResponseEntity<>(note.getId(), headers, HttpStatus.OK);
@@ -105,7 +106,7 @@ public class NotesController extends ObjectsController
             Note before = noteService.get(getCollectionName(entity), note.getId());
 
             noteService.copyUnusedAttributes(note, before);
-            noteService.update(getCollectionName(entity), note);
+            noteService.update(entity, note);
 
             savePostprocessor.process(note, before, entity);
             database.saveLog(entity, "UPDATE", note.getId(), before.toString(), note.toString());
@@ -143,7 +144,8 @@ public class NotesController extends ObjectsController
 
                 note.getAttributes().put(param, params.get(param));
             }
-            noteService.update(getCollectionName(entity), note);
+
+            noteService.update(entity, note);
             return new ResponseEntity<>(note.getId(), headers, HttpStatus.OK);
         }
         catch (Exception e)
@@ -166,7 +168,7 @@ public class NotesController extends ObjectsController
         {
             Note note = noteService.get(getCollectionName(entity), id);
             if (note == null)
-                throw new IllegalArgumentException("Wrong note id");
+                throw new IllegalArgumentException("Cannot find note");
 
             Attribute attribute = attributeService.getByName(attributeName);
             if (attribute == null || !attribute.getType().contentEquals(Type.INC.title))
@@ -195,7 +197,7 @@ public class NotesController extends ObjectsController
             value += Double.parseDouble(attribute.getStep());
 
             note.getAttributes().put(attributeName, value);
-            noteService.update(getCollectionName(entity), note);
+            noteService.update(entity, note);
             return new ResponseEntity<>(value.toString(), headers, HttpStatus.OK);
         }
         catch (Exception e)
@@ -203,6 +205,26 @@ public class NotesController extends ObjectsController
             logger.error(e);
             return utils.getResponseForError(headers, e);
         }
+    }
+
+
+    @PutMapping(value = "/{entity}/{id}/hide", consumes = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    public void hide(
+            @PathVariable(value = ENTITY) String entity,
+            @PathVariable(value = ID) String id)
+    {
+        noteService.hide(entity, id);
+    }
+
+
+    @PutMapping(value = "/{entity}/{id}/reveal", consumes = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    public void reveal(
+            @PathVariable(value = ENTITY) String entity,
+            @PathVariable(value = ID) String id)
+    {
+        noteService.reveal(entity, id);
     }
 
 
@@ -228,6 +250,49 @@ public class NotesController extends ObjectsController
         database.saveLog(entity, "DELETE", null, count, 0);
     }
 
+
+    @GetMapping(path = "/{entity}/hidden", produces = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Object getHidden(@PathVariable(value = ENTITY) String entity)
+    {
+        HttpHeaders headers = new HttpHeaders();
+        try
+        {
+            Entity e = entityService.getByName(entity);
+            Identifiable[] objects = noteService.searchByHidden(getCollectionName(entity), true,
+                    noteService.createSortInfo(e));
+            return new ResponseEntity<>(objects, headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            logger.error(e);
+            return utils.getResponseForError(headers, e);
+        }
+    }
+
+
+    @GetMapping(path = "/{entity}/visible", produces = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Object getVisible(@PathVariable(value = ENTITY) String entity)
+    {
+        HttpHeaders headers = new HttpHeaders();
+        try
+        {
+            Entity e = entityService.getByName(entity);
+            Identifiable[] objects = noteService.searchByHidden(getCollectionName(entity), false,
+                    noteService.createSortInfo(e));
+            return new ResponseEntity<>(objects, headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            logger.error(e);
+            return utils.getResponseForError(headers, e);
+        }
+    }
+
+
     @PostMapping(path = "/{entity}/{attributeName}/search", produces = "application/json;charset=UTF-8")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -240,24 +305,27 @@ public class NotesController extends ObjectsController
         try
         {
             String request = new ObjectMapper().readValue(requestString, String.class);
+            Entity e = entityService.getByName(entity);
+            SortInfo sortInfo = noteService.createSortInfo(e);
             Attribute attribute = attributeService.getByName(attributeName);
-            Attribute.Type type = Attribute.Type.get(attribute.getType());
+            Attribute.Type type = attribute.getTypeAsEnum();
             Object response = null;
             switch (type)
             {
             case TEXT:
             case TEXT_AREA:
+            case DELIMITED_TEXT:
             case URL:
-                response = noteService.searchBySubstring(request, getCollectionName(entity), attribute); break;
+                response = noteService.searchBySubstring(request, getCollectionName(entity), attribute, sortInfo); break;
             case NUMBER:
             case INC:
-                response = noteService.searchByNumber(request, getCollectionName(entity), attribute); break;
+                response = noteService.searchByNumber(request, getCollectionName(entity), attribute, sortInfo); break;
             case SELECT:
-                response = noteService.searchByExactString(request, getCollectionName(entity), attribute); break;
+                response = noteService.searchByExactString(request, getCollectionName(entity), attribute, sortInfo); break;
             case CHECKBOX:
-                response = noteService.searchByBoolean(request, getCollectionName(entity), attribute); break;
+                response = noteService.searchByBoolean(request, getCollectionName(entity), attribute, sortInfo); break;
             case MULTI_SELECT:
-                response = noteService.searchByIngoing(request, getCollectionName(entity), attribute); break;
+                response = noteService.searchByIngoing(request, getCollectionName(entity), attribute, sortInfo); break;
             default:
                 break;
             }
@@ -271,21 +339,6 @@ public class NotesController extends ObjectsController
     }
 
 
-    @Override
-    public Validator getValidator()
-    {
-        return noteValidator;
-    }
-
-
-    @Override
-    public Mapper getMapper()
-    {
-        return noteMapper;
-    }
-
-
-    @Override
     public String getCollectionName(String entity)
     {
         return entity + ".notes" ;

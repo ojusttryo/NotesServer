@@ -2,7 +2,6 @@ package ru.justtry.mappers;
 
 import static ru.justtry.shared.AttributeConstants.*;
 import static ru.justtry.shared.Constants.MONGO_ID;
-import static ru.justtry.shared.Constants.NAME;
 
 import java.util.List;
 
@@ -40,6 +39,7 @@ public class AttributeMapper extends Mapper
         attribute.setMin((Double)document.get(MIN));
         attribute.setMax((Double)document.get(MAX));
         attribute.setDefaultValue(getStringOrNull(document, DEFAULT));
+        attribute.setDelimiter(getStringOrNull(document, DELIMITER));
         attribute.setStep(getStringOrNull(document, STEP));
         attribute.setRequired((Boolean)document.get(REQUIRED));
         attribute.setRegex(getStringOrNull(document, REGEX));
@@ -74,6 +74,7 @@ public class AttributeMapper extends Mapper
                 .append(MIN, attribute.getMin())
                 .append(REQUIRED, attribute.getRequired())
                 .append(REGEX, attribute.getRegex())
+                .append(DELIMITER, attribute.getDelimiter())
                 .append(EDITABLE_IN_TABLE, attribute.getEditableInTable())
                 .append(DATE_FORMAT, attribute.getDateFormat())
                 .append(SELECT_OPTIONS, attribute.getSelectOptions());
