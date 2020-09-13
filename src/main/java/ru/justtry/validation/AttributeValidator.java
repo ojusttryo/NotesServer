@@ -11,7 +11,10 @@ import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+
+import com.google.common.base.Strings;
 
 import ru.justtry.database.Database;
 import ru.justtry.mappers.AttributeMapper;
@@ -19,6 +22,7 @@ import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.ImageSize;
 import ru.justtry.metainfo.Attribute.Method;
 import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.AttributeService;
 import ru.justtry.shared.ErrorMessages;
 import ru.justtry.shared.Identifiable;
 
@@ -33,6 +37,9 @@ public class AttributeValidator implements Validator
     private Database database;
     @Autowired
     private AttributeMapper attributeMapper;
+    @Autowired
+    @Lazy
+    private AttributeService attributeService;
 
     @Override
     public void validate(Object object, String collectionName)
@@ -220,5 +227,13 @@ public class AttributeValidator implements Validator
 
         if (type == Type.DELIMITED_TEXT && (attribute.getDelimiter() == null || attribute.getDelimiter().length() == 0))
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("delimiter"));
+
+        if (type == Type.NESTED_NOTES || type == Type.COMPARED_NOTES)
+        {
+            if (Strings.isNullOrEmpty(attribute.getEntity()))
+                throw new IllegalArgumentException(ErrorMessages.getIsNotSet("entity"));
+            if (attributeService.getByName(attribute.getEntity()) == null)
+                throw new IllegalArgumentException("Entity for nested notes is not exists");
+        }
     }
 }

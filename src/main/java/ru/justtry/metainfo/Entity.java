@@ -19,14 +19,15 @@ public class Entity extends Identifiable
     private String sortAttribute;
     private String sortDirection;
     private List<String> attributes = new ArrayList<>();    // identifiers
+    private List<String> comparedAttributes = new ArrayList<>();
 
     @Override
     public String toString()
     {
-        return String.format(
-                "%s (title=%s, visible=%s, keyAttribute=%s, sortAttribute=%s, sortDirection=%s, attributes=[%s])",
+        return String.format("%s (title=%s, visible=%s, keyAttribute=%s, sortAttribute=%s, sortDirection=%s, "
+                        + "attributes=[%s], comparedAttributes=[%s])",
                 name, title, String.valueOf(visible), keyAttribute, sortAttribute, sortDirection,
-                String.join(", ", attributes));
+                String.join(", ", attributes), String.join(", ", comparedAttributes));
     }
 
 

@@ -70,7 +70,11 @@ public class Attribute extends Identifiable
         FILE("file"),
         IMAGE("image"),
         FILES("files"),
-        GALLERY("gallery");
+        GALLERY("gallery"),
+        NESTED_NOTES("nested notes"),
+        RELATED_NOTES("related notes"),
+        COMPARED_NOTES("compared notes"),
+        ROW_NUMBER("row number");
 
         public final String title;
 
@@ -117,6 +121,11 @@ public class Attribute extends Identifiable
             return (type == FILE || type == IMAGE);
         }
 
+        public static boolean isNotesList(Type type)
+        {
+            return (type == NESTED_NOTES || type == RELATED_NOTES || type == COMPARED_NOTES);
+        }
+
         public static Type get(String type)
         {
             switch (type)
@@ -138,6 +147,10 @@ public class Attribute extends Identifiable
             case "image": return IMAGE;
             case "files": return FILES;
             case "gallery": return GALLERY;
+            case "nested notes": return NESTED_NOTES;
+            case "related notes": return RELATED_NOTES;
+            case "compared notes": return COMPARED_NOTES;
+            case "row number": return ROW_NUMBER;
             default: return null;
             }
         }
@@ -299,8 +312,9 @@ public class Attribute extends Identifiable
      */
     private String regex;
 
-
     private String delimiter = null;
+
+    private String entity = null;
 
 
     /**

@@ -4,6 +4,7 @@ import static ru.justtry.shared.Constants.ID;
 import static ru.justtry.shared.NoteConstants.ENTITY;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -284,6 +285,26 @@ public class NotesController extends ObjectsController
             Identifiable[] objects = noteService.searchByHidden(getCollectionName(entity), false,
                     noteService.createSortInfo(e));
             return new ResponseEntity<>(objects, headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            logger.error(e);
+            return utils.getResponseForError(headers, e);
+        }
+    }
+
+
+    @PostMapping(path = "/{entity}/search", produces = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Object search(
+            @RequestBody List<String> ids,
+            @PathVariable(value = ENTITY) String entity)
+    {
+        HttpHeaders headers = new HttpHeaders();
+        try
+        {
+            return noteService.get(entity, ids);
         }
         catch (Exception e)
         {

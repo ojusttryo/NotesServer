@@ -4,6 +4,7 @@ public abstract class ErrorMessages
 {
     public static String NAME_IS_DUPLICATED = "Attribute with this name is already exists";
     public static String NOT_ALL_ATTRIBUTES_FOUND = "Some attributes are not found";
+    public static String NOT_ALL_COMPARED_ATTRIBUTES_FOUND = "Some compared attributes doesn't exist";
 
 
     public static String getIsNotSet(String attribute)

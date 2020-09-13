@@ -2,6 +2,7 @@ package ru.justtry.validation;
 
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.ErrorMessages.NOT_ALL_ATTRIBUTES_FOUND;
+import static ru.justtry.shared.ErrorMessages.NOT_ALL_COMPARED_ATTRIBUTES_FOUND;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -43,6 +44,19 @@ public class EntityValidator implements Validator
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("sortAttribute"));
         if (attributeService.getById(entity.getSortAttribute()) == null)
             throw new IllegalArgumentException("Attribute specified as sort attribute is not found");
+
+        if (entity.getComparedAttributes().size() == 0)
+            throw new IllegalArgumentException(ErrorMessages.getIsNotSet("comparedAttributes"));
+        try
+        {
+            int actualCount = database.getDocuments(ATTRIBUTES_COLLECTION, entity.getComparedAttributes()).size();
+            if (actualCount != entity.getComparedAttributes().size())
+                throw new IllegalArgumentException(NOT_ALL_COMPARED_ATTRIBUTES_FOUND);
+        }
+        catch (Exception e)
+        {
+            throw new IllegalArgumentException(NOT_ALL_COMPARED_ATTRIBUTES_FOUND);
+        }
 
         Direction direction = SortInfo.Direction.get(entity.getSortDirection());
         if (direction == null)

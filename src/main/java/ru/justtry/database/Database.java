@@ -53,6 +53,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
 import ru.justtry.mappers.LogMapper;
+import ru.justtry.shared.AttributeConstants;
 
 public class Database
 {
@@ -96,6 +97,12 @@ public class Database
                 .append("attributeName", 1)
                 .append("fileId", 1);
         notesFilesCollection.createIndex(notesFilesRestriction, new IndexOptions().unique(true));
+
+        MongoCollection<Document> attributesCollection = database.getCollection(ATTRIBUTES_COLLECTION);
+        attributesCollection.createIndex(new BasicDBObject(AttributeConstants.NAME, 1), new IndexOptions().unique(true));
+
+        MongoCollection<Document> entitiesCollection = database.getCollection(ENTITIES_COLLECTION);
+        entitiesCollection.createIndex(new BasicDBObject(NAME, new IndexOptions().unique(true)));
 
         logger.info("Database created");
     }

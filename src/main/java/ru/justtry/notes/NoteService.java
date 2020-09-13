@@ -3,7 +3,7 @@ package ru.justtry.notes;
 import static com.mongodb.client.model.Filters.*;
 import static ru.justtry.shared.NoteConstants.HIDDEN;
 
-import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -53,13 +53,21 @@ public class NoteService
     }
 
 
-    public Identifiable[] get(String entity)
+    public Note[] get(String entity)
     {
         Entity e = entityService.getByName(entity);
         List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), NOT_HIDDEN_FILTER,
                 createSortInfo(e));
         Identifiable[] objects = noteMapper.getObjects(documents);
-        return objects;
+        return toNoteArray(objects);
+    }
+
+
+    public Note[] get(String entity, List<String> ids)
+    {
+        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), ids);
+        Identifiable[] notes = noteMapper.getObjects(documents);
+        return toNoteArray(notes);
     }
 
 
@@ -77,14 +85,6 @@ public class NoteService
         updateTimeAttributes(attributeService.get(entity), note);
         Document doc = noteMapper.getDocument(note);
         database.updateDocument(notesController.getCollectionName(entity), doc);
-    }
-
-
-    public void updateTimeAttributes(Iterable<Attribute> attributes, Note note)
-    {
-        long now = utils.getTimeInMs();
-        for (Attribute attribute : attributes)
-            updateTimeAttribute(attribute, note, now);
     }
 
 
@@ -259,16 +259,15 @@ public class NoteService
     }
 
 
-    private long getTimeInMs()
-    {
-        return Instant.now().getEpochSecond() * 1000;
-    }
-
-
     public SortInfo createSortInfo(Entity entity)
     {
         Attribute attribute = attributeService.getById(entity.getSortAttribute());
         SortInfo sortInfo = new SortInfo(attribute, entity.getSortDirection());
         return sortInfo;
+    }
+
+    private Note[] toNoteArray(Identifiable[] notes)
+    {
+        return Arrays.stream(notes).map(x -> (Note)x).toArray(Note[]::new);
     }
 }
