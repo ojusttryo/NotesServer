@@ -26,8 +26,8 @@ public class EntityMapper extends Mapper
         entity.setTitle(document.get(TITLE).toString());
         entity.setVisible((boolean)document.get(VISIBLE));
         entity.setKeyAttribute(document.get(KEY_ATTRIBUTE).toString());
-        entity.setSortAttribute(document.get(SORT_ATTRIBUTE).toString());
-        entity.setSortDirection(document.get(SORT_DIRECTION).toString());
+        entity.setSortAttribute(getStringOrNull(document, SORT_ATTRIBUTE));
+        entity.setSortDirection(getStringOrNull(document, SORT_DIRECTION));
         entity.setAttributes((List<String>)document.get(ATTRIBUTES));
         entity.setComparedAttributes((List<String>)document.get(COMPARED_ATTRIBUTES));
 

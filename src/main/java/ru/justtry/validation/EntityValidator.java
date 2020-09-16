@@ -14,6 +14,7 @@ import ru.justtry.database.SortInfo;
 import ru.justtry.database.SortInfo.Direction;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
+import ru.justtry.shared.EntityConstants;
 import ru.justtry.shared.ErrorMessages;
 
 @Component
@@ -37,19 +38,28 @@ public class EntityValidator implements Validator
 
         if (Strings.isNullOrEmpty(entity.getKeyAttribute()))
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("keyAttribute"));
-        if (attributeService.getById(entity.getKeyAttribute()) == null)
+        if (attributeService.getByName(entity.getKeyAttribute()) == null)
             throw new IllegalArgumentException("Attribute specified as ket attribute is not found");
 
-        if (Strings.isNullOrEmpty(entity.getSortAttribute()))
-            throw new IllegalArgumentException(ErrorMessages.getIsNotSet("sortAttribute"));
-        if (attributeService.getById(entity.getSortAttribute()) == null)
+        if (entity.getSortAttribute() != null && attributeService.getByName(entity.getSortAttribute()) == null)
             throw new IllegalArgumentException("Attribute specified as sort attribute is not found");
+
+        if (entity.getSortAttribute() != null && entity.getSortDirection() == null)
+            throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("sortDirection"));
+
+        if (entity.getSortDirection() != null)
+        {
+            Direction direction = SortInfo.Direction.get(entity.getSortDirection());
+            if (direction == null)
+                throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("sortDirection"));
+        }
 
         if (entity.getComparedAttributes().size() == 0)
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("comparedAttributes"));
         try
         {
-            int actualCount = database.getDocuments(ATTRIBUTES_COLLECTION, entity.getComparedAttributes()).size();
+            int actualCount = database.getDocuments(ATTRIBUTES_COLLECTION,
+                    entity.getComparedAttributes(), EntityConstants.NAME).size();
             if (actualCount != entity.getComparedAttributes().size())
                 throw new IllegalArgumentException(NOT_ALL_COMPARED_ATTRIBUTES_FOUND);
         }
@@ -58,16 +68,13 @@ public class EntityValidator implements Validator
             throw new IllegalArgumentException(NOT_ALL_COMPARED_ATTRIBUTES_FOUND);
         }
 
-        Direction direction = SortInfo.Direction.get(entity.getSortDirection());
-        if (direction == null)
-            throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("sortDirection"));
-
         if (database.isEntityExist(name))
             throw new IllegalArgumentException("Collection with this name already exists");
 
         try
         {
-            int actualCount = database.getDocuments(ATTRIBUTES_COLLECTION, entity.getAttributes()).size();
+            int actualCount = database.getDocuments(ATTRIBUTES_COLLECTION,
+                    entity.getAttributes(), EntityConstants.NAME).size();
             if (actualCount != entity.getAttributes().size())
                 throw new IllegalArgumentException(NOT_ALL_ATTRIBUTES_FOUND);
         }

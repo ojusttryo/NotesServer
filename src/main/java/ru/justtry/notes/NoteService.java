@@ -1,6 +1,7 @@
 package ru.justtry.notes;
 
 import static com.mongodb.client.model.Filters.*;
+import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.NoteConstants.HIDDEN;
 
 import java.util.Arrays;
@@ -56,6 +57,8 @@ public class NoteService
     public Note[] get(String entity)
     {
         Entity e = entityService.getByName(entity);
+        if (e == null)
+            throw new IllegalArgumentException("Wrong entity name: " + entity);
         List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), NOT_HIDDEN_FILTER,
                 createSortInfo(e));
         Identifiable[] objects = noteMapper.getObjects(documents);
@@ -65,7 +68,7 @@ public class NoteService
 
     public Note[] get(String entity, List<String> ids)
     {
-        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), ids);
+        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), ids, MONGO_ID);
         Identifiable[] notes = noteMapper.getObjects(documents);
         return toNoteArray(notes);
     }
@@ -261,7 +264,10 @@ public class NoteService
 
     public SortInfo createSortInfo(Entity entity)
     {
-        Attribute attribute = attributeService.getById(entity.getSortAttribute());
+        if (entity.getSortAttribute() == null)
+            return null;
+
+        Attribute attribute = attributeService.getByName(entity.getSortAttribute());
         SortInfo sortInfo = new SortInfo(attribute, entity.getSortDirection());
         return sortInfo;
     }

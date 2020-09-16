@@ -88,8 +88,9 @@ public class EntitiesController
         HttpHeaders headers = new HttpHeaders();
         try
         {
+            Identifiable before = entityService.getByName(entity.getName());
+            entity.setId(before.getId());
             entityValidator.validate(entity, ENTITIES_COLLECTION);
-            Identifiable before = entityService.getById(entity.getId());
             entityService.update(entity);
             savePostprocessor.process(entity);
             database.saveLog(ENTITIES_COLLECTION, "UPDATE", entity.getId(), before.toString(), entity.toString());
@@ -128,13 +129,13 @@ public class EntitiesController
     }
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{name}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(@PathVariable(value = ID) String id)
+    public void delete(@PathVariable(value = NAME) String name)
     {
-        Entity before = entityService.getById(id);
-        database.deleteDocument(ENTITIES_COLLECTION, id);
+        Entity before = entityService.getByName(name);
+        database.deleteDocument(ENTITIES_COLLECTION, before.getId());
         deletePostprocessor.process(before);
-        database.saveLog(ENTITIES_COLLECTION, "DELETE", id, before.toString(), null);
+        database.saveLog(ENTITIES_COLLECTION, "DELETE", name, before.toString(), null);
     }
 }

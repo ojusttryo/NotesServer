@@ -38,14 +38,23 @@ public class AttributeService
     public Attribute getByName(String name)
     {
         Document document = database.getAttribute(name);
+        if (document == null)
+            return null;
         Attribute attribute = (Attribute)attributeMapper.getObject(document);
         return attribute;
     }
 
 
-    public Attribute[] get(List<String> ids)
+    public String getId(String name)
     {
-        List<Document> documents = database.getDocuments(ATTRIBUTES_COLLECTION, ids);
+        Attribute attribute = getByName(name);
+        return (attribute == null) ? null : attribute.getId();
+    }
+
+
+    public Attribute[] get(List<String> names)
+    {
+        List<Document> documents = database.getDocuments(ATTRIBUTES_COLLECTION, names, NAME);
         Identifiable[] attributes = attributeMapper.getObjects(documents);
         return toAttributesArray(attributes);
     }

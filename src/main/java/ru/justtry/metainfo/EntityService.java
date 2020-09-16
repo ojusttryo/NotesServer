@@ -35,10 +35,17 @@ public class EntityService
     {
         Document doc = database.getEntity(name);
         if (doc == null)
-            throw new IllegalArgumentException("Wrong entity name");
+            return null;
 
         Entity entity = (Entity)entityMapper.getObject(doc);
         return entity;
+    }
+
+
+    public String getId(String name)
+    {
+        Entity entity = getByName(name);
+        return (entity == null) ? null : entity.getName();
     }
 
 

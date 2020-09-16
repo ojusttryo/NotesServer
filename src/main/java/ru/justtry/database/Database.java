@@ -102,7 +102,7 @@ public class Database
         attributesCollection.createIndex(new BasicDBObject(AttributeConstants.NAME, 1), new IndexOptions().unique(true));
 
         MongoCollection<Document> entitiesCollection = database.getCollection(ENTITIES_COLLECTION);
-        entitiesCollection.createIndex(new BasicDBObject(NAME, new IndexOptions().unique(true)));
+        entitiesCollection.createIndex(new BasicDBObject(NAME, 1), new IndexOptions().unique(true));
 
         logger.info("Database created");
     }
@@ -155,15 +155,15 @@ public class Database
     /**
      * Get documents from requested collection ordering them by specified order in ids collection
      */
-    public List<Document> getDocuments(String collectionName, List<String> ids)
+    public List<Document> getDocuments(String collectionName, List<String> values, String fieldName)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
 
-        List<ObjectId> identifiers = new ArrayList<>(ids.size());
-        for (String id : ids)
-            identifiers.add(new ObjectId(id));
+        List<String> identifiers = new ArrayList<>(values.size());
+        for (String id : values)
+            identifiers.add(id);
 
-        FindIterable<Document> iterable = collection.find(in(MONGO_ID, identifiers));
+        FindIterable<Document> iterable = collection.find(in(fieldName, identifiers));
 
         List<Document> documents = new ArrayList<>();
         try (MongoCursor<Document> cursor = iterable.iterator())
@@ -175,14 +175,15 @@ public class Database
         // SortInfo documents by requested list of ids
         Map<String, Document> documentMap = new HashMap<>();
         for (Document document : documents)
-            documentMap.put(document.get(MONGO_ID).toString(), document);
+            documentMap.put(document.get(fieldName).toString(), document);
 
         documents.clear();
-        for (String id : ids)
+        for (String id : values)
             documents.add(documentMap.get(id));
 
         return documents;
     }
+
 
 
     public List<Document> getDocuments(String collectionName, String sortField)
@@ -214,7 +215,8 @@ public class Database
         // Inner mongodb sort wasn't good cause I had to explicitly $group result from many documents into one with
         // dynamic number of fields after $match, $unwind and $sort. I.e. there were several documents for the same
         // note, one for each attribute.
-        sort.run(documents, sortInfo);
+        if (sortInfo != null)
+            sort.run(documents, sortInfo);
 
         return documents;
     }

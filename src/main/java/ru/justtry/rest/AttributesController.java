@@ -1,7 +1,7 @@
 package ru.justtry.rest;
 
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
-import static ru.justtry.shared.Constants.ID;
+import static ru.justtry.shared.AttributeConstants.NAME;
 import static ru.justtry.shared.RestConstants.REST_ATTRIBUTES;
 
 import org.apache.logging.log4j.LogManager;
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import ru.justtry.database.Database;
-import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
@@ -46,8 +45,6 @@ public class AttributesController
     private Database database;
     @Autowired
     private AttributeValidator attributeValidator;
-    @Autowired
-    private AttributeMapper attributeMapper;
     @Autowired
     private SaveAttributePostprocessor savePostprocessor;
     @Autowired
@@ -89,8 +86,9 @@ public class AttributesController
         HttpHeaders headers = new HttpHeaders();
         try
         {
+            attribute.setId(attributeService.getId(attribute.getName()));
             attributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
-            Attribute before = attributeService.getById(attribute.getId());
+            Attribute before = attributeService.getByName(attribute.getName());
             attributeService.update(attribute);
             savePostprocessor.process(attribute);
             database.saveLog(ATTRIBUTES_COLLECTION, "UPDATE", attribute.getId(), before.toString(), attribute.toString());
@@ -108,17 +106,17 @@ public class AttributesController
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public Object get(
-            @RequestParam(value = "entityId", required = false) String entityId,
-            @RequestParam(value = ID, required = false) String id)
+            @RequestParam(value = "entityName", required = false) String entityName,
+            @RequestParam(value = NAME, required = false) String name)
     {
-        if (entityId != null)
+        if (entityName != null)
         {
-            Entity entity = entityService.getById(entityId);
+            Entity entity = entityService.getByName(entityName);
             return attributeService.get(entity.getAttributes());
         }
-        else if (id != null)
+        else if (name != null)
         {
-            return attributeService.getById(id);
+            return attributeService.getByName(name);
         }
         else
         {
@@ -136,13 +134,13 @@ public class AttributesController
     }
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{name}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(@PathVariable(value = ID) String id)
+    public void delete(@PathVariable(value = NAME) String name)
     {
-        Attribute before = attributeService.getById(id);
-        database.deleteDocument(ATTRIBUTES_COLLECTION, id);
+        Attribute before = attributeService.getByName(name);
+        database.deleteDocument(ATTRIBUTES_COLLECTION, before.getId());
         deletePostprocessor.process(before);
-        database.saveLog(ATTRIBUTES_COLLECTION, "DELETE", id, before.toString(), null);
+        database.saveLog(ATTRIBUTES_COLLECTION, "DELETE", name, before.toString(), null);
     }
 }
