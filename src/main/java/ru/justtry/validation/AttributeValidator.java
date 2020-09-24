@@ -23,6 +23,7 @@ import ru.justtry.metainfo.Attribute.ImageSize;
 import ru.justtry.metainfo.Attribute.Method;
 import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.AttributeService;
+import ru.justtry.metainfo.EntityService;
 import ru.justtry.shared.ErrorMessages;
 import ru.justtry.shared.Identifiable;
 
@@ -40,6 +41,8 @@ public class AttributeValidator implements Validator
     @Autowired
     @Lazy
     private AttributeService attributeService;
+    @Autowired
+    private EntityService entityService;
 
     @Override
     public void validate(Object object, String collectionName)
@@ -232,7 +235,7 @@ public class AttributeValidator implements Validator
         {
             if (Strings.isNullOrEmpty(attribute.getEntity()))
                 throw new IllegalArgumentException(ErrorMessages.getIsNotSet("entity"));
-            if (attributeService.getByName(attribute.getEntity()) == null)
+            if (entityService.getByName(attribute.getEntity()) == null)
                 throw new IllegalArgumentException("Entity for nested notes is not exists");
         }
     }

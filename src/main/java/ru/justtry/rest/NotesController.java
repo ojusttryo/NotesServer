@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.websocket.server.PathParam;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,7 +180,7 @@ public class NotesController extends ObjectsController
             if (!note.getAttributes().containsKey(attributeName))
             {
                 Entity e = entityService.getByName(entity);
-                if (e == null || !e.hasAttribute(attribute.getId()))
+                if (e == null || !e.hasAttribute(attribute.getName()))
                     throw new IllegalArgumentException("This entity has no such attribute");
             }
 
@@ -284,6 +286,32 @@ public class NotesController extends ObjectsController
             Entity e = entityService.getByName(entity);
             Identifiable[] objects = noteService.searchByHidden(getCollectionName(entity), false,
                     noteService.createSortInfo(e));
+            return new ResponseEntity<>(objects, headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            logger.error(e);
+            return utils.getResponseForError(headers, e);
+        }
+    }
+
+
+    @GetMapping(path = "/nested/{entity}/{attribute}/{parentNoteId}", produces = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Object getNested(
+            @PathVariable(value = ENTITY) String entity,
+            @PathVariable(value = "attribute") String attribute,
+            @PathVariable(value = "parentNoteId") String parentNoteId,
+            @PathParam(value = "side") String side)
+    {
+        HttpHeaders headers = new HttpHeaders();
+        try
+        {
+            String nestedValue = (side == null) ? String.format("%s/%s", attribute, parentNoteId)
+                    : String.format("%s/%s/%s", attribute, side, parentNoteId);
+
+            Identifiable[] objects = noteService.getNested(entity, nestedValue);
             return new ResponseEntity<>(objects, headers, HttpStatus.OK);
         }
         catch (Exception e)

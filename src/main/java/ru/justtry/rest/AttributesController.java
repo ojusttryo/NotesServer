@@ -125,6 +125,16 @@ public class AttributesController
     }
 
 
+    @GetMapping(path = "/compared/{entityName}", produces = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Object get(@PathVariable(value = "entityName") String entityName)
+    {
+        Entity entity = entityService.getByName(entityName);
+        return attributeService.get(entity.getComparedAttributes());
+    }
+
+
     @GetMapping(produces = "application/json;charset=UTF-8")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody

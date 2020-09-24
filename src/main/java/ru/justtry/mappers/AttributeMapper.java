@@ -45,6 +45,7 @@ public class AttributeMapper extends Mapper
         attribute.setRegex(getStringOrNull(document, REGEX));
         attribute.setEditableInTable((Boolean)document.get(EDITABLE_IN_TABLE));
         attribute.setDateFormat(getStringOrNull(document, DATE_FORMAT));
+        attribute.setEntity(getStringOrNull(document, ENTITY));
 
         return attribute;
     }
@@ -77,7 +78,8 @@ public class AttributeMapper extends Mapper
                 .append(DELIMITER, attribute.getDelimiter())
                 .append(EDITABLE_IN_TABLE, attribute.getEditableInTable())
                 .append(DATE_FORMAT, attribute.getDateFormat())
-                .append(SELECT_OPTIONS, attribute.getSelectOptions());
+                .append(SELECT_OPTIONS, attribute.getSelectOptions())
+                .append(ENTITY, attribute.getEntity());
 
         if (!Strings.isNullOrEmpty(attribute.getId()))
             document.append(MONGO_ID, new ObjectId(attribute.getId()));

@@ -11,6 +11,7 @@ public class Note extends Identifiable
 {
     private String folderId;
     private boolean hidden = false;
+    private String nested = null;
     private Map<String, Object> attributes = new HashMap<>();
 
     @Override
@@ -18,6 +19,7 @@ public class Note extends Identifiable
     {
         StringBuffer buffer = new StringBuffer();
         buffer.append("hidden=" + hidden + " ");
+        buffer.append("nested=" + nested != null ? nested + " " : "null ");
         for (String name : attributes.keySet())
         {
             Object value = (attributes.get(name) == null) ? "" : attributes.get(name);

@@ -3,6 +3,7 @@ package ru.justtry.notes;
 import static com.mongodb.client.model.Filters.*;
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.NoteConstants.HIDDEN;
+import static ru.justtry.shared.NoteConstants.NESTED;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +32,8 @@ public class NoteService
 {
     private static final Bson NOT_HIDDEN_FILTER = eq(HIDDEN, false);
     private static final Bson HIDDEN_FILTER = eq(HIDDEN, true);
+    private static final Bson NOT_NESTED_FILTER = exists(NESTED, false);
+    private static final Bson REGULAR_FILTER = and(NOT_HIDDEN_FILTER, NOT_NESTED_FILTER);
 
     @Autowired
     private NoteMapper noteMapper;
@@ -59,8 +62,20 @@ public class NoteService
         Entity e = entityService.getByName(entity);
         if (e == null)
             throw new IllegalArgumentException("Wrong entity name: " + entity);
-        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), NOT_HIDDEN_FILTER,
+        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), REGULAR_FILTER,
                 createSortInfo(e));
+        Identifiable[] objects = noteMapper.getObjects(documents);
+        return toNoteArray(objects);
+    }
+
+
+    public Note[] getNested(String entity, String nestedValue)
+    {
+        Entity e = entityService.getByName(entity);
+        if (e == null)
+            throw new IllegalArgumentException("Wrong entity name: " + entity);
+        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity),
+                eq(NESTED, nestedValue), createSortInfo(e));
         Identifiable[] objects = noteMapper.getObjects(documents);
         return toNoteArray(objects);
     }
@@ -164,12 +179,12 @@ public class NoteService
         if (attr.getDefaultValue() != null && pattern.matcher(attr.getDefaultValue()).find())
         {
             pattern.matcher(substring).reset();
-            Bson filter = and(or(exists(field, false), search), NOT_HIDDEN_FILTER);
+            Bson filter = and(or(exists(field, false), search), REGULAR_FILTER);
             docs = database.getDocuments(collection, filter, sortInfo);
         }
         else
         {
-            docs = database.getDocuments(collection, and(search, NOT_HIDDEN_FILTER), sortInfo);
+            docs = database.getDocuments(collection, and(search, REGULAR_FILTER), sortInfo);
         }
 
         return docs == null ? null : noteMapper.getObjects(docs);
@@ -187,11 +202,11 @@ public class NoteService
         if (defaultNumber != null && utils.equals(doubleValue, defaultNumber, step != null ? step : 0.00001))
         {
             docs = database.getDocuments(collection,
-                    and(or(eq(field, doubleValue), exists(field, false)), NOT_HIDDEN_FILTER), sortInfo);
+                    and(or(eq(field, doubleValue), exists(field, false)), REGULAR_FILTER), sortInfo);
         }
         else
         {
-            docs = database.getDocuments(collection, and(eq(field, doubleValue), NOT_HIDDEN_FILTER), sortInfo);
+            docs = database.getDocuments(collection, and(eq(field, doubleValue), REGULAR_FILTER), sortInfo);
         }
 
         return docs == null ? null : noteMapper.getObjects(docs);
@@ -205,11 +220,11 @@ public class NoteService
         if (attr.getDefaultValue() != null && attr.getDefaultValue().contentEquals(string))
         {
             documents = database.getDocuments(collection,
-                    and(or(eq(field, string), exists(field, false)), NOT_HIDDEN_FILTER), sortInfo);
+                    and(or(eq(field, string), exists(field, false)), REGULAR_FILTER), sortInfo);
         }
         else
         {
-            documents = database.getDocuments(collection, and(eq(field, string), NOT_HIDDEN_FILTER), sortInfo);
+            documents = database.getDocuments(collection, and(eq(field, string), REGULAR_FILTER), sortInfo);
         }
 
         return documents == null ? null : noteMapper.getObjects(documents);
@@ -230,11 +245,11 @@ public class NoteService
         if ((!booleanValue && (!isSet || isFalse)) || (booleanValue && isTrue))
         {
             documents = database.getDocuments(collection,
-                    and(or(eq(field, booleanValue), exists(field, false)), NOT_HIDDEN_FILTER), sortInfo);
+                    and(or(eq(field, booleanValue), exists(field, false)), REGULAR_FILTER), sortInfo);
         }
         else
         {
-            documents = database.getDocuments(collection, and(eq(field, booleanValue), NOT_HIDDEN_FILTER), sortInfo);
+            documents = database.getDocuments(collection, and(eq(field, booleanValue), REGULAR_FILTER), sortInfo);
         }
 
         return documents == null ? null : noteMapper.getObjects(documents);
@@ -244,14 +259,16 @@ public class NoteService
     public Identifiable[] searchByIngoing(String value, String collection, Attribute attr, SortInfo sortInfo)
     {
         List<Document> documents = database.getDocuments(collection,
-                and(in(getDbFieldName(attr.getName()), value), NOT_HIDDEN_FILTER), sortInfo);
+                and(in(getDbFieldName(attr.getName()), value), REGULAR_FILTER), sortInfo);
         return documents == null ? null : noteMapper.getObjects(documents);
     }
 
 
     public Identifiable[] searchByHidden(String collection, Boolean hidden, SortInfo sortInfo)
     {
-        List<Document> documents = database.getDocuments(collection, hidden ? HIDDEN_FILTER : NOT_HIDDEN_FILTER, sortInfo);
+        List<Document> documents = database.getDocuments(collection,
+                hidden ? and(HIDDEN_FILTER, NOT_NESTED_FILTER) : and(NOT_HIDDEN_FILTER, NOT_NESTED_FILTER),
+                sortInfo);
         return documents == null ? null : noteMapper.getObjects(documents);
     }
 

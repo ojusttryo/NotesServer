@@ -3,6 +3,7 @@ package ru.justtry.mappers;
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.NoteConstants.FOLDER_ID;
 import static ru.justtry.shared.NoteConstants.HIDDEN;
+import static ru.justtry.shared.NoteConstants.NESTED;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ public class NoteMapper extends Mapper
         note.setId(document.get(MONGO_ID).toString());
         note.setFolderId(getStringOrNull(document, FOLDER_ID));
         note.setHidden((boolean)document.get(HIDDEN));
+        note.setNested(getStringOrNull(document, NESTED));
         List<Document> attributes = (List<Document>)document.get(NoteConstants.ATTRIBUTES);
         for (Document attribute : attributes)
         {
@@ -62,6 +64,8 @@ public class NoteMapper extends Mapper
         Document document = new Document();
         document.append(FOLDER_ID, note.getFolderId());
         document.append(HIDDEN, note.isHidden());
+        if (!Strings.isNullOrEmpty(note.getNested()))
+            document.append(NESTED, note.getNested());
         if (!Strings.isNullOrEmpty(note.getId()))
             document.append(MONGO_ID, new ObjectId(note.getId()));
 

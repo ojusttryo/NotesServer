@@ -26,6 +26,7 @@ public interface AttributeConstants
     String DELIMITER = "delimiter";
     String EDITABLE_IN_TABLE = "editableInTable";
     String DATE_FORMAT = "dateFormat";
+    String ENTITY = "entity";
 
     interface Type
     {
