@@ -5,7 +5,9 @@ import static ru.justtry.shared.ErrorMessages.NAME_IS_DUPLICATED;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -218,8 +220,20 @@ public class AttributeValidator implements Validator
             }
         }
 
-        if (Type.isSelectType(type) && (attribute.getSelectOptions() == null || attribute.getSelectOptions().size() < 1))
-            throw new IllegalStateException("No select options are set");
+        if (Type.isSelectType(type))
+        {
+            if ((attribute.getSelectOptions() == null || attribute.getSelectOptions().size() < 1))
+                throw new IllegalStateException("No select options are set");
+
+            Set<String> values = new HashSet<>();
+            for (String option : attribute.getSelectOptions())
+            {
+                String value = option.split("=")[0];
+                if (values.contains(value))
+                    throw new IllegalArgumentException("Duplicated value in options");
+                values.add(value);
+            }
+        }
 
         if ((type == Type.INC || type == Type.SELECT) && attribute.getEditableInTable() == null)
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("editableInTable"));

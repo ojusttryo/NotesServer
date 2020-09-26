@@ -23,7 +23,7 @@ public class Note extends Identifiable
         for (String name : attributes.keySet())
         {
             Object value = (attributes.get(name) == null) ? "" : attributes.get(name);
-            buffer.append(value + ";");
+            buffer.append(String.format("%s: %s", name, value.toString() + ";"));
         }
         if (buffer.length() > 0)
             buffer.deleteCharAt(buffer.length() - 1);

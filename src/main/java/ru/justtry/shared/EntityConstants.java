@@ -4,6 +4,7 @@ public interface EntityConstants
 {
     String ATTRIBUTES = "attributes";
     String COMPARED_ATTRIBUTES = "comparedAttributes";
+    String VISIBLE_ATTRIBUTES = "visibleAttributes";
     String ENTITIES_COLLECTION = "entities";
     String NAME = "name";
     String TITLE = "title";

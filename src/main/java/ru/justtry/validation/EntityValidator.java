@@ -3,6 +3,7 @@ package ru.justtry.validation;
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.ErrorMessages.NOT_ALL_ATTRIBUTES_FOUND;
 import static ru.justtry.shared.ErrorMessages.NOT_ALL_COMPARED_ATTRIBUTES_FOUND;
+import static ru.justtry.shared.ErrorMessages.NOT_ALL_VISIBLE_ATTRIBUTES_FOUND;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -66,6 +67,20 @@ public class EntityValidator implements Validator
         catch (Exception e)
         {
             throw new IllegalArgumentException(NOT_ALL_COMPARED_ATTRIBUTES_FOUND);
+        }
+
+        if (entity.getVisibleAttributes().size() == 0)
+            throw new IllegalArgumentException(ErrorMessages.getIsNotSet("visibleAttributes"));
+        try
+        {
+            int actualCount = database.getDocuments(ATTRIBUTES_COLLECTION,
+                    entity.getVisibleAttributes(), EntityConstants.NAME).size();
+            if (actualCount != entity.getVisibleAttributes().size())
+                throw new IllegalArgumentException(NOT_ALL_VISIBLE_ATTRIBUTES_FOUND);
+        }
+        catch (Exception e)
+        {
+            throw new IllegalArgumentException(NOT_ALL_VISIBLE_ATTRIBUTES_FOUND);
         }
 
         if (database.isEntityExist(name))

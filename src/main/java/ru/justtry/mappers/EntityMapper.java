@@ -30,6 +30,7 @@ public class EntityMapper extends Mapper
         entity.setSortDirection(getStringOrNull(document, SORT_DIRECTION));
         entity.setAttributes((List<String>)document.get(ATTRIBUTES));
         entity.setComparedAttributes((List<String>)document.get(COMPARED_ATTRIBUTES));
+        entity.setVisibleAttributes((List<String>)document.get(VISIBLE_ATTRIBUTES));
 
         return entity;
     }
@@ -48,7 +49,8 @@ public class EntityMapper extends Mapper
                 .append(SORT_ATTRIBUTE, entity.getSortAttribute())
                 .append(SORT_DIRECTION, entity.getSortDirection())
                 .append(ATTRIBUTES, entity.getAttributes())
-                .append(COMPARED_ATTRIBUTES, entity.getComparedAttributes());
+                .append(COMPARED_ATTRIBUTES, entity.getComparedAttributes())
+                .append(VISIBLE_ATTRIBUTES, entity.getVisibleAttributes());
 
         if (!Strings.isNullOrEmpty(entity.getId()))
             document.append(MONGO_ID, new ObjectId(entity.getId()));

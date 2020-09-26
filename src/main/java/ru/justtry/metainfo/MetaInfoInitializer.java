@@ -72,14 +72,12 @@ public class MetaInfoInitializer
         attribute.setName("name");
         attribute.setTitle("Name");
         attribute.setRequired(true);
-        attribute.setVisible(true);
         return attribute;
     }
 
     private Attribute getAttributeState()
     {
         Attribute attribute = new Attribute();
-        attribute.setVisible(true);
         attribute.setType(Type.SELECT);
         attribute.setRequired(true);
         attribute.setName("state");
@@ -98,7 +96,6 @@ public class MetaInfoInitializer
     private Attribute getAttributeComment()
     {
         Attribute attribute = new Attribute();
-        attribute.setVisible(false);
         attribute.setName("comment");
         attribute.setTitle("Comment");
         attribute.setRequired(false);

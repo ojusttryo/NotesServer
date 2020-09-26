@@ -30,7 +30,6 @@ public class AttributeMapper extends Mapper
         attribute.setLinesCount((Integer)document.get(LINES_COUNT));
         attribute.setType(document.get(TYPE).toString());
         attribute.setSelectOptions((List<String>)document.get(SELECT_OPTIONS));
-        attribute.setVisible((Boolean)document.get(VISIBLE));
         attribute.setMethod(getStringOrNull(document, METHOD));
         attribute.setMaxWidth(getStringOrNull(document, MAX_WIDTH));
         attribute.setMinWidth(getStringOrNull(document, MIN_WIDTH));
@@ -60,7 +59,6 @@ public class AttributeMapper extends Mapper
                 .append(NAME, attribute.getName())
                 .append(TITLE, attribute.getTitle())
                 .append(METHOD, attribute.getMethod())
-                .append(VISIBLE, attribute.getVisible())
                 .append(TYPE, attribute.getType())
                 .append(MIN_WIDTH, attribute.getMinWidth())
                 .append(MAX_WIDTH, attribute.getMaxWidth())

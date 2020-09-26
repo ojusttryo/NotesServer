@@ -107,12 +107,15 @@ public class AttributesController
     @ResponseBody
     public Object get(
             @RequestParam(value = "entityName", required = false) String entityName,
-            @RequestParam(value = NAME, required = false) String name)
+            @RequestParam(value = NAME, required = false) String name,
+            @RequestParam(value = "visible", required = false) Boolean visible)
     {
         if (entityName != null)
         {
+            boolean isVisible = (visible != null && visible);
             Entity entity = entityService.getByName(entityName);
-            return attributeService.get(entity.getAttributes());
+            return isVisible ? attributeService.get(entity.getVisibleAttributes())
+                    : attributeService.get(entity.getAttributes());
         }
         else if (name != null)
         {

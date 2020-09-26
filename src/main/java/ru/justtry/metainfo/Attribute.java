@@ -28,9 +28,13 @@ public class Attribute extends Identifiable
     public enum Method
     {
         NONE("none"),                   // does nothing, just empty field
-        FOLDER_NAME("folder name"),     // the name of the folder containing notes
-        AVG("avg"),                     // the average attributes value from the notes inside folder
-        COUNT("count");                 // count of objects in folder
+        AVG("avg"),
+        SUM("sum"),
+        MIN("min"),
+        MAX("max"),
+        RANGE("range"),                 // range of values like "5 - 200"
+        EMPTY("empty"),                 // count of empty elements
+        COUNT("count");
 
         public final String title;
 
@@ -39,8 +43,12 @@ public class Attribute extends Identifiable
             switch (method)
             {
             case "none": return NONE;
-            case "folder name": return FOLDER_NAME;
             case "avg": return AVG;
+            case "sum": return SUM;
+            case "min": return MIN;
+            case "max": return MAX;
+            case "range": return RANGE;
+            case "empty": return EMPTY;
             case "count": return COUNT;
             default: return null;
             }
@@ -232,12 +240,6 @@ public class Attribute extends Identifiable
     private String method = Method.NONE.title;
 
     /**
-     * The visibility of column with this attribute in table
-     */
-    @NotNull(message = "Visible cannot be null")
-    private Boolean visible = DefaultValue.VISIBLE;
-
-    /**
      * Value type.
      */
     @NotNull(message = "Type cannot be null")
@@ -358,10 +360,10 @@ public class Attribute extends Identifiable
         String options = selectOptions == null ? "null" :
                 Stream.of(selectOptions).map(Object::toString).collect(Collectors.joining(", "));
 
-        return String.format("%s (title=%s; method=%s; visible=%s; required=%s; type=%s; minWidth=%s; maxWidth=%s, "
+        return String.format("%s (title=%s; method=%s; required=%s; type=%s; minWidth=%s; maxWidth=%s, "
                         + "min=%s; max=%s; defaultValue=%s; linesCount=%s; alignment=%s; regex=%s; selectOptions=%s; "
                         + "editableInTable=%s",
-                name, title, method, visible, required, type,
+                name, title, method, required, type,
                 ofNullable(minWidth).orElse("null"), ofNullable(maxWidth).orElse("null"),
                 min == null ? "null" : min.toString(), max == null ? "null" : max.toString(),
                 ofNullable(defaultValue).orElse("null"), linesCount == null ? "null" : linesCount.toString(),
