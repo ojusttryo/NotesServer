@@ -234,10 +234,36 @@ public class NotesController extends ObjectsController
             @PathVariable(value = ENTITY) String entity,
             @PathVariable(value = ID) String id)
     {
-        Note before = noteService.get(getCollectionName(entity), id);
-        database.deleteDocument(getCollectionName(entity), id);
-        deletePostprocessor.process(before, entity);
-        database.saveLog(getCollectionName(entity), "DELETE", id, before.toString(), null);
+        try
+        {
+            Note before = noteService.get(getCollectionName(entity), id);
+            database.deleteDocument(getCollectionName(entity), id);
+            deletePostprocessor.process(before, entity);
+            database.saveLog(getCollectionName(entity), "DELETE", id, before.toString(), null);
+        }
+        catch (Exception e)
+        {
+            logger.error(e);
+        }
+    }
+
+
+    @GetMapping(value = "/{entity}/{id}/key", produces = "application/text;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    public Object getKey(
+            @PathVariable(value = ENTITY) String entity,
+            @PathVariable(value = ID) String id)
+    {
+        HttpHeaders headers = new HttpHeaders();
+        try
+        {
+            return new ResponseEntity<>(noteService.getKey(entity, id), headers, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            logger.error(e);
+            return utils.getResponseForError(headers, e);
+        }
     }
 
 

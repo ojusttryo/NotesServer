@@ -58,6 +58,21 @@ public class NoteService
     }
 
 
+    public Object getKey(String entity, String id)
+    {
+        Entity e = entityService.getByName(entity);
+        Document doc = database.getDocument(notesController.getCollectionName(entity), id);
+        List<Document> attributes = (List<Document>)doc.get(NoteConstants.ATTRIBUTES);
+        for (Document attribute : attributes)
+        {
+            if (attribute.containsKey(e.getKeyAttribute()))
+                return attribute.get(e.getKeyAttribute());
+        }
+
+        return null;
+    }
+
+
     public Note[] get(String entity)
     {
         Entity e = entityService.getByName(entity);
