@@ -171,13 +171,25 @@ public class NoteService
      * Saves attributes which were used before. They probably will be useful in future
      * when attributes will have been changed again.
      */
-    public void copyUnusedAttributes(String entity, Note newNote, Note oldNote)
+    public void copyUnusedAttributes(Map<String, Attribute> attributes, Note newNote, Note oldNote)
     {
-        Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entity);
-
         for (String key : oldNote.getAttributes().keySet())
         {
             if (!attributes.containsKey(key) && !newNote.getAttributes().containsKey(key))
+                newNote.getAttributes().put(key, oldNote.getAttributes().get(key));
+        }
+    }
+
+
+    public void copyTimeAttributes(Map<String, Attribute> attributes, Note newNote, Note oldNote)
+    {
+        for (String key : oldNote.getAttributes().keySet())
+        {
+            Attribute attribute = attributes.get(key);
+            if (!Attribute.Type.isTimestampType(attribute.getType()))
+                continue;
+
+            if (oldNote.getAttributes().containsKey(key) && !newNote.getAttributes().containsKey(key))
                 newNote.getAttributes().put(key, oldNote.getAttributes().get(key));
         }
     }

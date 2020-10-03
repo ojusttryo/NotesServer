@@ -105,7 +105,9 @@ public class NotesController extends ObjectsController
 
             Note before = noteService.get(getCollectionName(entity), note.getId());
 
-            noteService.copyUnusedAttributes(entity, note, before);
+            Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entity);
+            noteService.copyUnusedAttributes(attributes, note, before);
+            noteService.copyTimeAttributes(attributes, note, before);
             noteService.update(entity, note);
 
             savePostprocessor.process(note, before, entity);
