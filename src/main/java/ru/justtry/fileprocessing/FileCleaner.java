@@ -29,7 +29,7 @@ public class FileCleaner
                 try
                 {
                     logger.info("Removing old unused files...");
-                    long time = Instant.now().minus(1, ChronoUnit.HOURS).getEpochSecond();
+                    long time = Instant.now().minus(5, ChronoUnit.MINUTES).getEpochSecond();
                     int count = database.removeFilesOlderThan(time);
                     logger.info("Removed " + count + " files");
                 }
@@ -40,7 +40,7 @@ public class FileCleaner
 
                 try
                 {
-                    Thread.sleep(60 * 60 * 1000);
+                    Thread.sleep(5 * 60 * 1000);
                 }
                 catch (Exception e)
                 {

@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.justtry.database.Database;
 import ru.justtry.database.SortInfo;
-import ru.justtry.mappers.NoteMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.AttributeService;
@@ -52,8 +51,6 @@ public class NotesController extends ObjectsController
 
     @Autowired
     private NoteValidator noteValidator;
-    @Autowired
-    private NoteMapper noteMapper;
     @Autowired
     private NoteService noteService;
     @Autowired
@@ -108,7 +105,7 @@ public class NotesController extends ObjectsController
 
             Note before = noteService.get(getCollectionName(entity), note.getId());
 
-            noteService.copyUnusedAttributes(note, before);
+            noteService.copyUnusedAttributes(entity, note, before);
             noteService.update(entity, note);
 
             savePostprocessor.process(note, before, entity);
@@ -385,6 +382,28 @@ public class NotesController extends ObjectsController
             logger.error(e);
             return utils.getResponseForError(headers, e);
         }
+    }
+
+    /**
+     * Temporary solution to migrate from old SQLite database
+     */
+    @GetMapping(path = "/migrate", produces = "application/json;charset=UTF-8")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void migrate()
+    {
+        //utils.migrateAffairs();
+        //utils.migrateAnimeSerials();
+        //utils.migrateBookmarks();
+        //utils.migrateDesires();
+        //utils.migrateMovies();
+        //utils.migrateGames();
+        //utils.migrateLiterature();
+        //utils.migrateMeal();
+        //utils.migratePeople();
+        //utils.migratePrograms();
+        //utils.migrateRegularAffairs();
+        //utils.migrateSerials();
     }
 
 

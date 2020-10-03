@@ -36,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
 import com.mongodb.ReadConcern;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
@@ -79,13 +80,14 @@ public class Database
 
     public void init(String host, Integer port, String name, String user, String password)
     {
+        MongoCredential credential = MongoCredential.createCredential(user, name, password.toCharArray());
         ServerAddress address = new ServerAddress(host, port);
         MongoClientOptions options = MongoClientOptions
                 .builder()
                 .writeConcern(WriteConcern.ACKNOWLEDGED)
                 .readConcern(ReadConcern.LOCAL)
                 .build();
-        MongoClient mongo = new MongoClient(address, options);
+        MongoClient mongo = new MongoClient(address, credential, options);
         database = mongo.getDatabase(name);
 
         MongoCollection<Document> filesCollection = database.getCollection(FILES_COLLECTION + ".files");
@@ -405,6 +407,7 @@ public class Database
 
                     // Removing image itself
                     bucket.delete(file.getObjectId());
+                    logger.info("Removing file " + file.getMetadata().get("title"));
                     count++;
                 }
             }

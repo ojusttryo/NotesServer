@@ -7,6 +7,7 @@ import static ru.justtry.shared.NoteConstants.NESTED;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.bson.Document;
@@ -155,11 +156,13 @@ public class NoteService
      * Saves attributes which were used before. They probably will be useful in future
      * when attributes will have been changed again.
      */
-    public void copyUnusedAttributes(Note newNote, Note oldNote)
+    public void copyUnusedAttributes(String entity, Note newNote, Note oldNote)
     {
+        Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entity);
+
         for (String key : oldNote.getAttributes().keySet())
         {
-            if (!newNote.getAttributes().containsKey(key))
+            if (!attributes.containsKey(key) && !newNote.getAttributes().containsKey(key))
                 newNote.getAttributes().put(key, oldNote.getAttributes().get(key));
         }
     }

@@ -26,11 +26,6 @@ import ru.justtry.shared.Identifiable;
 @DependsOn({"database"})
 public class MetaInfoInitializer
 {
-//    @Inject
-//    private static AttributesController attributesController;
-//    @Inject
-//    @Named("database")
-//    private static Database database;
     @Autowired
     private ApplicationContext context;
     @Autowired
@@ -43,6 +38,9 @@ public class MetaInfoInitializer
         AttributesController attributesController = (AttributesController)context.getBean("attributesController");
 
         Identifiable[] attrs = attributeMapper.getObjects(database.getDocuments(ATTRIBUTES_COLLECTION, NAME));
+
+        if (true)
+            return;
 
         if (!containsAttribute(attrs, PredefinedAttributes.NAME))
             attributesController.save(getAttributeName());

@@ -1,7 +1,7 @@
 package ru.justtry.metainfo;
 
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
-import static ru.justtry.shared.EntityConstants.NAME;
+import static ru.justtry.shared.EntityConstants.TITLE;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +25,7 @@ public class EntityService
 
     public Entity[] getAll()
     {
-        List<Document> docs = database.getDocuments(ENTITIES_COLLECTION, NAME);
+        List<Document> docs = database.getDocuments(ENTITIES_COLLECTION, TITLE);
         Identifiable[] entities = entityMapper.getObjects(docs);
         return toEntitiesArray(entities);
     }

@@ -129,6 +129,11 @@ public class Attribute extends Identifiable
             return (type == FILE || type == IMAGE);
         }
 
+        public static boolean isMultiFile(Type type)
+        {
+            return (type == GALLERY || type == FILES);
+        }
+
         public static boolean isNotesList(Type type)
         {
             return (type == NESTED_NOTES || type == RELATED_NOTES || type == COMPARED_NOTES);

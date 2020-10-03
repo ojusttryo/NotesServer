@@ -12,6 +12,7 @@ public class Note extends Identifiable
     private String folderId;
     private boolean hidden = false;
     private String nested = null;
+    private boolean favourite = false;
     private Map<String, Object> attributes = new HashMap<>();
 
     @Override
@@ -19,6 +20,7 @@ public class Note extends Identifiable
     {
         StringBuffer buffer = new StringBuffer();
         buffer.append("hidden=" + hidden + " ");
+        buffer.append("favourite=" + favourite + " ");
         buffer.append("nested=" + nested != null ? nested + " " : "null ");
         for (String name : attributes.keySet())
         {

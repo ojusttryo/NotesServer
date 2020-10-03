@@ -64,7 +64,7 @@ public class SaveNotePostprocessor
                     database.linkFilesAndNote(note.getId(), attributeName, Arrays.asList(newFileId));
             }
 
-            if (type == Type.GALLERY)
+            if (Type.isMultiFile(type))
             {
                 ArrayList<String> noteImages = note.getAttributes().get(attributeName) == null ? new ArrayList<>()
                         : (ArrayList<String>)note.getAttributes().get(attributeName);

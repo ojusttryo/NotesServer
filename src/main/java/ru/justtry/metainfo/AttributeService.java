@@ -2,6 +2,7 @@ package ru.justtry.metainfo;
 
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.AttributeConstants.NAME;
+import static ru.justtry.shared.AttributeConstants.TITLE;
 
 import java.util.Arrays;
 import java.util.List;
@@ -70,7 +71,7 @@ public class AttributeService
 
     public Attribute[] getAll()
     {
-        List<Document> documents = database.getDocuments(ATTRIBUTES_COLLECTION, NAME);
+        List<Document> documents = database.getDocuments(ATTRIBUTES_COLLECTION, TITLE);
         Identifiable[] attributes = attributeMapper.getObjects(documents);
         return toAttributesArray(attributes);
     }
