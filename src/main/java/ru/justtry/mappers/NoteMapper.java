@@ -6,22 +6,32 @@ import static ru.justtry.shared.NoteConstants.FOLDER_ID;
 import static ru.justtry.shared.NoteConstants.HIDDEN;
 import static ru.justtry.shared.NoteConstants.NESTED;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 import ru.justtry.notes.Note;
 import ru.justtry.shared.Identifiable;
 import ru.justtry.shared.NoteConstants;
 
+/**
+ * Mapper to use note document, which is saved like this:
+ *
+ * {
+ *     "id": "5d8ad8ad43e02d58f3a59945",
+ *     "folderId": null,
+ *     hidden: false,
+ *     "attributes":
+ *     {
+ *         "name": "Avengers 5",
+ *         "state": "Finished",
+ *         "year": 2025
+ *     }
+ * }
+ */
 @Component
 public class NoteMapper extends Mapper
 {
@@ -34,11 +44,10 @@ public class NoteMapper extends Mapper
         note.setHidden((boolean)document.get(HIDDEN));
         note.setFavorite((boolean)document.get(FAVORITE));
         note.setNested(getStringOrNull(document, NESTED));
-        List<Document> attributes = (List<Document>)document.get(NoteConstants.ATTRIBUTES);
-        for (Document attribute : attributes)
+        Document attributes = (Document)document.get(NoteConstants.ATTRIBUTES);
+        for (String key : attributes.keySet())
         {
-            Map.Entry<String, Object> entry = attribute.entrySet().iterator().next();
-            note.getAttributes().put(entry.getKey(), entry.getValue());
+            note.getAttributes().put(key, attributes.get(key));
         }
 
         return note;
@@ -48,19 +57,6 @@ public class NoteMapper extends Mapper
     @Override
     public Document getDocument(Identifiable object)
     {
-        /**
-         * The document saved like this:
-         * {
-         *     "id": "5d8ad8ad43e02d58f3a59945",
-         *     "folderId": null,
-         *     "attributes": [
-         *       { "name": "Avengers 5" },
-         *       { "state": "Finished" },
-         *       { "year": 2025 }
-         *     ]
-         * }
-         */
-
         Note note = (Note)object;
 
         Document document = new Document();
@@ -72,13 +68,9 @@ public class NoteMapper extends Mapper
         if (!Strings.isNullOrEmpty(note.getId()))
             document.append(MONGO_ID, new ObjectId(note.getId()));
 
-        List<DBObject> attributes = new ArrayList<>();
+        BasicDBObject attributes = new BasicDBObject();
         for (String attrName : note.getAttributes().keySet())
-        {
-            BasicDBObject attr = new BasicDBObject();
-            attr.put(attrName, note.getAttributes().get(attrName));
-            attributes.add(attr);
-        }
+            attributes.put(attrName, note.getAttributes().get(attrName));
         document.append(NoteConstants.ATTRIBUTES, attributes);
 
         return document;

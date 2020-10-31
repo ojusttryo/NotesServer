@@ -7,10 +7,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import com.github.ojusttryo.migmong.MigMong;
+
 @Configuration
 @PropertySource("classpath:application.properties")
 public class DatabaseConfiguration
 {
+    private static final String MONGODB_URI_FORMAT = "mongodb://%s:%s@%s:%s/%s";
+
     @Autowired
     private ApplicationContext context;
 
@@ -32,12 +36,21 @@ public class DatabaseConfiguration
 
 
     @Bean(name = "database")
-//    @Scope("singleton")
-//    @Named("database")
     public Database getDatabase()
     {
         Database db = new Database();
         db.init(host, port, name, user, password);
         return db;
+    }
+
+
+    @Bean
+    public MigMong migMong()
+    {
+        MigMong runner = new MigMong(host, port, name, user, password);
+        runner.setChangeLogsScanPackage("ru.justtry.database.migrations"); // the package to be scanned for changesets
+        runner.setApplicationContext(context);
+        runner.setEnabled(true);
+        return runner;
     }
 }

@@ -3,7 +3,6 @@ package ru.justtry.database;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -68,13 +67,13 @@ public class Sort
             HashMap<Document, String> stringMap = new HashMap<>();
             for (Document d : documents)
             {
-                Document noteAttr = getNoteAttr(d, attrName);
+                Object noteAttr = getNoteAttr(d, attrName);
                 String defaultValue = sortInfo.getAttribute().getDefaultValue();
 
                 if (noteAttr == null)
                     stringMap.put(d, defaultValue);
                 else
-                    stringMap.put(d, noteAttr.get(attrName).toString());
+                    stringMap.put(d, noteAttr.toString());
             }
             documents.clear();
 
@@ -88,7 +87,7 @@ public class Sort
             HashMap<Document, Double> doubleMap = new HashMap<>();
             for (Document d : documents)
             {
-                Document noteAttr = getNoteAttr(d, attrName);
+                Object noteAttr = getNoteAttr(d, attrName);
                 Double defaultValue = null;
                 if (sortInfo.getAttribute().getDefaultValue() != null)
                     defaultValue = Double.parseDouble(sortInfo.getAttribute().getDefaultValue());
@@ -98,7 +97,7 @@ public class Sort
                 if (noteAttr == null)
                     doubleMap.put(d, defaultValue);
                 else
-                    doubleMap.put(d, Double.parseDouble(noteAttr.get(attrName).toString()));
+                    doubleMap.put(d, Double.parseDouble(noteAttr.toString()));
             }
             documents.clear();
 
@@ -111,14 +110,14 @@ public class Sort
             HashMap<Document, Boolean> booleanMap = new HashMap<>();
             for (Document d : documents)
             {
-                Document noteAttr = getNoteAttr(d, attrName);
+                Object noteAttr = getNoteAttr(d, attrName);
                 String defaultValueStr = sortInfo.getAttribute().getDefaultValue();
                 Boolean defaultValue = defaultValueStr == null ? null : Boolean.parseBoolean(defaultValueStr);
 
                 if (noteAttr == null)
                     booleanMap.put(d, defaultValue);
                 else
-                    booleanMap.put(d, (Boolean)noteAttr.get(attrName));
+                    booleanMap.put(d, (Boolean)noteAttr);
             }
             documents.clear();
 
@@ -133,14 +132,14 @@ public class Sort
                 HashMap<Document, Date> dateMap = new HashMap<>();
                 for (Document d : documents)
                 {
-                    Document noteAttr = getNoteAttr(d, attrName);
+                    Object noteAttr = getNoteAttr(d, attrName);
                     String defaultValueStr = sortInfo.getAttribute().getDefaultValue();
                     Date defaultValue = defaultValueStr == null ? null : DATE_FORMAT.parse(defaultValueStr);
 
                     if (noteAttr == null)
                         dateMap.put(d, defaultValue);
                     else
-                        dateMap.put(d, DATE_FORMAT.parse(noteAttr.get(attrName).toString()));
+                        dateMap.put(d, DATE_FORMAT.parse(noteAttr.toString()));
                 }
                 documents.clear();
 
@@ -160,14 +159,14 @@ public class Sort
                 HashMap<Document, LocalTime> dateMap = new HashMap<>();
                 for (Document d : documents)
                 {
-                    Document noteAttr = getNoteAttr(d, attrName);
+                    Object noteAttr = getNoteAttr(d, attrName);
                     String defaultValueStr = sortInfo.getAttribute().getDefaultValue();
                     LocalTime defaultValue = defaultValueStr == null ? null : LocalTime.parse(defaultValueStr, TIME_FORMAT);
 
                     if (noteAttr == null)
                         dateMap.put(d, defaultValue);
                     else
-                        dateMap.put(d, LocalTime.parse(noteAttr.get(attrName).toString(), TIME_FORMAT));
+                        dateMap.put(d, LocalTime.parse(noteAttr.toString(), TIME_FORMAT));
                 }
                 documents.clear();
 
@@ -187,10 +186,9 @@ public class Sort
     }
 
 
-    private Document getNoteAttr(Document document, String attributeName)
+    private Object getNoteAttr(Document document, String attributeName)
     {
-        ArrayList<Document> attributes = (ArrayList<Document>)document.get(NoteConstants.ATTRIBUTES);
-        Document noteAttr = attributes.stream().filter(x -> x.get(attributeName) != null).findAny().orElse(null);
-        return noteAttr;
+        Document attributes = (Document)document.get(NoteConstants.ATTRIBUTES);
+        return attributes.get(attributeName);
     }
 }

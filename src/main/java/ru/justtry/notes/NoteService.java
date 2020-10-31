@@ -62,14 +62,8 @@ public class NoteService
     {
         Entity e = entityService.getByName(entity);
         Document doc = database.getDocument(notesController.getCollectionName(entity), id);
-        List<Document> attributes = (List<Document>)doc.get(NoteConstants.ATTRIBUTES);
-        for (Document attribute : attributes)
-        {
-            if (attribute.containsKey(e.getKeyAttribute()))
-                return attribute.get(e.getKeyAttribute());
-        }
-
-        return null;
+        Document attributes = (Document)doc.get(NoteConstants.ATTRIBUTES);
+        return attributes.get(e.getKeyAttribute());
     }
 
 
@@ -186,7 +180,7 @@ public class NoteService
         for (String key : oldNote.getAttributes().keySet())
         {
             Attribute attribute = attributes.get(key);
-            if (!Attribute.Type.isTimestampType(attribute.getType()))
+            if (attribute == null || !Attribute.Type.isTimestampType(attribute.getType()))
                 continue;
 
             if (oldNote.getAttributes().containsKey(key) && !newNote.getAttributes().containsKey(key))

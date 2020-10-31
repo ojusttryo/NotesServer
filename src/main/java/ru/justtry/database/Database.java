@@ -64,8 +64,8 @@ public class Database
     private static final String NOTES_FILES_COLLECTION = "notes.files";
     private static final String IMAGES_COLLECTION = "notes.images";
 
-
-    private MongoDatabase database;
+    private String databaseName;
+    private MongoClient mongoClient;
     @Autowired
     private LogMapper logMapper;
     @Autowired
@@ -87,8 +87,9 @@ public class Database
                 .writeConcern(WriteConcern.ACKNOWLEDGED)
                 .readConcern(ReadConcern.LOCAL)
                 .build();
-        MongoClient mongo = new MongoClient(address, credential, options);
-        database = mongo.getDatabase(name);
+        databaseName = name;
+        mongoClient = new MongoClient(address, credential, options);
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> filesCollection = database.getCollection(FILES_COLLECTION + ".files");
         filesCollection.createIndex(new BasicDBObject("md5", 1), new IndexOptions().unique(true));
@@ -112,7 +113,7 @@ public class Database
 
     public String saveDocument(String collectionName, Document document)
     {
-        MongoCollection<Document> collection = database.getCollection(collectionName);
+        MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
         collection.insertOne(document);
         return ((ObjectId)document.get(MONGO_ID)).toString();
     }
@@ -120,17 +121,24 @@ public class Database
 
     public void updateDocument(String collectionName, Document document)
     {
-        MongoCollection<Document> collection = database.getCollection(collectionName);
+        MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
         UpdateResult result = collection.updateOne(
                 eq(MONGO_ID, document.get(MONGO_ID)), new Document("$set", document));
         if (result.getMatchedCount() != 1)
             throw new RuntimeException("There are no object with id " + document.get(MONGO_ID));
     }
 
+    public void unsetAttribute(String collectionName, Document document, String attrName)
+    {
+        MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
+        UpdateResult result = collection.updateOne(
+                eq(MONGO_ID, document.get(MONGO_ID)), new Document("$unset", new BasicDBObject(attrName, 1)));
+    }
+
 
     public void deleteDocument(String collectionName, String id)
     {
-        MongoCollection<Document> collection = database.getCollection(collectionName);
+        MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
         DeleteResult result = collection.deleteOne(eq(MONGO_ID, new ObjectId(id)));
         if (result.getDeletedCount() != 1)
             throw new RuntimeException(String.format("Cannot delete %s: document not found", id));
@@ -138,7 +146,7 @@ public class Database
 
     public long dropCollection(String collectionName)
     {
-        MongoCollection<Document> collection = database.getCollection(collectionName);
+        MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
         long count = collection.estimatedDocumentCount();
         collection.drop();
         return count;
@@ -146,7 +154,7 @@ public class Database
 
     public Document getDocument(String collectionName, String id)
     {
-        MongoCollection<Document> collection = database.getCollection(collectionName);
+        MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
         FindIterable<Document> iterable = collection.find(eq(MONGO_ID, new ObjectId(id))).limit(1);
         try (MongoCursor<Document> cursor = iterable.iterator())
         {
@@ -159,7 +167,7 @@ public class Database
      */
     public List<Document> getDocuments(String collectionName, List<String> values, String fieldName)
     {
-        MongoCollection<Document> collection = database.getCollection(collectionName);
+        MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
 
         List<String> identifiers = new ArrayList<>(values.size());
         for (String id : values)
@@ -187,10 +195,9 @@ public class Database
     }
 
 
-
     public List<Document> getDocuments(String collectionName, String sortField)
     {
-        MongoCollection<Document> collection = database.getCollection(collectionName);
+        MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
         FindIterable<Document> iterable = collection.find().sort(ascending(sortField));
         List<Document> documents = new ArrayList<>();
         try (MongoCursor<Document> cursor = iterable.iterator())
@@ -205,7 +212,7 @@ public class Database
 
     public List<Document> getDocuments(String collectionName, Bson filter, SortInfo sortInfo)
     {
-        MongoCollection<Document> collection = database.getCollection(collectionName);
+        MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
         FindIterable<Document> iterable = collection.find(filter);
         List<Document> documents = new ArrayList<>();
         try (MongoCursor<Document> cursor = iterable.iterator())
@@ -226,7 +233,7 @@ public class Database
 
     public Document getAttribute(String name)
     {
-        MongoCollection<Document> collection = database.getCollection(ATTRIBUTES_COLLECTION);
+        MongoCollection<Document> collection = getDatabase().getCollection(ATTRIBUTES_COLLECTION);
         FindIterable<Document> iterable = collection.find(eq(NAME, name)).limit(1);
         try (MongoCursor<Document> cursor = iterable.iterator())
         {
@@ -237,7 +244,7 @@ public class Database
 
     public Document getEntity(String entityName)
     {
-        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
+        MongoCollection<Document> collection = getDatabase().getCollection(ENTITIES_COLLECTION);
         FindIterable<Document> iterable = collection.find(eq(NAME, entityName)).limit(1);
         try (MongoCursor<Document> cursor = iterable.iterator())
         {
@@ -247,7 +254,7 @@ public class Database
 
     public boolean isEntityExist(String entityCollection)
     {
-        MongoCollection<Document> collection = database.getCollection(ENTITIES_COLLECTION);
+        MongoCollection<Document> collection = getDatabase().getCollection(ENTITIES_COLLECTION);
         FindIterable<Document> iterable = collection.find(eq(NAME, entityCollection)).limit(1);
         try (MongoCursor<Document> cursor = iterable.iterator())
         {
@@ -258,7 +265,7 @@ public class Database
 
     public Object[] getLog()
     {
-        MongoCollection<Document> collection = database.getCollection(LOG_COLLECTION);
+        MongoCollection<Document> collection = getDatabase().getCollection(LOG_COLLECTION);
 
         FindIterable<Document> iterable = collection.find();
         List<LogRecord> result = new ArrayList<>();
@@ -276,7 +283,7 @@ public class Database
 
     public Object[] getLog(int count)
     {
-        MongoCollection<Document> collection = database.getCollection(LOG_COLLECTION);
+        MongoCollection<Document> collection = getDatabase().getCollection(LOG_COLLECTION);
         FindIterable<Document> iterable = collection.find().sort(new Document(MONGO_ID, -1)).limit(count);
         List<LogRecord> result = new ArrayList<>();
         try (MongoCursor<Document> cursor = iterable.iterator())
@@ -296,14 +303,14 @@ public class Database
         LogRecord logRecord = new LogRecord(collectionName, operation, id, before, after);
         Document document = logMapper.getDocument(logRecord);
 
-        MongoCollection<Document> collection = database.getCollection(LOG_COLLECTION);
+        MongoCollection<Document> collection = getDatabase().getCollection(LOG_COLLECTION);
         collection.insertOne(document);
     }
 
 
     public String saveFile(MultipartFile file) throws IOException
     {
-        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+        GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
 
         Document metaData = new Document();
         metaData.put("contentType", file.getContentType());
@@ -320,7 +327,7 @@ public class Database
 
     public void linkFilesAndNote(String noteId, String attributeName, Collection<String> fileIds)
     {
-        MongoCollection<Document> collection = database.getCollection(NOTES_FILES_COLLECTION);
+        MongoCollection<Document> collection = getDatabase().getCollection(NOTES_FILES_COLLECTION);
 
         for (String fileId : fileIds)
         {
@@ -343,7 +350,7 @@ public class Database
 
     public void unlinkFilesAndNote(String noteId, String attributeName)
     {
-        MongoCollection<Document> collection = database.getCollection(NOTES_FILES_COLLECTION);
+        MongoCollection<Document> collection = getDatabase().getCollection(NOTES_FILES_COLLECTION);
         Document document = new Document()
                 .append("noteId", noteId)
                 .append("attributeName", attributeName);
@@ -355,7 +362,7 @@ public class Database
     {
         if (fileIds != null && fileIds.size() > 0)
         {
-            MongoCollection<Document> collection = database.getCollection(NOTES_FILES_COLLECTION);
+            MongoCollection<Document> collection = getDatabase().getCollection(NOTES_FILES_COLLECTION);
             Document document = new Document()
                     .append("noteId", noteId)
                     .append("attributeName", attributeName);
@@ -366,7 +373,7 @@ public class Database
 
     public String getFileId(String md5)
     {
-        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+        GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
 
         GridFSFindIterable iterable = bucket.find(eq("md5", md5)).limit(1);
         GridFSFile file = iterable.first();
@@ -380,13 +387,13 @@ public class Database
 
     public int removeFilesOlderThan(long time)
     {
-        MongoCollection notesFiles = database.getCollection(NOTES_FILES_COLLECTION);
+        MongoCollection notesFiles = getDatabase().getCollection(NOTES_FILES_COLLECTION);
         Set<String> usedIds = (HashSet<String>)notesFiles
                 .distinct("fileId", String.class).into(new HashSet<String>());
 
-        MongoCollection imagesCollection = database.getCollection(IMAGES_COLLECTION);
+        MongoCollection imagesCollection = getDatabase().getCollection(IMAGES_COLLECTION);
 
-        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+        GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
 
         GridFSFindIterable iterable = bucket.find(lt("metadata.uploaded", time));
         try (MongoCursor cursor = iterable.iterator())
@@ -420,27 +427,13 @@ public class Database
     {
         ObjectId fileId = new ObjectId(id);
 
-        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+        GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
 
         GridFSFindIterable iterable = bucket.find(eq(MONGO_ID, fileId)).limit(1);
         GridFSFile file = iterable.first();
 
 
         return new GridFsResource(file, bucket.openDownloadStream(file.getObjectId()));
-
-        //return bucket.openDownloadStream(fileId);
-
-
-/*
-        GridFSFile file = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(id)));
-        Video video = new Video();
-        video.setTitle(file.getMetadata().getById("title").toString());
-        video.setStream(operations.getResource(file).getInputStream());
-
-        FileOutputStream streamToDownloadTo = new FileOutputStream("/tmp/mongodb-tutorial.pdf");
-        gridFSBucket.downloadToStream(fileId, streamToDownloadTo);
-        streamToDownloadTo.close();
-        System.out.println(streamToDownloadTo.toString());*/
     }
 
 
@@ -448,7 +441,7 @@ public class Database
     {
         ObjectId fileId = new ObjectId(id);
 
-        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+        GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
 
         GridFSFindIterable iterable = bucket.find(eq(MONGO_ID, fileId)).limit(1);
         GridFSFile file = iterable.first();
@@ -463,7 +456,7 @@ public class Database
     {
         List<ObjectId> fileIds = ids.stream().map(ObjectId::new).collect(Collectors.toList());
 
-        GridFSBucket bucket = GridFSBuckets.create(database, FILES_COLLECTION);
+        GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
 
         GridFSFindIterable iterable = bucket.find(in(MONGO_ID, fileIds));
         List<Document> metadata = new ArrayList<>();
@@ -484,7 +477,7 @@ public class Database
 
     public String saveImage(Document image)
     {
-        MongoCollection<Document> collection = database.getCollection(IMAGES_COLLECTION);
+        MongoCollection<Document> collection = getDatabase().getCollection(IMAGES_COLLECTION);
         collection.insertOne(image);
         return ((ObjectId)image.get(MONGO_ID)).toString();
     }
@@ -492,495 +485,23 @@ public class Database
 
     public Document getImage(String identifier, int size)
     {
-        MongoCollection<Document> collection = database.getCollection(IMAGES_COLLECTION);
+        MongoCollection<Document> collection = getDatabase().getCollection(IMAGES_COLLECTION);
         FindIterable<Document> iterable = collection.find(and(eq(ORIGINAL_ID, identifier), eq(SIZE, size)));
         try (MongoCursor<Document> iterator = iterable.iterator())
         {
             return (iterator.hasNext()) ? iterator.next() : null;
         }
     }
+
+    /**
+     * Creates thread-safe MongoDatabase instance.
+     * As it said, every instance of MongoDatabase, created via MongoClient, is thread-safe.
+     * http://mongodb.github.io/mongo-java-driver/3.5/driver/getting-started/quick-start/
+     */
+    private MongoDatabase getDatabase()
+    {
+        return mongoClient.getDatabase(databaseName);
+    }
 }
 
-
-/**
- * Expected hierarchy of data stored in MongoDB:
- *
- *         Versions: [
- *             notes:
- *             serials:
- *             movies
- *             animeSerials
- *             animeMovies
- *             ...
- *         ]
- *
- *         Serials:
- *             lastUpdate:
- *             data: [
- *             {
- *                 id
- *                 saved
- *                 updated
- *                 name: [
- *                     EN:
- *                     RU:
- *                 ]
- *                 description: [
- *                     EN:
- *                     RU:
- *                 ]
- *                 plot: [
- *                     EN:
- *                     RU:
- *                 ]
- *                 seasonsCount
- *                 //seriesCount - absent, because there are serials with dynamic series count
- *                 releaseDate
- *                 rating: [
- *                     imdb
- *                     kinopoisk
- *                     lostfilm
- *                     ...
- *                 ]
- *                 type: [
- *                     Space
- *                     Time travel
- *                     ...
- *                 }
- *                 genre: [
- *                     drama,
- *                     fantastics
- *                 }
- *                 photos: [
- *                     // refs or photos from server
- *                 ]
- *
- *                 author: Netflix
- *                 country: USA
- *             }
- *             ...
- *         }
- *
- *         Movies: [
- *             ...
- *         ]
- *
- *         AnimeSerials: [
- *             ...
- *         ]
- *
- *         AnimeMovies: [
- *             ...
- *         ]
- *
- *         Literature: [
- *             ...
- *         ]
- *
- *         Users: [
- *             {
- *                 id: 1
- *                 name: John Wick
- *                 passowrd: somehash
- *                 email: email@somemail.com
- *                 phone: +7 978 ...
- *                 birthdate: 16.07.1990
- *                 address:
- *                 {
- *                     country: USA,
- *                     city: New York
- *                     ...
- *                 }
- *
- *                 registered: timestamp
- *                 lastVisited: timestamp
- *                 lastActivity: timestamp
- *
- *                 // Add photo list to almost all notes and reference to this table.
- *                 photos: [
- *                     {
- *                         id
- *                         name
- *                         date
- *                         author
- *                         groups: [ Travel, Naumen ]
- *                         people: []
- *                         location
- *                         state
- *                         comment
- *                     }
- *                 ]
- *
- *
- *                 GeneralAffairs: [
- *                     {
- *                         id: 1
- *                         name: Write book,
- *                         description: Write book about psychology,
- *                         executeDate: date,
- *                         state: State.
- *                         comment: Some comment
- *                         added: date
- *                         lastUpdate: date
- *
- *                         priorityLevel: 1-10
- *                         price: total price for all inner affairs
- *
- *                         // Inner affairs. I.E. Make good health: teeth: clean, remove
- *                         Affairs: [
- *                             ...
- *                             Affairs: [ ... ]
- *                         ]
- *                     }
- *                     ...
- *                 ]
- *
- *                 AnimeFilms: [
- *                     {
- *                         id: 1
- *                         name: Name,
- *                         year: Year,
- *                         state: State,
- *                         comment: Some comment
- *                         ownRatio:
- *                     }
- *                     ...
- *                 ]
- *
- *                 AnimeSerials: [
- *                     {
- *                         id: 1
- *                         name
- *                         season
- *                         episode
- *                         state
- *                         comment
- *                         ownRatio
- *                     }
- *                     ...
- *                 ]
- *
- *                 Bookmarks: [
- *                     {
- *                         id
- *                         name
- *                         url
- *                         login
- *                         password
- *                         email
- *                         state
- *                         comment
- *                         file: (archieve of site)
- *
- *                         // inner bookmarks
- *                         bookmarks: [
- *                             ...
- *                             bookmarks: [ ... ]
- *                         ]
- *                     }
- *                     ...
- *                 ]
- *
- *                 Desires: [
- *                     {
- *                         id
- *                         name
- *                         description
- *                         state
- *                         comment
- *                         priorityLevel: 1-10
- *                         price: total price for all inner desires
- *
- *                         // inner desires. For example, bicycle, and the bag/ring/wheel for it.
- *                         desires: [
- *                             ...
- *                             desires: [ ... ]
- *                         ]
- *                     }
- *                     ...
- *                 ]
- *
- *                 Movies: [
- *                     {
- *                         id
- *                         name
- *                         year
- *                         state
- *                         comment
- *                         ownRatio
- *                     }
- *                     ...
- *                 ]
- *
- *                 Games: [
- *                     {
- *                         id
- *                         name
- *                         version
- *                         genre
- *                         type (singleplayer/multiplayer/mixed)
- *                         link
- *                         login
- *                         password
- *                         email
- *                         state
- *                         comment
- *                         ownRatio
- *                     }
- *                     ...
- *                 }
- *
- *                 Literature: [
- *                     {
- *                         id
- *                         name
- *                         author
- *                         genre
- *                         universe (S.T.A.L.K.E.R, Metro 2033, etc)
- *                         series (some series in universe or without it)
- *                         audio: (true if audio, else - text)
- *                         volume
- *                         currentChapter
- *                         currentPage
- *                         pagesCount
- *                         year
- *                         state
- *                         comment
- *                         ownRatio
- *                     }
- *                     ...
- *                 ]
- *
- *                 Meal: [
- *                     {
- *                         id
- *                         name
- *                         ingredients
- *                         recipe
- *                         state
- *                         comment
- *                     }
- *                     ...
- *                 ]
- *
- *                 Performances: [
- *                     {
- *                         id
- *                         name
- *                         year
- *                         state
- *                         comment
- *                         ownRaio
- *                     }
- *                     ...
- *                 ]
- *
- *                 People: [
- *                     {
- *                         id
- *                         name
- *                         nickname
- *                         sex
- *                         birthdate
- *                         address
- *                         contacts:
- *                         {
- *                             phone (always)
- *                             telegram (custom)
- *                             viber (custom)
- *                             ...
- *                         }
- *                         groups:
- *                         {
- *                             id: 1
- *                             id: 2
- *                             ...
- *                         }
- *                         state
- *                         comment
- *                     }
- *                     ...
- *                 ]
- *
- *                 PropleGroups: [
- *                     { id: 1, name: Tavrida },
- *                     { id: 2, name: Naumen },
- *                     ...
- *                 ]
- *
- *                 Programs: [
- *                     {
- *                         id
- *                         name
- *                         version
- *                         link (from Bookmarks or new)
- *                         login
- *                         password
- *                         email
- *                         state
- *                         comment
- *                     }
- *                     ...
- *                 ]
- *
- *                 DailyAffairs: [
- *                     {
- *                         id
- *                         date: (for every day)
- *                         name
- *                         description
- *                         state
- *                         comment
- *                         priorityLevel: 1-10
- *                         price: (sum from all inner)
- *                         repeat: (every day, one time, etc)
- *
- *                         // Inner affairs. Example: morning routine: teeth, toilet, food, etc.
- *                         DailyAffairs: [
- *                             ...
- *                             DailyAffairs: [ ... ]
- *                         ]
- *                     }
- *                     ...
- *                 ]
- *
- *                 Serials: [
- *                     {
- *                         id
- *                         name
- *                         season
- *                         episode
- *                         state
- *                         comment
- *                         ownRatio
- *                     }
- *                     ...
- *                 ]
- *
- *                 TVShows: [
- *                     {
- *                         id
- *                         name
- *                         season
- *                         episode
- *                         state
- *                         comment
- *                         added
- *                         lastUpdated
- *                         ownRatio
- *                     }
- *                     ...
- *                 ]
- *
- *                 Concerts: [
- *                     {
- *                         id
- *                         name
- *                         description
- *                         visited: boolean
- *                         location
- *                         date
- *                         state
- *                         comment
- *                         added
- *                         lastUpdated
- *                         ownRatio
- *                     }
- *                 ]
- *
- *                 // Some walks by city, etc
- *                 Walks: [
- *                     {
- *                         id
- *                         name
- *                         description
- *                         location
- *                         date
- *                         state
- *                         comment
- *                         added
- *                         lastUpdated
- *                         photos: [
- *                             id: 1
- *                             id: 2
- *                         ]
- *                     }
- *                 ]
- *
- *                 Travels: [
- *                     {
- *                         id
- *                         name
- *                         description
- *                         locations: [
- *                             { id: 1, location: name/point, date, photos }
- *                             ...
- *                         ]
- *                         date
- *                         state
- *                         comment
- *                         added
- *                         lastUpdated
- *                         sharedPhotos: [
- *                             id: 1
- *                             id: 2
- *                         ]
- *                     }
- *                     ...
- *                 ]
- *
- *                 Minds: [
- *                     {
- *                         // Просто мысли человека. Что-то полезное, интересное, что-то что хочется запомнить и т.п.
- *                         // Сюда же можно вносить новые идеи или лайфхаки, полезные для человека.
- *                     }
- *                 ]
- *
- *                 // goals in life
- *                 Goals: [
- *                     priorityLeveL: 1-10
- *                     date
- *                     type: single (in that date), every day (until the date come), etc
- *
- *                     Goals: [
- *                         ...
- *                     ]
- *                     state
- *                     comment
- *                 ]
- *
- *                 Projects: [
- *                     priorityLevel: 1-10
- *                     state
- *                     comment
- *                     author
- *                     whatAffects: (what change if you do project)
- *                     relation: (with what projects or something else is this project connected)
- *                     benefit:
- *                     harm:
- *                     // sum from tasks
- *                     costs: [
- *                         money:
- *                         time
- *                     ]
- *
- *                     // some tasks to do project
- *                     Tasks: [
- *                         priorityLevel: 1-10
- *                         date
- *                         name
- *                         costs: [
- *                             money
- *                             time
- *                         ]
- *                         state
- *                         comment
- *                         ...
- *                     ]
- *                 ]
- *             }
- *         ]
- *
- *
- */
 

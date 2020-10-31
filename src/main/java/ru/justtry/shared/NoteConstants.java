@@ -6,6 +6,6 @@ public interface NoteConstants
     String ENTITY = "entity";
     String FOLDER_ID = "folderId";
     String HIDDEN = "hidden";
-    String FAVORITE = "favourite";
+    String FAVORITE = "favorite";
     String NESTED = "nested";
 }
