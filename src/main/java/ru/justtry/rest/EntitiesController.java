@@ -1,6 +1,7 @@
 package ru.justtry.rest;
 
 import static ru.justtry.shared.Constants.ID;
+import static ru.justtry.shared.EntityConstants.ATTRIBUTE;
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
 import static ru.justtry.shared.EntityConstants.NAME;
 
@@ -109,12 +110,15 @@ public class EntitiesController
     @ResponseStatus(HttpStatus.OK)
     public Object get(
             @RequestParam(value = ID, required = false) String id,
-            @RequestParam(value = NAME, required = false) String name)
+            @RequestParam(value = NAME, required = false) String name,
+            @RequestParam(value = ATTRIBUTE, required = false) String attribute)
     {
         if (id != null)
             return entityService.getById(id);
         else if (name != null)
             return entityService.getByName(name);
+        else if (attribute != null)
+            return entityService.getByAttribute(attribute);
         else
             return entityService.getAll();
     }

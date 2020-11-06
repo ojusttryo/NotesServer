@@ -2,6 +2,7 @@ package ru.justtry.rest;
 
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.AttributeConstants.NAME;
+import static ru.justtry.shared.AttributeConstants.SHARED;
 import static ru.justtry.shared.RestConstants.REST_ATTRIBUTES;
 
 import org.apache.logging.log4j.LogManager;
@@ -108,8 +109,24 @@ public class AttributesController
     public Object get(
             @RequestParam(value = "entityName", required = false) String entityName,
             @RequestParam(value = NAME, required = false) String name,
-            @RequestParam(value = "visible", required = false) Boolean visible)
+            @RequestParam(value = "visible", required = false) Boolean visible,
+            @RequestParam(value = SHARED, required = false) Boolean shared)
     {
+        // all by shared
+        if (shared != null && shared)
+        {
+            if (entityName != null)
+            {
+                Entity entity = entityService.getByName(entityName);
+                Attribute[] attributes = attributeService.getAvailable(entity);
+                return attributes;
+            }
+            else
+            {
+                return attributeService.getAvailable(null);
+            }
+        }
+        // all by visible
         if (entityName != null)
         {
             boolean isVisible = (visible != null && visible);
@@ -117,10 +134,12 @@ public class AttributesController
             return isVisible ? attributeService.get(entity.getVisibleAttributes())
                     : attributeService.get(entity.getAttributes());
         }
+        // single by name
         else if (name != null)
         {
             return attributeService.getByName(name);
         }
+        // all
         else
         {
             return attributeService.getAll();

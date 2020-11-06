@@ -7,14 +7,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import com.github.ojusttryo.migmong.MigMong;
+import com.github.ojusttryo.migmong.MongoMigration;
 
 @Configuration
 @PropertySource("classpath:application.properties")
 public class DatabaseConfiguration
 {
-    private static final String MONGODB_URI_FORMAT = "mongodb://%s:%s@%s:%s/%s";
-
     @Autowired
     private ApplicationContext context;
 
@@ -34,7 +32,6 @@ public class DatabaseConfiguration
     private String password;
 
 
-
     @Bean(name = "database")
     public Database getDatabase()
     {
@@ -45,12 +42,14 @@ public class DatabaseConfiguration
 
 
     @Bean
-    public MigMong migMong()
+    public MongoMigration mongoMigration()
     {
-        MigMong runner = new MigMong(host, port, name, user, password);
-        runner.setChangeLogsScanPackage("ru.justtry.database.migrations"); // the package to be scanned for changesets
-        runner.setApplicationContext(context);
-        runner.setEnabled(true);
-        return runner;
+        MongoMigration migration = new MongoMigration(host, port, name, user, password);
+        migration.setMigrationScanPackage("ru.justtry.database.migrations");
+        migration.setApplicationContext(context);
+        migration.setEnabled(true);
+        migration.setMigrationNamePrefix("V");
+        migration.setMigrationCollectionName("migrationLog");
+        return migration;
     }
 }

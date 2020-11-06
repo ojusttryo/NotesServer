@@ -4,7 +4,9 @@ import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.AttributeConstants.NAME;
 import static ru.justtry.shared.AttributeConstants.TITLE;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -74,6 +76,41 @@ public class AttributeService
         List<Document> documents = database.getDocuments(ATTRIBUTES_COLLECTION, TITLE);
         Identifiable[] attributes = attributeMapper.getObjects(documents);
         return toAttributesArray(attributes);
+    }
+
+
+    public Attribute[] getAvailable(Entity entity)
+    {
+        Entity[] entities = entityService.getAll();
+        Attribute[] attributes = getAll();
+        Map<String, Attribute> attrMap = Arrays.stream(attributes).collect(Collectors.toMap(x -> x.getName(), x -> x));
+
+        List<Attribute> available = new ArrayList<>();
+        Map<String, Integer> usage = new HashMap<>();
+        for (Attribute attribute : attributes)
+        {
+            if (attribute.isShared())
+                available.add(attribute);
+            else
+                usage.put(attribute.getName(), 0);
+        }
+
+        for (Entity e : entities)
+        {
+            for (String entityAttr : e.getAttributes())
+            {
+                if (usage.containsKey(entityAttr))
+                    usage.put(entityAttr, usage.get(entityAttr) + 1);
+            }
+        }
+
+        for (Map.Entry<String, Integer> entry : usage.entrySet())
+        {
+            if (entry.getValue() == 0 || (entity != null && entity.getAttributes().contains(entry.getKey())))
+                available.add(attrMap.get(entry.getKey()));
+        }
+
+        return available.toArray(Attribute[]::new);
     }
 
 

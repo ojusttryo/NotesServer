@@ -27,6 +27,7 @@ public interface AttributeConstants
     String EDITABLE_IN_TABLE = "editableInTable";
     String DATE_FORMAT = "dateFormat";
     String ENTITY = "entity";
+    String SHARED = "shared";
 
     interface Type
     {

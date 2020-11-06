@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="migmong">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/migmong.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/migmong.jar!/" />
+    </SOURCES>
+  </library>
+</component>

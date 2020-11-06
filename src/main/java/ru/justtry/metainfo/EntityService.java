@@ -1,10 +1,12 @@
 package ru.justtry.metainfo;
 
+import static ru.justtry.shared.EntityConstants.ATTRIBUTES;
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
 import static ru.justtry.shared.EntityConstants.TITLE;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,22 @@ public class EntityService
     public Entity[] getAll()
     {
         List<Document> docs = database.getDocuments(ENTITIES_COLLECTION, TITLE);
+        Identifiable[] entities = entityMapper.getObjects(docs);
+        return toEntitiesArray(entities);
+    }
+
+
+    public Entity[] getByAttribute(String attributeName)
+    {
+        // Not the best solution in terms of performance but it's a rare operation and there are very few entities
+        List<Document> docs = database.getDocuments(ENTITIES_COLLECTION, TITLE).stream()
+                .filter(x ->
+                {
+                    Object a = x.get(ATTRIBUTES);
+                    List<String> attributes = (List<String>)x.get(ATTRIBUTES);
+                    return attributes.contains(attributeName);
+                })
+                .collect(Collectors.toList());
         Identifiable[] entities = entityMapper.getObjects(docs);
         return toEntitiesArray(entities);
     }

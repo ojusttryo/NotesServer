@@ -3,6 +3,7 @@ package ru.justtry.shared;
 public interface EntityConstants
 {
     String ATTRIBUTES = "attributes";
+    String ATTRIBUTE = "attribute";
     String COMPARED_ATTRIBUTES = "comparedAttributes";
     String VISIBLE_ATTRIBUTES = "visibleAttributes";
     String ENTITIES_COLLECTION = "entities";

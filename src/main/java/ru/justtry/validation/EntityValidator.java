@@ -40,19 +40,20 @@ public class EntityValidator implements Validator
         if (Strings.isNullOrEmpty(entity.getKeyAttribute()))
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("keyAttribute"));
         if (attributeService.getByName(entity.getKeyAttribute()) == null)
-            throw new IllegalArgumentException("Attribute specified as ket attribute is not found");
+            throw new IllegalArgumentException("Attribute specified as key attribute is not found");
 
-        if (entity.getSortAttribute() != null && attributeService.getByName(entity.getSortAttribute()) == null)
+        if (entity.getSortAttribute() == null)
+            throw new IllegalArgumentException("No sort attribute specified");
+        if (attributeService.getByName(entity.getSortAttribute()) == null)
             throw new IllegalArgumentException("Attribute specified as sort attribute is not found");
 
-        if (entity.getSortAttribute() != null && entity.getSortDirection() == null)
-            throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("sortDirection"));
-
+        if (entity.getSortDirection() == null)
+            throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("sort direction"));
         if (entity.getSortDirection() != null)
         {
             Direction direction = SortInfo.Direction.get(entity.getSortDirection());
             if (direction == null)
-                throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("sortDirection"));
+                throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("sort direction"));
         }
 
         if (entity.getComparedAttributes().size() == 0)

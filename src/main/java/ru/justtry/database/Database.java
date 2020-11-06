@@ -30,7 +30,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.gridfs.GridFsResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.mongodb.BasicDBObject;
@@ -423,21 +423,20 @@ public class Database
     }
 
 
-    public GridFsResource getFile(String id)
+    public InputStreamResource getFileStream(String id)
     {
         ObjectId fileId = new ObjectId(id);
 
         GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
-
         GridFSFindIterable iterable = bucket.find(eq(MONGO_ID, fileId)).limit(1);
         GridFSFile file = iterable.first();
 
-
-        return new GridFsResource(file, bucket.openDownloadStream(file.getObjectId()));
+        InputStreamResource resource = new InputStreamResource(bucket.openDownloadStream(file.getObjectId()));
+        return resource;
     }
 
 
-    public Object getMetadata(String id)
+    public Document getMetadata(String id)
     {
         ObjectId fileId = new ObjectId(id);
 

@@ -323,17 +323,22 @@ public class Attribute extends Identifiable
 
     private String entity = null;
 
-
     /**
      * The values of drop-down list (enum)
      */
     @Setter(AccessLevel.NONE)
     private List<String> selectOptions;
 
-    @NotNull(message = "EditableIntable cannot be null")
+    @NotNull(message = "EditableInTable cannot be null")
     private Boolean editableInTable = false;
 
     private String dateFormat;
+
+    /**
+     * Defines whether attribute should be visible for another entities. It means that after first addition
+     * this attributes won't be shown in the list of available attributes on entity form.
+     */
+    private boolean shared = true;
 
     public void setSelectOptions(List<String> selectOptions)
     {

@@ -11,8 +11,6 @@ import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.gridfs.GridFsObject.Options;
-import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
@@ -42,17 +40,16 @@ public class ImageService
 
     public void createResizedCopies(String originalId, int... sizes) throws Exception
     {
-        GridFsResource resource = database.getFile(originalId);
-        if (resource == null)
+        Document metadata = database.getMetadata(originalId);
+        if (metadata == null)
             throw new FileNotFoundException("File " + originalId + " not found");
 
-        Options options = resource.getOptions();
-        String contentType = options.getMetadata().get("contentType").toString();
+        String contentType = metadata.get("contentType").toString();
 
         if (contentType != null && contentType.startsWith("image"))
         {
             String extension = contentType.replace("image/", "");
-            BufferedImage image = ImageIO.read(resource.getInputStream());
+            BufferedImage image = ImageIO.read(database.getFileStream(originalId).getInputStream());
 
             for (int i = 0; i < sizes.length; i++)
                 saveResizedCopy(image, sizes[i], originalId, extension);
