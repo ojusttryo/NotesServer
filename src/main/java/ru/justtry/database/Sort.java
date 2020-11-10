@@ -29,6 +29,8 @@ public class Sort
         @Override
         public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2)
         {
+            if (o1.getValue() == null && o2.getValue() == null)
+                return 0;
             if (o1.getValue() == null)
                 return 1;
             if (o2.getValue() == null)
@@ -43,6 +45,8 @@ public class Sort
         @Override
         public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2)
         {
+            if (o1.getValue() == null && o2.getValue() == null)
+                return 0;
             if (o1.getValue() == null)
                 return 1;
             if (o2.getValue() == null)

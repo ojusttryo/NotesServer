@@ -13,6 +13,8 @@ import com.google.common.base.Strings;
 import ru.justtry.database.Database;
 import ru.justtry.database.SortInfo;
 import ru.justtry.database.SortInfo.Direction;
+import ru.justtry.metainfo.Attribute;
+import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.shared.EntityConstants;
@@ -39,8 +41,12 @@ public class EntityValidator implements Validator
 
         if (Strings.isNullOrEmpty(entity.getKeyAttribute()))
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("keyAttribute"));
-        if (attributeService.getByName(entity.getKeyAttribute()) == null)
+        Attribute keyAttribute = attributeService.getByName(entity.getKeyAttribute());
+        if (keyAttribute == null)
             throw new IllegalArgumentException("Attribute specified as key attribute is not found");
+        Attribute.Type keyAttrType = keyAttribute.getTypeAsEnum();
+        if (keyAttrType != Type.SELECT && !Type.isNumericType(keyAttrType) && !Type.isTextType(keyAttrType))
+            throw new IllegalArgumentException("Key attribute should be textual, numeric or select type");
 
         if (entity.getSortAttribute() == null)
             throw new IllegalArgumentException("No sort attribute specified");
