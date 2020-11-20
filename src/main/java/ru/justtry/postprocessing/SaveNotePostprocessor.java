@@ -7,20 +7,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Strings;
+
 import ru.justtry.database.Database;
-import ru.justtry.mappers.AttributeMapper;
-import ru.justtry.mappers.EntityMapper;
-import ru.justtry.mappers.NoteMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.notes.Note;
-import ru.justtry.rest.NotesController;
-import ru.justtry.shared.Utils;
 
 @Component
 public class SaveNotePostprocessor
@@ -28,20 +26,10 @@ public class SaveNotePostprocessor
     @Autowired
     private Database database;
     @Autowired
-    private NoteMapper noteMapper;
-    @Autowired
-    private AttributeMapper attributeMapper;
-    @Autowired
-    private EntityMapper entityMapper;
-    @Autowired
-    @Lazy
-    private NotesController notesController;
-    @Autowired
-    private Utils utils;
-    @Autowired
     private AttributeService attributeService;
 
-    public void process(Note note, Note oldNote, String entityName)
+
+    public void process(Note note, @Nullable Note oldNote, String entityName)
     {
         Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entityName);
         for (String attributeName : attributes.keySet())
@@ -53,7 +41,8 @@ public class SaveNotePostprocessor
                 String oldFileId = oldNote == null ? null : (String)oldNote.getAttributes().get(attributeName);
                 String newFileId = (String)note.getAttributes().get(attributeName);
 
-                // TODO check here if new file exists
+                if (!Strings.isNullOrEmpty(newFileId) && !database.isFileExists(newFileId))
+                    throwFileDoesNotExist(newFileId, attributeName);
 
                 boolean fileIsDeleted = (newFileId == null && oldFileId != null);
                 boolean fileIsChanged = (newFileId != null && oldFileId != null && !newFileId.contentEquals(oldFileId));
@@ -66,20 +55,34 @@ public class SaveNotePostprocessor
 
             if (Type.isMultiFile(type))
             {
-                ArrayList<String> noteImages = note.getAttributes().get(attributeName) == null ? new ArrayList<>()
+                ArrayList<String> newFilesList = note.getAttributes().get(attributeName) == null ? new ArrayList<>()
                         : (ArrayList<String>)note.getAttributes().get(attributeName);
-                ArrayList<String> oldNoteImages = oldNote == null || oldNote.getAttributes().get(attributeName) == null
+                ArrayList<String> oldFilesList = oldNote == null || oldNote.getAttributes().get(attributeName) == null
                         ? new ArrayList<>() : (ArrayList<String>)oldNote.getAttributes().get(attributeName);
 
-                Set<String> newImages = new HashSet<>(noteImages);
-                Set<String> oldImages = new HashSet<>(oldNoteImages);
-                Set<String> intersection = newImages.stream().filter(oldImages::contains).collect(Collectors.toSet());
-                newImages = noteImages.stream().filter(x -> !intersection.contains(x)).collect(Collectors.toSet());
-                oldImages = oldImages.stream().filter(x -> !intersection.contains(x)).collect(Collectors.toSet());
+                Set<String> filesToLink = new HashSet<>(newFilesList);
+                for (String newFileId : filesToLink)
+                {
+                    if (!Strings.isNullOrEmpty(newFileId) && !database.isFileExists(newFileId))
+                        throwFileDoesNotExist(newFileId, attributeName);
+                }
 
-                database.linkFilesAndNote(note.getId(), attributeName, newImages);
-                database.unlinkFilesAndNote(note.getId(), attributeName, oldImages);
+                Set<String> filesToUnlink = new HashSet<>(oldFilesList);
+                Set<String> intersection = filesToLink.stream().filter(filesToUnlink::contains).collect(Collectors.toSet());
+                filesToLink.removeAll(intersection);
+                filesToUnlink.removeAll(intersection);
+
+                database.linkFilesAndNote(note.getId(), attributeName, filesToLink);
+                database.unlinkFilesAndNote(note.getId(), attributeName, filesToUnlink);
             }
         }
+    }
+
+
+    private void throwFileDoesNotExist(String fileId, String attributeName)
+    {
+        String message = String.format("The file (id = %s) for attribute %s does not exist",
+                fileId, attributeName);
+        throw new IllegalArgumentException(message);
     }
 }

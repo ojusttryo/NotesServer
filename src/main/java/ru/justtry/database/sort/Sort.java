@@ -1,4 +1,4 @@
-package ru.justtry.database;
+package ru.justtry.database.sort;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.springframework.stereotype.Component;
 
-import ru.justtry.database.SortInfo.Direction;
+import ru.justtry.database.sort.SortInfo.Direction;
 import ru.justtry.shared.NoteConstants;
 
 @Component

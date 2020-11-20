@@ -4,6 +4,8 @@ import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.in;
 import static com.mongodb.client.model.Filters.lt;
+import static com.mongodb.client.model.Projections.excludeId;
+import static com.mongodb.client.model.Projections.include;
 import static com.mongodb.client.model.Sorts.ascending;
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.Constants.MONGO_ID;
@@ -49,10 +51,15 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSFindIterable;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Projections;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
+import ru.justtry.database.sort.Sort;
+import ru.justtry.database.sort.SortInfo;
 import ru.justtry.mappers.LogMapper;
 import ru.justtry.shared.AttributeConstants;
 
@@ -61,8 +68,8 @@ public class Database
     private static final Logger logger = LogManager.getLogger(Database.class);
     private static final String LOG_COLLECTION = "log";
     private static final String FILES_COLLECTION = "files";
-    private static final String NOTES_FILES_COLLECTION = "notes.files";
-    private static final String IMAGES_COLLECTION = "notes.images";
+    public static final String NOTES_FILES_COLLECTION = "notes.files";
+    public static final String IMAGES_COLLECTION = "notes.images";
 
     private String databaseName;
     private MongoClient mongoClient;
@@ -354,7 +361,7 @@ public class Database
         Document document = new Document()
                 .append("noteId", noteId)
                 .append("attributeName", attributeName);
-        collection.deleteOne(document);
+        collection.deleteMany(document);
     }
 
 
@@ -366,8 +373,31 @@ public class Database
             Document document = new Document()
                     .append("noteId", noteId)
                     .append("attributeName", attributeName);
-            collection.deleteOne(and(document, in("fileId", fileIds)));
+            collection.deleteMany(and(document, in("fileId", fileIds)));
         }
+    }
+
+
+    public int unlinkAllFilesExcept(Set<String> fileIds)
+    {
+        MongoCollection<Document> notesFiles = getDatabase().getCollection(NOTES_FILES_COLLECTION);
+
+        Set<String> fileIdsToUnlink = notesFiles.distinct("fileId", String.class).into(new HashSet<>());
+        fileIdsToUnlink.removeAll(fileIds);
+        for (String toUnlink : fileIdsToUnlink)
+            notesFiles.deleteMany(eq("fileId", toUnlink));
+
+        return fileIdsToUnlink.size();
+    }
+
+
+    public boolean isFileExists(String fileId)
+    {
+        GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
+        GridFSFindIterable iterable = bucket.find(eq(MONGO_ID, fileId)).limit(1);
+        GridFSFile file = iterable.first();
+
+        return (file != null);
     }
 
 
@@ -385,7 +415,7 @@ public class Database
     }
 
 
-    public int removeFilesOlderThan(long time)
+    public int deleteFilesOlderThan(long time)
     {
         MongoCollection notesFiles = getDatabase().getCollection(NOTES_FILES_COLLECTION);
         Set<String> usedIds = (HashSet<String>)notesFiles
@@ -404,7 +434,7 @@ public class Database
                 GridFSFile file = (GridFSFile)cursor.next();
                 if (!usedIds.contains(file.getObjectId().toString()))
                 {
-                    // Removing scaled duplicates of images
+                    // Removing scaled images (icons)
                     String contentType = (String)file.getMetadata().get("contentType");
                     if (contentType != null && contentType.startsWith("image"))
                     {
@@ -412,7 +442,7 @@ public class Database
                         imagesCollection.deleteMany(document);
                     }
 
-                    // Removing image itself
+                    // Removing file/image itself
                     bucket.delete(file.getObjectId());
                     logger.info("Removing file " + file.getMetadata().get("title"));
                     count++;
@@ -491,6 +521,40 @@ public class Database
             return (iterator.hasNext()) ? iterator.next() : null;
         }
     }
+
+
+    public Document getCollectionInfo(String collectionNames)
+    {
+        return getDatabase().runCommand(new Document("collStats", collectionNames));
+    }
+
+    public List<Document> getFilesInfo()
+    {
+        List<Bson> aggregation = new ArrayList<>();
+        Bson unwind = Aggregates.unwind("$metadata");
+        Bson group = Aggregates.group("$metadata.contentType",
+                Accumulators.addToSet("contentType", "$metadata.contentType"),
+                Accumulators.sum("size", "$length"),
+                Accumulators.sum("count", 1L));
+        Bson project = Aggregates.project(
+                Projections.fields(excludeId(), include("contentType", "size", "count")));
+        Bson sort = Aggregates.sort(ascending("contentType"));
+
+        aggregation.add(unwind);
+        aggregation.add(group);
+        aggregation.add(project);
+        aggregation.add(sort);
+
+        MongoCollection<Document> files = getDatabase().getCollection("files.files");
+        List<Document> result = files.aggregate(aggregation).into(new ArrayList<>());
+        return result;
+    }
+
+    public Document getDatabaseInfo()
+    {
+        return getDatabase().runCommand(new Document("dbstats", 1));
+    }
+
 
     /**
      * Creates thread-safe MongoDatabase instance.

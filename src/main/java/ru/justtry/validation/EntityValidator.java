@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Strings;
 
 import ru.justtry.database.Database;
-import ru.justtry.database.SortInfo;
-import ru.justtry.database.SortInfo.Direction;
+import ru.justtry.database.sort.SortInfo;
+import ru.justtry.database.sort.SortInfo.Direction;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.AttributeService;

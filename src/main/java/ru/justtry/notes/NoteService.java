@@ -1,6 +1,10 @@
 package ru.justtry.notes;
 
-import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.exists;
+import static com.mongodb.client.model.Filters.in;
+import static com.mongodb.client.model.Filters.or;
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.NoteConstants.HIDDEN;
 import static ru.justtry.shared.NoteConstants.NESTED;
@@ -16,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
-import ru.justtry.database.SortInfo;
+import ru.justtry.database.sort.SortInfo;
 import ru.justtry.mappers.NoteMapper;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
@@ -50,7 +54,7 @@ public class NoteService
     private EntityService entityService;
 
 
-    public Note get(String collection, String id)
+    public Note getRegular(String collection, String id)
     {
         Document doc = database.getDocument(collection, id);
         Note note = (Note)noteMapper.getObject(doc);
@@ -67,14 +71,35 @@ public class NoteService
     }
 
 
-    public Note[] get(String entity)
+    public Note[] getAll(String entity)
     {
         Entity e = entityService.getByName(entity);
         if (e == null)
             throw new IllegalArgumentException("Wrong entity name: " + entity);
+
+        String sortField = String.format("%s.%s", NoteConstants.ATTRIBUTES, createSortInfo(e).getAttribute().getName());
+        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), sortField);
+        Identifiable[] objects = noteMapper.getObjects(documents);
+
+        return toNoteArray(objects);
+    }
+
+
+    /**
+     * Get by regular filter: not nested and not hidden
+     * @param entity entity name
+     * @return array of found notes
+     */
+    public Note[] getRegular(String entity)
+    {
+        Entity e = entityService.getByName(entity);
+        if (e == null)
+            throw new IllegalArgumentException("Wrong entity name: " + entity);
+
         List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), REGULAR_FILTER,
                 createSortInfo(e));
         Identifiable[] objects = noteMapper.getObjects(documents);
+
         return toNoteArray(objects);
     }
 
@@ -91,7 +116,7 @@ public class NoteService
     }
 
 
-    public Note[] get(String entity, List<String> ids)
+    public Note[] getRegular(String entity, List<String> ids)
     {
         List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), ids, MONGO_ID);
         Identifiable[] notes = noteMapper.getObjects(documents);
@@ -147,7 +172,7 @@ public class NoteService
 
     public void hide(String entity, String id)
     {
-        Note note = get(notesController.getCollectionName(entity), id);
+        Note note = getRegular(notesController.getCollectionName(entity), id);
         note.setHidden(true);
         update(entity, note);
     }
@@ -155,7 +180,7 @@ public class NoteService
 
     public void reveal(String entity, String id)
     {
-        Note note = get(notesController.getCollectionName(entity), id);
+        Note note = getRegular(notesController.getCollectionName(entity), id);
         note.setHidden(false);
         update(entity, note);
     }
@@ -312,6 +337,7 @@ public class NoteService
         SortInfo sortInfo = new SortInfo(attribute, entity.getSortDirection());
         return sortInfo;
     }
+
 
     private Note[] toNoteArray(Identifiable[] notes)
     {

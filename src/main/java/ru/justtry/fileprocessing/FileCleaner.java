@@ -8,11 +8,13 @@ import javax.annotation.PostConstruct;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
 
 @Component
+@DependsOn({"mongoMigration"})      // it should start after any changes been made in migrations
 public class FileCleaner
 {
     final static Logger logger = LogManager.getLogger(FileCleaner.class);
@@ -30,7 +32,7 @@ public class FileCleaner
                 {
                     logger.info("Removing old unused files...");
                     long time = Instant.now().minus(1, ChronoUnit.HOURS).getEpochSecond();
-                    int count = database.removeFilesOlderThan(time);
+                    int count = database.deleteFilesOlderThan(time);
                     logger.info("Removed " + count + " files");
                 }
                 catch (Exception e)

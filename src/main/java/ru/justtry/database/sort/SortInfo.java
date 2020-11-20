@@ -1,4 +1,4 @@
-package ru.justtry.database;
+package ru.justtry.database.sort;
 
 import static com.mongodb.client.model.Sorts.ascending;
 import static com.mongodb.client.model.Sorts.descending;

@@ -29,7 +29,7 @@ public abstract class ObjectsController
     public Identifiable get(@PathVariable(value = ENTITY) String entity,
                       @PathVariable(value = ID) String id)
     {
-        return noteService.get(getCollectionName(entity), id);
+        return noteService.getRegular(getCollectionName(entity), id);
     }
 
 
@@ -38,7 +38,7 @@ public abstract class ObjectsController
     public ResponseEntity<Identifiable[]> getAll(@PathVariable(value = ENTITY) String entity)
     {
         HttpHeaders headers = new HttpHeaders();
-        Identifiable[] objects = noteService.get(entity);
+        Identifiable[] objects = noteService.getRegular(entity);
         return new ResponseEntity<>(objects, headers, HttpStatus.OK);
     }
 }

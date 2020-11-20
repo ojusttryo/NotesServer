@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.justtry.database.Database;
-import ru.justtry.database.SortInfo;
+import ru.justtry.database.sort.SortInfo;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.AttributeService;
@@ -103,7 +103,7 @@ public class NotesController extends ObjectsController
         {
             noteValidator.validate(note, entity);
 
-            Note before = noteService.get(getCollectionName(entity), note.getId());
+            Note before = noteService.getRegular(getCollectionName(entity), note.getId());
 
             Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entity);
             noteService.copyUnusedAttributes(attributes, note, before);
@@ -132,7 +132,9 @@ public class NotesController extends ObjectsController
         try
         {
             Map<String, Object> params = new ObjectMapper().readValue(json, HashMap.class);
-            Note note = noteService.get(getCollectionName(entity), id);
+            // Two same request in order not to use some deep copy lib
+            Note before = noteService.getRegular(getCollectionName(entity), id);
+            Note note = noteService.getRegular(getCollectionName(entity), id);
             if (note == null)
                 throw new IllegalArgumentException(String.format("Note with id=%s in %s not found", id, entity));
 
@@ -148,6 +150,8 @@ public class NotesController extends ObjectsController
             }
 
             noteService.update(entity, note);
+            savePostprocessor.process(note, before, entity);
+
             return new ResponseEntity<>(note.getId(), headers, HttpStatus.OK);
         }
         catch (Exception e)
@@ -168,7 +172,9 @@ public class NotesController extends ObjectsController
         HttpHeaders headers = new HttpHeaders();
         try
         {
-            Note note = noteService.get(getCollectionName(entity), id);
+            // Two same request in order not to use some deep copy lib
+            Note before = noteService.getRegular(getCollectionName(entity), id);
+            Note note = noteService.getRegular(getCollectionName(entity), id);
             if (note == null)
                 throw new IllegalArgumentException("Cannot find note");
 
@@ -200,6 +206,10 @@ public class NotesController extends ObjectsController
 
             note.getAttributes().put(attributeName, value);
             noteService.update(entity, note);
+            // At this point of time it might be not necessary to use the post processor after incrementing one
+            // attribute. But later there might be something to process. So let's leave it here in order not to forget.
+            savePostprocessor.process(note, before, entity);
+
             return new ResponseEntity<>(value.toString(), headers, HttpStatus.OK);
         }
         catch (Exception e)
@@ -238,7 +248,7 @@ public class NotesController extends ObjectsController
     {
         try
         {
-            Note before = noteService.get(getCollectionName(entity), id);
+            Note before = noteService.getRegular(getCollectionName(entity), id);
             database.deleteDocument(getCollectionName(entity), id);
             deletePostprocessor.process(before, entity);
             database.saveLog(getCollectionName(entity), "DELETE", id, before.toString(), null);
@@ -357,7 +367,7 @@ public class NotesController extends ObjectsController
         HttpHeaders headers = new HttpHeaders();
         try
         {
-            return noteService.get(entity, ids);
+            return noteService.getRegular(entity, ids);
         }
         catch (Exception e)
         {

@@ -101,7 +101,8 @@ public class V0_1_0__changeAttributesArrayToObject
 
         MDC.put("entity", diary.getName());
 
-        List<Document> notes = db.getDocuments(collectionName, diary.getKeyAttribute());
+        String sortField = String.format("%s.%s", NoteConstants.ATTRIBUTES, diary.getKeyAttribute());
+        List<Document> notes = db.getDocuments(collectionName, sortField);
         for (Document note : notes)
         {
             MDC.put("note", note.get(MONGO_ID).toString());
