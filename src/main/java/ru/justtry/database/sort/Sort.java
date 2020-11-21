@@ -40,6 +40,23 @@ public class Sort
     }
 
 
+    class NaturalStringComparator<K, String> implements Comparator<Map.Entry<K, String>> {
+
+        @Override
+        public int compare(Map.Entry<K, String> o1, Map.Entry<K, String> o2)
+        {
+            if (o1.getValue() == null && o2.getValue() == null)
+                return 0;
+            if (o1.getValue() == null)
+                return 1;
+            if (o2.getValue() == null)
+                return -1;
+
+            return o1.getValue().toString().compareToIgnoreCase(o2.getValue().toString());
+        }
+    }
+
+
     class ReverseComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>> {
 
         @Override
@@ -52,6 +69,22 @@ public class Sort
             if (o2.getValue() == null)
                 return -1;
             return o2.getValue().compareTo(o1.getValue());
+        }
+    }
+
+
+    class ReverseStringComparator<K, String> implements Comparator<Map.Entry<K, String>> {
+
+        @Override
+        public int compare(Map.Entry<K, String> o1, Map.Entry<K, String> o2)
+        {
+            if (o1.getValue() == null && o2.getValue() == null)
+                return 0;
+            if (o1.getValue() == null)
+                return 1;
+            if (o2.getValue() == null)
+                return -1;
+            return o2.getValue().toString().compareToIgnoreCase(o1.getValue().toString());
         }
     }
 
@@ -83,7 +116,7 @@ public class Sort
 
             stringMap.entrySet().stream()
                     .sorted(sortInfo.getDirection() == Direction.DESCENDING ?
-                            new ReverseComparator<>() : new NaturalComparator<>())
+                            new ReverseStringComparator<>() : new NaturalStringComparator<>())
                     .forEachOrdered(x -> documents.add(x.getKey()));
             break;
         case INC:
