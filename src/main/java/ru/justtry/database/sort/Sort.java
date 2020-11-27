@@ -51,7 +51,6 @@ public class Sort
                 return 1;
             if (o2.getValue() == null)
                 return -1;
-
             return o1.getValue().toString().compareToIgnoreCase(o2.getValue().toString());
         }
     }
@@ -115,8 +114,8 @@ public class Sort
             documents.clear();
 
             stringMap.entrySet().stream()
-                    .sorted(sortInfo.getDirection() == Direction.DESCENDING ?
-                            new ReverseStringComparator<>() : new NaturalStringComparator<>())
+                    .sorted(sortInfo.getDirection() == Direction.DESCENDING ? new ReverseStringComparator<>()
+                            : new NaturalStringComparator<>())
                     .forEachOrdered(x -> documents.add(x.getKey()));
             break;
         case INC:

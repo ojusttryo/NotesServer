@@ -275,12 +275,16 @@ public class Attribute extends Identifiable
     private String maxHeight = null;
 
     /**
-     * For number types applies as the lower bound. For text types - as the minimum length.
+     * For number types applies as the lower bound.
+     * For text types - as the minimum length.
+     * For files - as the minimum size (Kb)
      */
     private Double min = null;
 
     /**
-     * For int types applies as the upper bound. For text types - as the maximum length.
+     * For numeric types applies as the upper bound.
+     * For text types - as the maximum length.
+     * For files - as the maximum size (Kb)
      */
     private Double max = null;
 

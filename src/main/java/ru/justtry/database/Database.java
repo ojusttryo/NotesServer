@@ -393,11 +393,24 @@ public class Database
 
     public boolean isFileExists(String fileId)
     {
-        GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
-        GridFSFindIterable iterable = bucket.find(eq(MONGO_ID, fileId)).limit(1);
-        GridFSFile file = iterable.first();
+        MongoCollection<Document> allFiles = getDatabase().getCollection(FILES_COLLECTION);
+        FindIterable<Document> iterable = allFiles.find(eq(MONGO_ID, new ObjectId(fileId))).limit(1);
+        Document file = iterable.first();
 
         return (file != null);
+    }
+
+
+    public Integer getFileSize(String fileId)
+    {
+        MongoCollection<Document> allFiles = getDatabase().getCollection(FILES_COLLECTION);
+        FindIterable<Document> iterable = allFiles.find(eq(MONGO_ID, new ObjectId(fileId))).limit(1);
+        Document file = iterable.first();
+
+        if (file == null)
+            return null;
+
+        return (Integer)file.get("length");
     }
 
 

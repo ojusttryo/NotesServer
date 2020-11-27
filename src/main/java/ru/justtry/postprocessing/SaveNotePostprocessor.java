@@ -12,8 +12,6 @@ import javax.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Strings;
-
 import ru.justtry.database.Database;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.Type;
@@ -41,9 +39,6 @@ public class SaveNotePostprocessor
                 String oldFileId = oldNote == null ? null : (String)oldNote.getAttributes().get(attributeName);
                 String newFileId = (String)note.getAttributes().get(attributeName);
 
-                if (!Strings.isNullOrEmpty(newFileId) && !database.isFileExists(newFileId))
-                    throwFileDoesNotExist(newFileId, attributeName);
-
                 boolean fileIsDeleted = (newFileId == null && oldFileId != null);
                 boolean fileIsChanged = (newFileId != null && oldFileId != null && !newFileId.contentEquals(oldFileId));
                 boolean fileIsAdded = (oldFileId == null && newFileId != null);
@@ -61,12 +56,6 @@ public class SaveNotePostprocessor
                         ? new ArrayList<>() : (ArrayList<String>)oldNote.getAttributes().get(attributeName);
 
                 Set<String> filesToLink = new HashSet<>(newFilesList);
-                for (String newFileId : filesToLink)
-                {
-                    if (!Strings.isNullOrEmpty(newFileId) && !database.isFileExists(newFileId))
-                        throwFileDoesNotExist(newFileId, attributeName);
-                }
-
                 Set<String> filesToUnlink = new HashSet<>(oldFilesList);
                 Set<String> intersection = filesToLink.stream().filter(filesToUnlink::contains).collect(Collectors.toSet());
                 filesToLink.removeAll(intersection);
@@ -76,13 +65,5 @@ public class SaveNotePostprocessor
                 database.unlinkFilesAndNote(note.getId(), attributeName, filesToUnlink);
             }
         }
-    }
-
-
-    private void throwFileDoesNotExist(String fileId, String attributeName)
-    {
-        String message = String.format("The file (id = %s) for attribute %s does not exist",
-                fileId, attributeName);
-        throw new IllegalArgumentException(message);
     }
 }

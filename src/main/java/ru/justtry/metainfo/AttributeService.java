@@ -6,6 +6,7 @@ import static ru.justtry.shared.AttributeConstants.TITLE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +110,8 @@ public class AttributeService
             if (entry.getValue() == 0 || (entity != null && entity.getAttributes().contains(entry.getKey())))
                 available.add(attrMap.get(entry.getKey()));
         }
+
+        available.sort(Comparator.comparing(Attribute::getName));
 
         return available.toArray(Attribute[]::new);
     }
