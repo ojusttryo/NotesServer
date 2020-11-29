@@ -42,7 +42,7 @@ public class V0_1_2__cleanFiles
         for (Entity entity : entities)
         {
             Attribute[] attributes = attributeService.get(entity.getName());
-            Note[] notes = noteService.getAll(entity.getName());
+            Note[] notes = noteService.get(entity.getName());
 
             for (Note note : notes)
             {

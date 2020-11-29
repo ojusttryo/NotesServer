@@ -1,4 +1,4 @@
-package ru.justtry.rest;
+package ru.justtry.rest.controllers;
 
 import static ru.justtry.database.Database.IMAGES_COLLECTION;
 
@@ -39,6 +39,7 @@ public class StatisticsController
     @Autowired
     private NotesController notesController;
 
+
     @GetMapping("/notes")
     @ResponseBody
     public ResponseEntity<Object[]> getNotesInfo()
@@ -61,6 +62,7 @@ public class StatisticsController
         return new ResponseEntity<>(allCollectionsInfo.toArray(), new HttpHeaders(), HttpStatus.OK);
     }
 
+
     @GetMapping("/files")
     @ResponseBody
     public ResponseEntity<Object> getFilesInfo()
@@ -79,6 +81,7 @@ public class StatisticsController
         return new ResponseEntity<>(filesInfo, new HttpHeaders(), HttpStatus.OK);
     }
 
+
     @GetMapping("/db")
     @ResponseBody
     public ResponseEntity<Object> getDatabaseInfo()
@@ -93,6 +96,7 @@ public class StatisticsController
 
         return new ResponseEntity<>(databaseInfo, new HttpHeaders(), HttpStatus.OK);
     }
+
 
     @GetMapping("/icons")
     @ResponseBody

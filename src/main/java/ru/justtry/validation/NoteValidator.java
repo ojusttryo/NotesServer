@@ -32,7 +32,7 @@ public class NoteValidator implements Validator
 
         Note note = (Note)object;
         if (note.getId() != null && note.getId().length() != 24)
-            throwIllegalArg("Note id should be 32 characters length");
+            throwIllegalArg("Note id should be 24 characters length");
 
         Attribute[] attributes = attributeService.get(entityName);
         for (Attribute attribute : attributes)

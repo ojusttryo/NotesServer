@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import ru.justtry.database.Database;
 import ru.justtry.mappers.AttributeMapper;
-import ru.justtry.rest.AttributesController;
+import ru.justtry.rest.controllers.AttributesController;
 import ru.justtry.shared.AttributeConstants.PredefinedAttributes;
 import ru.justtry.shared.AttributeConstants.Type;
 import ru.justtry.shared.Identifiable;

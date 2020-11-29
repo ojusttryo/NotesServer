@@ -1,9 +1,7 @@
-package ru.justtry.rest;
+package ru.justtry.rest.controllers;
 
-import static ru.justtry.shared.Constants.ID;
-import static ru.justtry.shared.EntityConstants.ATTRIBUTE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
-import static ru.justtry.shared.EntityConstants.NAME;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,7 +30,6 @@ import ru.justtry.metainfo.EntityService;
 import ru.justtry.postprocessing.DeleteEntityPostprocessor;
 import ru.justtry.postprocessing.SaveEntityPostprocessor;
 import ru.justtry.shared.Identifiable;
-import ru.justtry.shared.Utils;
 import ru.justtry.validation.EntityValidator;
 
 @RestController
@@ -54,64 +51,44 @@ public class EntitiesController
     private DeleteEntityPostprocessor deletePostprocessor;
     @Autowired
     private EntityService entityService;
-    @Autowired
-    private Utils utils;
 
 
-    @PostMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public ResponseEntity<Object> save(@RequestBody Entity entity)
     {
-        HttpHeaders headers = new HttpHeaders();
-        try
-        {
-            entityValidator.validate(entity, ENTITIES_COLLECTION);
-            Document document = entityMapper.getDocument(entity);
-            String id = database.saveDocument(ENTITIES_COLLECTION, document);
-            entity.setId(id);
-            savePostprocessor.process(entity);
-            database.saveLog(ENTITIES_COLLECTION, "CREATE", id, null, entity.toString());
-            return new ResponseEntity<>(id, headers, HttpStatus.OK);
-        }
-        catch (Exception e)
-        {
-            logger.error(e);
-            return utils.getResponseForError(headers, e);
-        }
+        entityValidator.validate(entity, ENTITIES_COLLECTION);
+        Document document = entityMapper.getDocument(entity);
+        String id = database.saveDocument(ENTITIES_COLLECTION, document);
+        entity.setId(id);
+        savePostprocessor.process(entity);
+        database.saveLog(ENTITIES_COLLECTION, "CREATE", id, null, entity.toString());
+        return new ResponseEntity<>(id, new HttpHeaders(), HttpStatus.OK);
     }
 
-    @PutMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
+    @PutMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> update(@RequestBody Entity entity)
     {
-        HttpHeaders headers = new HttpHeaders();
-        try
-        {
-            Identifiable before = entityService.getByName(entity.getName());
-            entity.setId(before.getId());
-            entityValidator.validate(entity, ENTITIES_COLLECTION);
-            entityService.update(entity);
-            savePostprocessor.process(entity);
-            database.saveLog(ENTITIES_COLLECTION, "UPDATE", entity.getId(), before.toString(), entity.toString());
-            return new ResponseEntity<>(entity.getId(), headers, HttpStatus.OK);
-        }
-        catch (Exception e)
-        {
-            logger.error(e);
-            return utils.getResponseForError(headers, e);
-        }
+        Identifiable before = entityService.getByName(entity.getName());
+        entity.setId(before.getId());
+        entityValidator.validate(entity, ENTITIES_COLLECTION);
+        entityService.update(entity);
+        savePostprocessor.process(entity);
+        database.saveLog(ENTITIES_COLLECTION, "UPDATE", entity.getId(), before.toString(), entity.toString());
+        return new ResponseEntity<>(entity.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
 
-    @GetMapping(path = "/search", produces = "application/json;charset=UTF-8")
+    @GetMapping(path = "/search", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public Object get(
-            @RequestParam(value = ID, required = false) String id,
-            @RequestParam(value = NAME, required = false) String name,
-            @RequestParam(value = ATTRIBUTE, required = false) String attribute)
+            @RequestParam(required = false) String id,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String attribute)
     {
         if (id != null)
             return entityService.getById(id);
@@ -124,7 +101,7 @@ public class EntitiesController
     }
 
 
-    @GetMapping(produces = "application/json;charset=UTF-8")
+    @GetMapping(produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public Entity[] get()
@@ -135,7 +112,7 @@ public class EntitiesController
 
     @DeleteMapping("/{name}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(@PathVariable(value = NAME) String name)
+    public void delete(@PathVariable String name)
     {
         Entity before = entityService.getByName(name);
         database.deleteDocument(ENTITIES_COLLECTION, before.getId());

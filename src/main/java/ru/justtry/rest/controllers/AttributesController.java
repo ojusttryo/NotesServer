@@ -1,9 +1,7 @@
-package ru.justtry.rest;
+package ru.justtry.rest.controllers;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
-import static ru.justtry.shared.AttributeConstants.NAME;
-import static ru.justtry.shared.AttributeConstants.SHARED;
-import static ru.justtry.shared.RestConstants.REST_ATTRIBUTES;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,13 +29,12 @@ import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
 import ru.justtry.postprocessing.DeleteAttributePostprocessor;
 import ru.justtry.postprocessing.SaveAttributePostprocessor;
-import ru.justtry.shared.Utils;
 import ru.justtry.validation.AttributeValidator;
 
 
 @RestController
 @CrossOrigin(maxAge = 3600)
-@RequestMapping(REST_ATTRIBUTES)
+@RequestMapping("/rest/attributes")
 public class AttributesController
 {
     final static Logger logger = LogManager.getLogger(AttributesController.class);
@@ -54,63 +51,43 @@ public class AttributesController
     private AttributeService attributeService;
     @Autowired
     private EntityService entityService;
-    @Autowired
-    private Utils utils;
 
 
-    @PostMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public ResponseEntity<Object> save(@RequestBody Attribute attribute)
     {
-        HttpHeaders headers = new HttpHeaders();
-        try
-        {
-            attributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
-            attributeService.save(attribute);
-            savePostprocessor.process(attribute);
-            database.saveLog(ATTRIBUTES_COLLECTION, "CREATE", attribute.getId(), null, attribute.toString());
-            return new ResponseEntity<>(attribute.getId(), headers, HttpStatus.OK);
-        }
-        catch (Exception e)
-        {
-            // TODO roll back actions (delete note, etc)
-            logger.error(e);
-            return utils.getResponseForError(headers, e);
-        }
+        attributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
+        attributeService.save(attribute);
+        savePostprocessor.process(attribute);
+        database.saveLog(ATTRIBUTES_COLLECTION, "CREATE", attribute.getId(), null, attribute.toString());
+        return new ResponseEntity<>(attribute.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
-    @PutMapping(consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
+
+    @PutMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> update(@RequestBody Attribute attribute)
     {
-        HttpHeaders headers = new HttpHeaders();
-        try
-        {
-            attribute.setId(attributeService.getId(attribute.getName()));
-            attributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
-            Attribute before = attributeService.getByName(attribute.getName());
-            attributeService.update(attribute);
-            savePostprocessor.process(attribute);
-            database.saveLog(ATTRIBUTES_COLLECTION, "UPDATE", attribute.getId(), before.toString(), attribute.toString());
-            return new ResponseEntity<>(attribute.getId(), headers, HttpStatus.OK);
-        }
-        catch (Exception e)
-        {
-            logger.error(e);
-            return utils.getResponseForError(headers, e);
-        }
+        attribute.setId(attributeService.getId(attribute.getName()));
+        attributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
+        Attribute before = attributeService.getByName(attribute.getName());
+        attributeService.update(attribute);
+        savePostprocessor.process(attribute);
+        database.saveLog(ATTRIBUTES_COLLECTION, "UPDATE", attribute.getId(), before.toString(), attribute.toString());
+        return new ResponseEntity<>(attribute.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
 
-    @GetMapping(path = "/search", produces = "application/json;charset=UTF-8")
+    @GetMapping(path = "/search", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public Object get(
-            @RequestParam(value = "entityName", required = false) String entityName,
-            @RequestParam(value = NAME, required = false) String name,
-            @RequestParam(value = "visible", required = false) Boolean visible,
-            @RequestParam(value = SHARED, required = false) Boolean shared)
+            @RequestParam(required = false) String entityName,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Boolean visible,
+            @RequestParam(required = false) Boolean shared)
     {
         // all by shared
         if (shared != null && shared)
@@ -147,17 +124,17 @@ public class AttributesController
     }
 
 
-    @GetMapping(path = "/compared/{entityName}", produces = "application/json;charset=UTF-8")
+    @GetMapping(path = "/compared/{entityName}", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Object get(@PathVariable(value = "entityName") String entityName)
+    public Object get(@PathVariable String entityName)
     {
         Entity entity = entityService.getByName(entityName);
         return attributeService.get(entity.getComparedAttributes());
     }
 
 
-    @GetMapping(produces = "application/json;charset=UTF-8")
+    @GetMapping(produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public Attribute[] get()
@@ -168,7 +145,7 @@ public class AttributesController
 
     @DeleteMapping("/{name}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(@PathVariable(value = NAME) String name)
+    public void delete(@PathVariable String name)
     {
         Attribute before = attributeService.getByName(name);
         database.deleteDocument(ATTRIBUTES_COLLECTION, before.getId());

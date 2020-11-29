@@ -22,7 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import ru.justtry.notes.Note;
-import ru.justtry.rest.NotesController;
+import ru.justtry.rest.controllers.NotesController;
+import ru.justtry.rest.errors.RestError;
 
 @Component
 public class Utils

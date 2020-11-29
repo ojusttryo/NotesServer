@@ -18,7 +18,7 @@ import com.mongodb.BasicDBObject;
 import ru.justtry.database.Database;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
-import ru.justtry.rest.NotesController;
+import ru.justtry.rest.controllers.NotesController;
 import ru.justtry.shared.NoteConstants;
 
 @Migration

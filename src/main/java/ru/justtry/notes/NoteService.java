@@ -27,7 +27,7 @@ import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
-import ru.justtry.rest.NotesController;
+import ru.justtry.rest.controllers.NotesController;
 import ru.justtry.shared.Identifiable;
 import ru.justtry.shared.NoteConstants;
 import ru.justtry.shared.Utils;
@@ -54,7 +54,7 @@ public class NoteService
     private EntityService entityService;
 
 
-    public Note getRegular(String collection, String id)
+    public Note get(String collection, String id)
     {
         Document doc = database.getDocument(collection, id);
         Note note = (Note)noteMapper.getObject(doc);
@@ -71,7 +71,7 @@ public class NoteService
     }
 
 
-    public Note[] getAll(String entity)
+    public Note[] get(String entity)
     {
         Entity e = entityService.getByName(entity);
         if (e == null)
@@ -116,7 +116,7 @@ public class NoteService
     }
 
 
-    public Note[] getRegular(String entity, List<String> ids)
+    public Note[] get(String entity, List<String> ids)
     {
         List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), ids, MONGO_ID);
         Identifiable[] notes = noteMapper.getObjects(documents);
@@ -172,7 +172,7 @@ public class NoteService
 
     public void hide(String entity, String id)
     {
-        Note note = getRegular(notesController.getCollectionName(entity), id);
+        Note note = get(notesController.getCollectionName(entity), id);
         note.setHidden(true);
         update(entity, note);
     }
@@ -180,7 +180,7 @@ public class NoteService
 
     public void reveal(String entity, String id)
     {
-        Note note = getRegular(notesController.getCollectionName(entity), id);
+        Note note = get(notesController.getCollectionName(entity), id);
         note.setHidden(false);
         update(entity, note);
     }

@@ -1,7 +1,4 @@
-package ru.justtry.rest;
-
-import static ru.justtry.shared.Constants.ID;
-import static ru.justtry.shared.NoteConstants.ENTITY;
+package ru.justtry.rest.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -20,22 +17,22 @@ public abstract class ObjectsController
 {
     abstract String getCollectionName(String entity);
 
+
     @Autowired
     private NoteService noteService;
 
 
     @GetMapping("/{entity}/{id}")
     @ResponseBody
-    public Identifiable get(@PathVariable(value = ENTITY) String entity,
-                      @PathVariable(value = ID) String id)
+    public Identifiable get(@PathVariable String entity, @PathVariable String id)
     {
-        return noteService.getRegular(getCollectionName(entity), id);
+        return noteService.get(getCollectionName(entity), id);
     }
 
 
     @GetMapping("/{entity}")
     @ResponseBody
-    public ResponseEntity<Identifiable[]> getAll(@PathVariable(value = ENTITY) String entity)
+    public ResponseEntity<Identifiable[]> getAll(@PathVariable String entity)
     {
         HttpHeaders headers = new HttpHeaders();
         Identifiable[] objects = noteService.getRegular(entity);

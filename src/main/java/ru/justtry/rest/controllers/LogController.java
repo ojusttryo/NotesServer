@@ -1,7 +1,4 @@
-package ru.justtry.rest;
-
-import static ru.justtry.shared.Constants.ID;
-import static ru.justtry.shared.NoteConstants.ENTITY;
+package ru.justtry.rest.controllers;
 
 import javax.inject.Inject;
 
@@ -25,7 +22,7 @@ public class LogController
 
     @GetMapping("/rest/log/{count}")
     @ResponseBody
-    public ResponseEntity<Object[]> get(@PathVariable(value = "count") int count)
+    public ResponseEntity<Object[]> get(@PathVariable int count)
     {
         return new ResponseEntity<>(database.getLog(count), new HttpHeaders(), HttpStatus.OK);
     }

@@ -1,4 +1,4 @@
-package ru.justtry.rest;
+package ru.justtry.rest.controllers;
 
 import static ru.justtry.shared.NoteConstants.ENTITY;
 

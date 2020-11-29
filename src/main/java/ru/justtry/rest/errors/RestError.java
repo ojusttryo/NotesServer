@@ -1,4 +1,4 @@
-package ru.justtry.shared;
+package ru.justtry.rest.errors;
 
 import java.util.Date;
 
