@@ -344,6 +344,8 @@ public class Attribute extends Identifiable
      */
     private boolean shared = true;
 
+    private List<String> usage = new ArrayList<>();
+
     public void setSelectOptions(List<String> selectOptions)
     {
         if (selectOptions == null)

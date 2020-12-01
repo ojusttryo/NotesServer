@@ -139,7 +139,7 @@ public class AttributesController
     @ResponseBody
     public Attribute[] get()
     {
-        return attributeService.getAll();
+        return attributeService.getAllWithUsage();
     }
 
 

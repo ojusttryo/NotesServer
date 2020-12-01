@@ -80,6 +80,22 @@ public class AttributeService
     }
 
 
+    public Attribute[] getAllWithUsage()
+    {
+        Attribute[] attributes = getAll();
+        Map<String, Attribute> attributeMap = Arrays.stream(attributes)
+                .collect(Collectors.toMap(Attribute::getName, x -> x));
+
+        Entity[] entities = entityService.getAll();
+        for (Entity entity : entities)
+        {
+            for (String attribute : entity.getAttributes())
+                attributeMap.get(attribute).getUsage().add(entity.getName());
+        }
+        return attributes;
+    }
+
+
     public Attribute[] getAvailable(Entity entity)
     {
         Entity[] entities = entityService.getAll();
