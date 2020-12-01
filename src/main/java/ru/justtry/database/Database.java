@@ -393,7 +393,7 @@ public class Database
 
     public boolean isFileExists(String fileId)
     {
-        MongoCollection<Document> allFiles = getDatabase().getCollection(FILES_COLLECTION);
+        MongoCollection<Document> allFiles = getDatabase().getCollection("files.files");
         FindIterable<Document> iterable = allFiles.find(eq(MONGO_ID, new ObjectId(fileId))).limit(1);
         Document file = iterable.first();
 
