@@ -29,7 +29,8 @@ import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
 import ru.justtry.postprocessing.DeleteAttributePostprocessor;
 import ru.justtry.postprocessing.SaveAttributePostprocessor;
-import ru.justtry.validation.AttributeValidator;
+import ru.justtry.validation.delete.DeleteAttributeValidator;
+import ru.justtry.validation.save.SaveAttributeValidator;
 
 
 @RestController
@@ -42,7 +43,9 @@ public class AttributesController
     @Autowired
     private Database database;
     @Autowired
-    private AttributeValidator attributeValidator;
+    private SaveAttributeValidator saveAttributeValidator;
+    @Autowired
+    private DeleteAttributeValidator deleteAttributeValidator;
     @Autowired
     private SaveAttributePostprocessor savePostprocessor;
     @Autowired
@@ -58,7 +61,7 @@ public class AttributesController
     @ResponseBody
     public ResponseEntity<Object> save(@RequestBody Attribute attribute)
     {
-        attributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
+        saveAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
         attributeService.save(attribute);
         savePostprocessor.process(attribute);
         database.saveLog(ATTRIBUTES_COLLECTION, "CREATE", attribute.getId(), null, attribute.toString());
@@ -71,7 +74,7 @@ public class AttributesController
     public ResponseEntity<Object> update(@RequestBody Attribute attribute)
     {
         attribute.setId(attributeService.getId(attribute.getName()));
-        attributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
+        saveAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
         Attribute before = attributeService.getByName(attribute.getName());
         attributeService.update(attribute);
         savePostprocessor.process(attribute);
@@ -145,11 +148,12 @@ public class AttributesController
 
     @DeleteMapping("/{name}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(@PathVariable String name)
+    public void delete(@PathVariable String name) throws IllegalStateException
     {
-        Attribute before = attributeService.getByName(name);
-        database.deleteDocument(ATTRIBUTES_COLLECTION, before.getId());
-        deletePostprocessor.process(before);
-        database.saveLog(ATTRIBUTES_COLLECTION, "DELETE", name, before.toString(), null);
+        Attribute attribute = attributeService.getByName(name);
+        deleteAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
+        database.deleteDocument(ATTRIBUTES_COLLECTION, attribute.getId());
+        deletePostprocessor.process(attribute);
+        database.saveLog(ATTRIBUTES_COLLECTION, "DELETE", name, attribute.toString(), null);
     }
 }

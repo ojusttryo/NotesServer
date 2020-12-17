@@ -1,4 +1,4 @@
-package ru.justtry.validation;
+package ru.justtry.validation.save;
 
 import org.springframework.stereotype.Component;
 
@@ -8,7 +8,7 @@ import ru.justtry.notes.NoteFolder;
 import ru.justtry.shared.ErrorMessages;
 
 @Component
-public class FolderValidator implements Validator
+public class SaveFolderValidator implements SaveValidator
 {
     @Override
     public void validate(Object object, String collectionName)

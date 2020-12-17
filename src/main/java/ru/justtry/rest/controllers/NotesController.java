@@ -41,7 +41,7 @@ import ru.justtry.postprocessing.DeleteNotePostprocessor;
 import ru.justtry.postprocessing.SaveNotePostprocessor;
 import ru.justtry.shared.Identifiable;
 import ru.justtry.shared.Utils;
-import ru.justtry.validation.NoteValidator;
+import ru.justtry.validation.save.SaveNoteValidator;
 
 @RestController
 @RequestMapping("/rest/notes")
@@ -50,7 +50,7 @@ public class NotesController extends ObjectsController
     final static Logger logger = LogManager.getLogger(NotesController.class);
 
     @Autowired
-    private NoteValidator noteValidator;
+    private SaveNoteValidator saveNoteValidator;
     @Autowired
     private NoteService noteService;
     @Autowired
@@ -72,7 +72,7 @@ public class NotesController extends ObjectsController
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> save(@PathVariable String entity, @RequestBody Note note)
     {
-        noteValidator.validate(note, entity);
+        saveNoteValidator.validate(note, entity);
         noteService.save(entity, note);
         savePostprocessor.process(note, null, entity);
         database.saveLog(getCollectionName(entity), "CREATE", note.getId(), null, note.toString());
@@ -85,9 +85,11 @@ public class NotesController extends ObjectsController
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> update(@PathVariable String entity, @RequestBody Note note)
     {
-        noteValidator.validate(note, entity);
+        saveNoteValidator.validate(note, entity);
 
         Note before = noteService.get(getCollectionName(entity), note.getId());
+        note.setFavorite(before.isFavorite());
+        note.setHidden(before.isHidden());
 
         Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entity);
         noteService.copyUnusedAttributes(attributes, note, before);

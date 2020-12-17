@@ -30,7 +30,8 @@ import ru.justtry.metainfo.EntityService;
 import ru.justtry.postprocessing.DeleteEntityPostprocessor;
 import ru.justtry.postprocessing.SaveEntityPostprocessor;
 import ru.justtry.shared.Identifiable;
-import ru.justtry.validation.EntityValidator;
+import ru.justtry.validation.delete.DeleteEntityValidator;
+import ru.justtry.validation.save.SaveEntityValidator;
 
 @RestController
 @CrossOrigin(maxAge = 3600)
@@ -44,13 +45,17 @@ public class EntitiesController
     @Autowired
     private EntityMapper entityMapper;
     @Autowired
-    private EntityValidator entityValidator;
+    private SaveEntityValidator saveEntityValidator;
+    @Autowired
+    private DeleteEntityValidator deleteEntityValidator;
     @Autowired
     private SaveEntityPostprocessor savePostprocessor;
     @Autowired
     private DeleteEntityPostprocessor deletePostprocessor;
     @Autowired
     private EntityService entityService;
+    @Autowired
+    private NotesController notesController;
 
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -58,7 +63,7 @@ public class EntitiesController
     @ResponseBody
     public ResponseEntity<Object> save(@RequestBody Entity entity)
     {
-        entityValidator.validate(entity, ENTITIES_COLLECTION);
+        saveEntityValidator.validate(entity, ENTITIES_COLLECTION);
         Document document = entityMapper.getDocument(entity);
         String id = database.saveDocument(ENTITIES_COLLECTION, document);
         entity.setId(id);
@@ -74,7 +79,7 @@ public class EntitiesController
     {
         Identifiable before = entityService.getByName(entity.getName());
         entity.setId(before.getId());
-        entityValidator.validate(entity, ENTITIES_COLLECTION);
+        saveEntityValidator.validate(entity, ENTITIES_COLLECTION);
         entityService.update(entity);
         savePostprocessor.process(entity);
         database.saveLog(ENTITIES_COLLECTION, "UPDATE", entity.getId(), before.toString(), entity.toString());
@@ -114,9 +119,11 @@ public class EntitiesController
     @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable String name)
     {
-        Entity before = entityService.getByName(name);
-        database.deleteDocument(ENTITIES_COLLECTION, before.getId());
-        deletePostprocessor.process(before);
-        database.saveLog(ENTITIES_COLLECTION, "DELETE", name, before.toString(), null);
+        Entity entity = entityService.getByName(name);
+        deleteEntityValidator.validate(entity, ENTITIES_COLLECTION);
+        database.deleteDocument(ENTITIES_COLLECTION, entity.getId());
+        database.dropCollection(notesController.getCollectionName(name));
+        deletePostprocessor.process(entity);
+        database.saveLog(ENTITIES_COLLECTION, "DELETE", name, entity.toString(), null);
     }
 }

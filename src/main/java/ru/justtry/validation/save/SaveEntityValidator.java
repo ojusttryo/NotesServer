@@ -1,4 +1,4 @@
-package ru.justtry.validation;
+package ru.justtry.validation.save;
 
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.ErrorMessages.NOT_ALL_ATTRIBUTES_FOUND;
@@ -21,7 +21,7 @@ import ru.justtry.shared.EntityConstants;
 import ru.justtry.shared.ErrorMessages;
 
 @Component
-public class EntityValidator implements Validator
+public class SaveEntityValidator implements SaveValidator
 {
     @Autowired
     private AttributeService attributeService;

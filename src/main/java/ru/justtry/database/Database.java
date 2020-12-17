@@ -176,11 +176,7 @@ public class Database
     {
         MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
 
-        List<String> identifiers = new ArrayList<>(values.size());
-        for (String id : values)
-            identifiers.add(id);
-
-        FindIterable<Document> iterable = collection.find(in(fieldName, identifiers));
+        FindIterable<Document> iterable = collection.find(in(fieldName, values));
 
         List<Document> documents = new ArrayList<>();
         try (MongoCursor<Document> cursor = iterable.iterator())

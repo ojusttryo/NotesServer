@@ -1,4 +1,4 @@
-package ru.justtry.validation;
+package ru.justtry.validation.save;
 
 import java.util.ArrayList;
 
@@ -13,7 +13,7 @@ import ru.justtry.metainfo.AttributeService;
 import ru.justtry.notes.Note;
 
 @Component
-public class NoteValidator implements Validator
+public class SaveNoteValidator implements SaveValidator
 {
     @Autowired
     private Database database;

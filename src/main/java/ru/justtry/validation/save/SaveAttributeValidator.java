@@ -1,4 +1,4 @@
-package ru.justtry.validation;
+package ru.justtry.validation.save;
 
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 import static ru.justtry.shared.ErrorMessages.NAME_IS_DUPLICATED;
@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
@@ -24,27 +23,22 @@ import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Attribute.ImageSize;
 import ru.justtry.metainfo.Attribute.Method;
 import ru.justtry.metainfo.Attribute.Type;
-import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.EntityService;
 import ru.justtry.shared.ErrorMessages;
 import ru.justtry.shared.Identifiable;
 
 @Component
-public class AttributeValidator implements Validator
+public class SaveAttributeValidator implements SaveValidator
 {
-
     private static Pattern namePattern = Pattern.compile("\\A[a-zA-Z]{1}[0-9a-zA-Z\\-]*\\Z");
-    private static Pattern positiveIntegerPattern = Pattern.compile("\\d+");
 
     @Autowired
     private Database database;
     @Autowired
     private AttributeMapper attributeMapper;
     @Autowired
-    @Lazy
-    private AttributeService attributeService;
-    @Autowired
     private EntityService entityService;
+
 
     @Override
     public void validate(Object object, String collectionName)
