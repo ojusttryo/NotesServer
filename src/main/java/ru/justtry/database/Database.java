@@ -26,12 +26,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,31 +55,27 @@ import com.mongodb.client.model.Projections;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.sort.Sort;
 import ru.justtry.database.sort.SortInfo;
 import ru.justtry.mappers.LogMapper;
 import ru.justtry.shared.AttributeConstants;
 
+@RequiredArgsConstructor
+@Slf4j
 public class Database
 {
-    private static final Logger logger = LogManager.getLogger(Database.class);
     private static final String LOG_COLLECTION = "log";
     private static final String FILES_COLLECTION = "files";
     public static final String NOTES_FILES_COLLECTION = "notes.files";
     public static final String IMAGES_COLLECTION = "notes.images";
 
+    private final LogMapper logMapper;
+    private final Sort sort;
+
     private String databaseName;
     private MongoClient mongoClient;
-    @Autowired
-    private LogMapper logMapper;
-    @Autowired
-    private Sort sort;
-
-
-    public Database()
-    {
-
-    }
 
 
     public void init(String host, Integer port, String name, String user, String password)
@@ -114,7 +107,7 @@ public class Database
         MongoCollection<Document> entitiesCollection = database.getCollection(ENTITIES_COLLECTION);
         entitiesCollection.createIndex(new BasicDBObject(NAME, 1), new IndexOptions().unique(true));
 
-        logger.info("Database created");
+        log.info("Database created");
     }
 
 
@@ -345,7 +338,7 @@ public class Database
             catch (Exception e)
             {
                 // Maybe we connect the same note attribute to the same file
-                logger.error(e);
+                log.error(e.toString());
             }
         }
     }
@@ -453,7 +446,7 @@ public class Database
 
                     // Removing file/image itself
                     bucket.delete(file.getObjectId());
-                    logger.info("Removing file " + file.getMetadata().get("title"));
+                    log.info("Removing file " + file.getMetadata().get("title"));
                     count++;
                 }
             }

@@ -5,28 +5,28 @@ import static ru.justtry.shared.ErrorMessages.NOT_ALL_ATTRIBUTES_FOUND;
 import static ru.justtry.shared.ErrorMessages.NOT_ALL_COMPARED_ATTRIBUTES_FOUND;
 import static ru.justtry.shared.ErrorMessages.NOT_ALL_VISIBLE_ATTRIBUTES_FOUND;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
 import ru.justtry.database.sort.SortInfo;
 import ru.justtry.database.sort.SortInfo.Direction;
 import ru.justtry.metainfo.Attribute;
-import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.dictionary.Type;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.shared.EntityConstants;
 import ru.justtry.shared.ErrorMessages;
 
 @Component
+@RequiredArgsConstructor
 public class SaveEntityValidator implements SaveValidator
 {
-    @Autowired
-    private AttributeService attributeService;
-    @Autowired
-    private Database database;
+    private final AttributeService attributeService;
+    private final Database database;
+
 
     @Override
     public void validate(Object object, String name)
@@ -44,7 +44,7 @@ public class SaveEntityValidator implements SaveValidator
         Attribute keyAttribute = attributeService.getByName(entity.getKeyAttribute());
         if (keyAttribute == null)
             throw new IllegalArgumentException("Attribute specified as key attribute is not found");
-        Attribute.Type keyAttrType = keyAttribute.getTypeAsEnum();
+        Type keyAttrType = keyAttribute.getTypeAsEnum();
         if (keyAttrType != Type.SELECT && !Type.isNumericType(keyAttrType) && !Type.isTextType(keyAttrType))
             throw new IllegalArgumentException("Key attribute should be textual, numeric or select type");
 

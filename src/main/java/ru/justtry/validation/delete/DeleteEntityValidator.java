@@ -5,25 +5,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.bson.Document;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
 import ru.justtry.metainfo.Attribute;
-import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.dictionary.Type;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
-import ru.justtry.rest.controllers.NotesController;
+import ru.justtry.notes.NoteService;
 
 @Component
+@RequiredArgsConstructor
 public class DeleteEntityValidator implements DeleteValidator
 {
-    @Autowired
-    private AttributeService attributeService;
-    @Autowired
-    private Database database;
-    @Autowired
-    private NotesController notesController;
+    private final AttributeService attributeService;
+    private final Database database;
+    private final NoteService noteService;
 
 
     @Override
@@ -42,7 +40,7 @@ public class DeleteEntityValidator implements DeleteValidator
             throw new IllegalStateException("Entity is used in attributes: " + String.join(", ", usageList));
         }
 
-        Document entitiesInfo = database.getCollectionInfo(notesController.getCollectionName(entity.getName()));
+        Document entitiesInfo = database.getCollectionInfo(noteService.getCollectionName(entity.getName()));
         if (entitiesInfo != null)
         {
             long count = Long.parseLong(entitiesInfo.get("count").toString());

@@ -10,19 +10,18 @@ import org.bson.Document;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
 import ru.justtry.mappers.ScaledImageMapper;
 
-@Component
+@Service
+@RequiredArgsConstructor
 public class ImageService
 {
-    @Autowired
-    private Database database;
-    @Autowired
-    private ScaledImageMapper imageMapper;
+    private final Database database;
+    private final ScaledImageMapper imageMapper;
 
 
     public ScaledImage getImage(String id, int size) throws Exception

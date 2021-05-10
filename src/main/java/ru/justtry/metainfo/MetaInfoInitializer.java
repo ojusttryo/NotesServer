@@ -7,11 +7,11 @@ import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
 import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.rest.controllers.AttributesController;
@@ -24,12 +24,11 @@ import ru.justtry.shared.Identifiable;
  */
 @Component
 @DependsOn({"database"})
+@RequiredArgsConstructor
 public class MetaInfoInitializer
 {
-    @Autowired
-    private ApplicationContext context;
-    @Autowired
-    private AttributeMapper attributeMapper;
+    private final ApplicationContext context;
+    private final AttributeMapper attributeMapper;
 
     @PostConstruct
     public void createDefaultMetaInfo()

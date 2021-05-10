@@ -16,23 +16,23 @@ import java.util.regex.Pattern;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
 import ru.justtry.database.sort.SortInfo;
 import ru.justtry.mappers.NoteMapper;
 import ru.justtry.metainfo.Attribute;
-import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.dictionary.Type;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
-import ru.justtry.rest.controllers.NotesController;
 import ru.justtry.shared.Identifiable;
 import ru.justtry.shared.NoteConstants;
 import ru.justtry.shared.Utils;
 
-@Component
+@Service
+@RequiredArgsConstructor
 public class NoteService
 {
     private static final Bson NOT_HIDDEN_FILTER = eq(HIDDEN, false);
@@ -40,18 +40,11 @@ public class NoteService
     private static final Bson NOT_NESTED_FILTER = exists(NESTED, false);
     private static final Bson REGULAR_FILTER = and(NOT_HIDDEN_FILTER, NOT_NESTED_FILTER);
 
-    @Autowired
-    private NoteMapper noteMapper;
-    @Autowired
-    private NotesController notesController;
-    @Autowired
-    private Database database;
-    @Autowired
-    private Utils utils;
-    @Autowired
-    private AttributeService attributeService;
-    @Autowired
-    private EntityService entityService;
+    private final NoteMapper noteMapper;
+    private final Database database;
+    private final Utils utils;
+    private final AttributeService attributeService;
+    private final EntityService entityService;
 
 
     public Note get(String collection, String id)
@@ -65,7 +58,7 @@ public class NoteService
     public Object getKey(String entity, String id)
     {
         Entity e = entityService.getByName(entity);
-        Document doc = database.getDocument(notesController.getCollectionName(entity), id);
+        Document doc = database.getDocument(getCollectionName(entity), id);
         Document attributes = (Document)doc.get(NoteConstants.ATTRIBUTES);
         return attributes.get(e.getKeyAttribute());
     }
@@ -78,7 +71,7 @@ public class NoteService
             throw new IllegalArgumentException("Wrong entity name: " + entity);
 
         String sortField = String.format("%s.%s", NoteConstants.ATTRIBUTES, createSortInfo(e).getAttribute().getName());
-        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), sortField);
+        List<Document> documents = database.getDocuments(getCollectionName(entity), sortField);
         Identifiable[] objects = noteMapper.getObjects(documents);
 
         return toNoteArray(objects);
@@ -96,7 +89,7 @@ public class NoteService
         if (e == null)
             throw new IllegalArgumentException("Wrong entity name: " + entity);
 
-        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), REGULAR_FILTER,
+        List<Document> documents = database.getDocuments(getCollectionName(entity), REGULAR_FILTER,
                 createSortInfo(e));
         Identifiable[] objects = noteMapper.getObjects(documents);
 
@@ -109,7 +102,7 @@ public class NoteService
         Entity e = entityService.getByName(entity);
         if (e == null)
             throw new IllegalArgumentException("Wrong entity name: " + entity);
-        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity),
+        List<Document> documents = database.getDocuments(getCollectionName(entity),
                 eq(NESTED, nestedValue), createSortInfo(e));
         Identifiable[] objects = noteMapper.getObjects(documents);
         return toNoteArray(objects);
@@ -118,7 +111,7 @@ public class NoteService
 
     public Note[] get(String entity, List<String> ids)
     {
-        List<Document> documents = database.getDocuments(notesController.getCollectionName(entity), ids, MONGO_ID);
+        List<Document> documents = database.getDocuments(getCollectionName(entity), ids, MONGO_ID);
         Identifiable[] notes = noteMapper.getObjects(documents);
         return toNoteArray(notes);
     }
@@ -128,7 +121,7 @@ public class NoteService
     {
         saveTimeAttributes(attributeService.get(entity), note);
         Document document = noteMapper.getDocument(note);
-        String id = database.saveDocument(notesController.getCollectionName(entity), document);
+        String id = database.saveDocument(getCollectionName(entity), document);
         note.setId(id);
     }
 
@@ -137,7 +130,7 @@ public class NoteService
     {
         updateTimeAttributes(attributeService.get(entity), note);
         Document doc = noteMapper.getDocument(note);
-        database.updateDocument(notesController.getCollectionName(entity), doc);
+        database.updateDocument(getCollectionName(entity), doc);
     }
 
 
@@ -154,7 +147,7 @@ public class NoteService
         long now = utils.getTimeInMs();
         for (Attribute attribute : attributes)
         {
-            if (Attribute.Type.isTimestampType(attribute.getType()))
+            if (Type.isTimestampType(attribute.getType()))
                 note.getAttributes().put(attribute.getName(), now);
         }
     }
@@ -172,7 +165,7 @@ public class NoteService
 
     public void hide(String entity, String id)
     {
-        Note note = get(notesController.getCollectionName(entity), id);
+        Note note = get(getCollectionName(entity), id);
         note.setHidden(true);
         update(entity, note);
     }
@@ -180,7 +173,7 @@ public class NoteService
 
     public void reveal(String entity, String id)
     {
-        Note note = get(notesController.getCollectionName(entity), id);
+        Note note = get(getCollectionName(entity), id);
         note.setHidden(false);
         update(entity, note);
     }
@@ -205,7 +198,7 @@ public class NoteService
         for (String key : oldNote.getAttributes().keySet())
         {
             Attribute attribute = attributes.get(key);
-            if (attribute == null || !Attribute.Type.isTimestampType(attribute.getType()))
+            if (attribute == null || !Type.isTimestampType(attribute.getType()))
                 continue;
 
             if (oldNote.getAttributes().containsKey(key) && !newNote.getAttributes().containsKey(key))
@@ -336,6 +329,12 @@ public class NoteService
         Attribute attribute = attributeService.getByName(entity.getSortAttribute());
         SortInfo sortInfo = new SortInfo(attribute, entity.getSortDirection());
         return sortInfo;
+    }
+
+
+    public String getCollectionName(String entity)
+    {
+        return entity + ".notes";
     }
 
 

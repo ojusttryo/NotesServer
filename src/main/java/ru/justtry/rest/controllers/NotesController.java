@@ -8,9 +8,6 @@ import java.util.Map;
 
 import javax.websocket.server.PathParam;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,17 +18,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
 import ru.justtry.database.sort.SortInfo;
 import ru.justtry.metainfo.Attribute;
-import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.dictionary.Type;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
@@ -45,49 +43,39 @@ import ru.justtry.validation.save.SaveNoteValidator;
 
 @RestController
 @RequestMapping("/rest/notes")
-public class NotesController extends ObjectsController
+@Slf4j
+@RequiredArgsConstructor
+public class NotesController
 {
-    final static Logger logger = LogManager.getLogger(NotesController.class);
-
-    @Autowired
-    private SaveNoteValidator saveNoteValidator;
-    @Autowired
-    private NoteService noteService;
-    @Autowired
-    protected Database database;
-    @Autowired
-    private SaveNotePostprocessor savePostprocessor;
-    @Autowired
-    private DeleteNotePostprocessor deletePostprocessor;
-    @Autowired
-    private Utils utils;
-    @Autowired
-    private AttributeService attributeService;
-    @Autowired
-    private EntityService entityService;
+    private final SaveNoteValidator saveNoteValidator;
+    private final NoteService noteService;
+    private final Database database;
+    private final SaveNotePostprocessor savePostprocessor;
+    private final DeleteNotePostprocessor deletePostprocessor;
+    private final Utils utils;
+    private final AttributeService attributeService;
+    private final EntityService entityService;
 
 
     @PostMapping(value = "/{entity}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> save(@PathVariable String entity, @RequestBody Note note)
     {
         saveNoteValidator.validate(note, entity);
         noteService.save(entity, note);
         savePostprocessor.process(note, null, entity);
-        database.saveLog(getCollectionName(entity), "CREATE", note.getId(), null, note.toString());
+        database.saveLog(noteService.getCollectionName(entity), "CREATE", note.getId(), null, note.toString());
         return new ResponseEntity<>(note.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
 
     @PutMapping(value = "/{entity}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> update(@PathVariable String entity, @RequestBody Note note)
     {
         saveNoteValidator.validate(note, entity);
 
-        Note before = noteService.get(getCollectionName(entity), note.getId());
+        Note before = noteService.get(noteService.getCollectionName(entity), note.getId());
         note.setFavorite(before.isFavorite());
         note.setHidden(before.isHidden());
 
@@ -103,7 +91,6 @@ public class NotesController extends ObjectsController
 
 
     @PutMapping(value = "/{entity}/{id}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    @ResponseBody
     public ResponseEntity<Object> update(
             @RequestBody String json,
             @PathVariable String entity,
@@ -111,8 +98,8 @@ public class NotesController extends ObjectsController
     {
         Map<String, Object> params = new ObjectMapper().readValue(json, HashMap.class);
         // Two same request in order not to use some deep copy lib
-        Note before = noteService.get(getCollectionName(entity), id);
-        Note note = noteService.get(getCollectionName(entity), id);
+        Note before = noteService.get(noteService.getCollectionName(entity), id);
+        Note note = noteService.get(noteService.getCollectionName(entity), id);
         if (note == null)
             throw new IllegalArgumentException(String.format("Note with id=%s in %s not found", id, entity));
 
@@ -135,15 +122,14 @@ public class NotesController extends ObjectsController
 
 
     @PutMapping(value = "/{entity}/{id}/inc/{attributeName}", produces = APPLICATION_JSON_VALUE)
-    @ResponseBody
     public ResponseEntity<Object> inc(
             @PathVariable String entity,
             @PathVariable String id,
             @PathVariable String attributeName)
     {
         // Two same request in order not to use some deep copy lib
-        Note before = noteService.get(getCollectionName(entity), id);
-        Note note = noteService.get(getCollectionName(entity), id);
+        Note before = noteService.get(noteService.getCollectionName(entity), id);
+        Note note = noteService.get(noteService.getCollectionName(entity), id);
         if (note == null)
             throw new IllegalArgumentException("Cannot find note");
 
@@ -203,10 +189,10 @@ public class NotesController extends ObjectsController
     @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable String entity, @PathVariable String id)
     {
-        Note before = noteService.get(getCollectionName(entity), id);
-        database.deleteDocument(getCollectionName(entity), id);
+        Note before = noteService.get(noteService.getCollectionName(entity), id);
+        database.deleteDocument(noteService.getCollectionName(entity), id);
         deletePostprocessor.process(before, entity);
-        database.saveLog(getCollectionName(entity), "DELETE", id, before.toString(), null);
+        database.saveLog(noteService.getCollectionName(entity), "DELETE", id, before.toString(), null);
     }
 
 
@@ -222,7 +208,7 @@ public class NotesController extends ObjectsController
     @ResponseStatus(HttpStatus.OK)
     public void dropCollection(@PathVariable String entity)
     {
-        long count = database.dropCollection(getCollectionName(entity));
+        long count = database.dropCollection(noteService.getCollectionName(entity));
         // TODO unlink here all files related to entity (new DB method)
         database.saveLog(entity, "DELETE", null, count, 0);
     }
@@ -230,11 +216,10 @@ public class NotesController extends ObjectsController
 
     @GetMapping(path = "/{entity}/hidden", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public ResponseEntity<Object> getHidden(@PathVariable String entity)
     {
         Entity e = entityService.getByName(entity);
-        Identifiable[] objects = noteService.searchByHidden(getCollectionName(entity), true,
+        Identifiable[] objects = noteService.searchByHidden(noteService.getCollectionName(entity), true,
                 noteService.createSortInfo(e));
         return new ResponseEntity<>(objects, new HttpHeaders(), HttpStatus.OK);
     }
@@ -242,11 +227,10 @@ public class NotesController extends ObjectsController
 
     @GetMapping(path = "/{entity}/visible", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public ResponseEntity<Object> getVisible(@PathVariable String entity)
     {
         Entity e = entityService.getByName(entity);
-        Identifiable[] objects = noteService.searchByHidden(getCollectionName(entity), false,
+        Identifiable[] objects = noteService.searchByHidden(noteService.getCollectionName(entity), false,
                 noteService.createSortInfo(e));
         return new ResponseEntity<>(objects, new HttpHeaders(), HttpStatus.OK);
     }
@@ -254,7 +238,6 @@ public class NotesController extends ObjectsController
 
     @GetMapping(path = "/nested/{entity}/{attribute}/{parentNoteId}", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public ResponseEntity<Object> getNested(
             @PathVariable String entity,
             @PathVariable String attribute,
@@ -270,7 +253,6 @@ public class NotesController extends ObjectsController
 
     @PostMapping(path = "/{entity}/search", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public ResponseEntity<Object> search(@RequestBody List<String> ids, @PathVariable String entity)
     {
         return new ResponseEntity<>(noteService.get(entity, ids), new HttpHeaders(), HttpStatus.OK);
@@ -280,7 +262,6 @@ public class NotesController extends ObjectsController
     @PostMapping(path = "/{entity}/{attributeName}/search", consumes = APPLICATION_JSON_VALUE,
             produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public ResponseEntity<Object> search(
             @RequestBody String requestString,
             @PathVariable String entity,
@@ -290,7 +271,7 @@ public class NotesController extends ObjectsController
         Entity e = entityService.getByName(entity);
         SortInfo sortInfo = noteService.createSortInfo(e);
         Attribute attribute = attributeService.getByName(attributeName);
-        Attribute.Type type = attribute.getTypeAsEnum();
+        Type type = attribute.getTypeAsEnum();
         Object response;
 
         switch (type)
@@ -299,20 +280,20 @@ public class NotesController extends ObjectsController
         case TEXT_AREA:
         case DELIMITED_TEXT:
         case URL:
-            response = noteService.searchBySubstring(request, getCollectionName(entity), attribute, sortInfo);
+            response = noteService.searchBySubstring(request, noteService.getCollectionName(entity), attribute, sortInfo);
             break;
         case NUMBER:
         case INC:
-            response = noteService.searchByNumber(request, getCollectionName(entity), attribute, sortInfo);
+            response = noteService.searchByNumber(request, noteService.getCollectionName(entity), attribute, sortInfo);
             break;
         case SELECT:
-            response = noteService.searchByExactString(request, getCollectionName(entity), attribute, sortInfo);
+            response = noteService.searchByExactString(request, noteService.getCollectionName(entity), attribute, sortInfo);
             break;
         case CHECKBOX:
-            response = noteService.searchByBoolean(request, getCollectionName(entity), attribute, sortInfo);
+            response = noteService.searchByBoolean(request, noteService.getCollectionName(entity), attribute, sortInfo);
             break;
         case MULTI_SELECT:
-            response = noteService.searchByIngoing(request, getCollectionName(entity), attribute, sortInfo);
+            response = noteService.searchByIngoing(request, noteService.getCollectionName(entity), attribute, sortInfo);
             break;
         default:
             throw new IllegalArgumentException("Wrong attribute type");
@@ -321,30 +302,20 @@ public class NotesController extends ObjectsController
         return new ResponseEntity<>(response, new HttpHeaders(), HttpStatus.OK);
     }
 
-    /**
-     * Temporary solution to migrate from old SQLite database.
-     */
-    @GetMapping(path = "/migrate", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public void migrate()
+
+    @GetMapping("/{entity}/{id}")
+    public Identifiable get(@PathVariable String entity, @PathVariable String id)
     {
-        utils.migrateAffairs();
-        utils.migrateAnimeSerials();
-        utils.migrateBookmarks();
-        utils.migrateDesires();
-        utils.migrateMovies();
-        utils.migrateGames();
-        utils.migrateLiterature();
-        utils.migrateMeal();
-        utils.migratePeople();
-        utils.migratePrograms();
-        utils.migrateRegularAffairs();
-        utils.migrateSerials();
+        return noteService.get(noteService.getCollectionName(entity), id);
     }
 
-    public String getCollectionName(String entity)
+
+    @GetMapping("/{entity}")
+    public ResponseEntity<Identifiable[]> getAll(@PathVariable String entity)
     {
-        return entity + ".notes" ;
+        HttpHeaders headers = new HttpHeaders();
+        Identifiable[] objects = noteService.getRegular(entity);
+        return new ResponseEntity<>(objects, headers, HttpStatus.OK);
     }
+
 }

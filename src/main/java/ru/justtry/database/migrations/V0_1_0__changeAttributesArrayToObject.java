@@ -5,8 +5,6 @@ import static ru.justtry.shared.Constants.MONGO_ID;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.slf4j.MDC;
 
@@ -15,17 +13,17 @@ import com.github.ojusttryo.migmong.migration.annotations.Migration;
 import com.github.ojusttryo.migmong.migration.annotations.MigrationUnit;
 import com.mongodb.BasicDBObject;
 
+import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
-import ru.justtry.rest.controllers.NotesController;
+import ru.justtry.notes.NoteService;
 import ru.justtry.shared.NoteConstants;
 
 @Migration
+@Slf4j
 public class V0_1_0__changeAttributesArrayToObject
 {
-    final static Logger logger = LogManager.getLogger(V0_1_0__changeAttributesArrayToObject.class);
-
     @MigrationUnit(id = 1)
     public void changeAttributesArrayToObject(MigrationContext context)
     {
@@ -33,14 +31,14 @@ public class V0_1_0__changeAttributesArrayToObject
 
         Database db = context.getApplicationContext().getBean(Database.class);
         EntityService entityService = context.getApplicationContext().getBean(EntityService.class);
-        NotesController notesController = context.getApplicationContext().getBean(NotesController.class);
+        NoteService noteService = context.getApplicationContext().getBean(NoteService.class);
 
         Entity[] entities = entityService.getAll();
         for (Entity entity : entities)
         {
             MDC.put("entity", entity.getName());
 
-            String collectionName = notesController.getCollectionName(entity.getName());
+            String collectionName = noteService.getCollectionName(entity.getName());
             List<Document> notes = db.getDocuments(collectionName, entity.getKeyAttribute());
 
             for (Document note : notes)
@@ -53,7 +51,7 @@ public class V0_1_0__changeAttributesArrayToObject
                     note.remove(NoteConstants.ATTRIBUTES + "2");
                     db.unsetAttribute(collectionName, note, NoteConstants.ATTRIBUTES + "2");
                     db.updateDocument(collectionName, note);
-                    logger.info(String.format("The old field %s has been removed", NoteConstants.ATTRIBUTES + "2"));
+                    log.info(String.format("The old field %s has been removed", NoteConstants.ATTRIBUTES + "2"));
                 }
 
                 // Start changing only if attributes field is still list (ArrayList)
@@ -72,7 +70,7 @@ public class V0_1_0__changeAttributesArrayToObject
 
                     db.updateDocument(collectionName, note);
 
-                    logger.info(String.format("The attribute field has been changed from array to object"));
+                    log.info(String.format("The attribute field has been changed from array to object"));
                 }
             }
         }
@@ -94,10 +92,10 @@ public class V0_1_0__changeAttributesArrayToObject
 
         Database db = context.getApplicationContext().getBean(Database.class);
         EntityService entityService = context.getApplicationContext().getBean(EntityService.class);
-        NotesController notesController = context.getApplicationContext().getBean(NotesController.class);
+        NoteService noteService = context.getApplicationContext().getBean(NoteService.class);
 
         Entity diary = entityService.getByName("diary");
-        String collectionName = notesController.getCollectionName(diary.getName());
+        String collectionName = noteService.getCollectionName(diary.getName());
 
         MDC.put("entity", diary.getName());
 
@@ -129,7 +127,7 @@ public class V0_1_0__changeAttributesArrayToObject
 
             db.updateDocument(collectionName, note);
 
-            logger.info("Date attribute has been changed from 'date' to 'date-required'");
+            log.info("Date attribute has been changed from 'date' to 'date-required'");
         }
 
         MDC.remove("migration");
@@ -148,7 +146,7 @@ public class V0_1_0__changeAttributesArrayToObject
 
         Database db = context.getApplicationContext().getBean(Database.class);
         EntityService entityService = context.getApplicationContext().getBean(EntityService.class);
-        NotesController notesController = context.getApplicationContext().getBean(NotesController.class);
+        NoteService noteService = context.getApplicationContext().getBean(NoteService.class);
         final String FAVOURITE = "favourite";
 
         Entity[] entities = entityService.getAll();
@@ -156,7 +154,7 @@ public class V0_1_0__changeAttributesArrayToObject
         {
             MDC.put("entity", entity.getName());
 
-            String collectionName = notesController.getCollectionName(entity.getName());
+            String collectionName = noteService.getCollectionName(entity.getName());
             List<Document> notes = db.getDocuments(collectionName, entity.getKeyAttribute());
 
             for (Document note : notes)
@@ -172,7 +170,7 @@ public class V0_1_0__changeAttributesArrayToObject
                     db.unsetAttribute(collectionName, note, FAVOURITE);
                     db.updateDocument(collectionName, note);
 
-                    logger.info("The 'favourite' attribute has been renamed to 'favorite'");
+                    log.info("The 'favourite' attribute has been renamed to 'favorite'");
                 }
             }
         }

@@ -5,39 +5,44 @@ import java.time.temporal.ChronoUnit;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
 
 @Component
+@Slf4j
+@RequiredArgsConstructor
 @DependsOn({"mongoMigration"})      // it should start after any changes been made in migrations
 public class FileCleaner
 {
-    final static Logger logger = LogManager.getLogger(FileCleaner.class);
+    private final Database database;
 
-    @Autowired
-    private Database database;
+    @Value("${files.cleaner.enabled:false}")
+    private boolean enabled;
 
     @PostConstruct
     public void run()
     {
+        if (!enabled)
+            return;
+
         Thread t = new Thread(() -> {
             while (true)
             {
                 try
                 {
-                    logger.info("Removing old unused files...");
+                    log.info("Removing old unused files...");
                     long time = Instant.now().minus(1, ChronoUnit.HOURS).getEpochSecond();
                     int count = database.deleteFilesOlderThan(time);
-                    logger.info("Removed " + count + " files");
+                    log.info("Removed " + count + " files");
                 }
                 catch (Exception e)
                 {
-                    logger.error(e);
+                    log.error(e.toString());
                 }
 
                 try

@@ -2,23 +2,22 @@ package ru.justtry.validation.save;
 
 import java.util.ArrayList;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.notes.Note;
 
 @Component
+@RequiredArgsConstructor
 public class SaveNoteValidator implements SaveValidator
 {
-    @Autowired
-    private Database database;
-    @Autowired
-    private AttributeService attributeService;
+    private final Database database;
+    private final AttributeService attributeService;
 
 
     @Override

@@ -9,20 +9,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.bson.Document;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
 import ru.justtry.mappers.EntityMapper;
 import ru.justtry.shared.Identifiable;
 
-@Component
+@Service
+@RequiredArgsConstructor
 public class EntityService
 {
-    @Autowired
-    private EntityMapper entityMapper;
-    @Autowired
-    protected Database database;
+    private final EntityMapper entityMapper;
+    private final Database database;
 
 
     public Entity[] getAll()

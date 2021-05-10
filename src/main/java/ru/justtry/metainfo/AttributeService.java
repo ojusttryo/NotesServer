@@ -13,22 +13,22 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.bson.Document;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
+import ru.justtry.database.sort.Sort;
 import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.shared.Identifiable;
 
-@Component
+@Service
+@RequiredArgsConstructor
 public class AttributeService
 {
-    @Autowired
-    private AttributeMapper attributeMapper;
-    @Autowired
-    protected Database database;
-    @Autowired
-    private EntityService entityService;
+    private final AttributeMapper attributeMapper;
+    private final Database database;
+    private final EntityService entityService;
+    private final Sort sort;
 
 
     public Attribute getById(String id)

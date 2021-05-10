@@ -9,22 +9,21 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
 import ru.justtry.metainfo.Attribute;
-import ru.justtry.metainfo.Attribute.Type;
+import ru.justtry.metainfo.dictionary.Type;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.notes.Note;
 
 @Component
+@RequiredArgsConstructor
 public class SaveNotePostprocessor
 {
-    @Autowired
-    private Database database;
-    @Autowired
-    private AttributeService attributeService;
+    private final Database database;
+    private final AttributeService attributeService;
 
 
     public void process(Note note, @Nullable Note oldNote, String entityName)
@@ -32,7 +31,7 @@ public class SaveNotePostprocessor
         Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entityName);
         for (String attributeName : attributes.keySet())
         {
-            Attribute.Type type = attributes.get(attributeName).getTypeAsEnum();
+            Type type = attributes.get(attributeName).getTypeAsEnum();
 
             if (Type.isFile(type))
             {

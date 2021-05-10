@@ -5,43 +5,38 @@ import static ru.justtry.database.Database.IMAGES_COLLECTION;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bson.Document;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
 import ru.justtry.database.info.CollectionInfo;
 import ru.justtry.database.info.DatabaseInfo;
 import ru.justtry.database.info.FilesInfo;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
+import ru.justtry.notes.NoteService;
 
 @CrossOrigin(maxAge = 3600, origins = "*")
 @RestController
 @RequestMapping("/rest/info")
+@RequiredArgsConstructor
+@Slf4j
 public class StatisticsController
 {
-    final static Logger logger = LogManager.getLogger(FileController.class);
-
-    @Autowired
-    private Database database;
-    @Autowired
-    private EntityService entityService;
-    @Autowired
-    private NotesController notesController;
+    private final Database database;
+    private final EntityService entityService;
+    private final NoteService noteService;
 
 
     @GetMapping("/notes")
-    @ResponseBody
     public ResponseEntity<Object[]> getNotesInfo()
     {
         List<CollectionInfo> allCollectionsInfo = new ArrayList<>();
@@ -51,7 +46,7 @@ public class StatisticsController
             CollectionInfo collectionInfo = new CollectionInfo();
             collectionInfo.setEntityName(entity.getName());
             collectionInfo.setEntityTitle(entity.getTitle());
-            String collectionName = notesController.getCollectionName(entity.getName());
+            String collectionName = noteService.getCollectionName(entity.getName());
             Document infoDocument = database.getCollectionInfo(collectionName);
             collectionInfo.setCount(infoDocument.get("count"));
             collectionInfo.setSize(infoDocument.get("size"));
@@ -64,7 +59,6 @@ public class StatisticsController
 
 
     @GetMapping("/files")
-    @ResponseBody
     public ResponseEntity<Object> getFilesInfo()
     {
         List<FilesInfo> filesInfo = new ArrayList<>();
@@ -83,7 +77,6 @@ public class StatisticsController
 
 
     @GetMapping("/db")
-    @ResponseBody
     public ResponseEntity<Object> getDatabaseInfo()
     {
         Document infoDocument = database.getDatabaseInfo();
@@ -99,7 +92,6 @@ public class StatisticsController
 
 
     @GetMapping("/icons")
-    @ResponseBody
     public ResponseEntity<Object> getIconsInfo()
     {
         Document infoDocument = database.getCollectionInfo(IMAGES_COLLECTION);

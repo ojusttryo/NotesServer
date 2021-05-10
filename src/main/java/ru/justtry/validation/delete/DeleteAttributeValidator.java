@@ -4,19 +4,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
 
 
 @Component
+@RequiredArgsConstructor
 public class DeleteAttributeValidator implements DeleteValidator
 {
-    @Autowired
-    private EntityService entityService;
+    private final EntityService entityService;
 
 
     @Override

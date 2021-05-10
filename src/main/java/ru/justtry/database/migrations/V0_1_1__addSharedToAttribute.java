@@ -6,8 +6,6 @@ import static ru.justtry.shared.AttributeConstants.SHARED;
 
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.slf4j.MDC;
 
@@ -15,14 +13,14 @@ import com.github.ojusttryo.migmong.migration.MigrationContext;
 import com.github.ojusttryo.migmong.migration.annotations.Migration;
 import com.github.ojusttryo.migmong.migration.annotations.MigrationUnit;
 
+import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
 import ru.justtry.shared.AttributeConstants;
 
 @Migration
+@Slf4j
 public class V0_1_1__addSharedToAttribute
 {
-    final static Logger logger = LogManager.getLogger(V0_1_1__addSharedToAttribute.class);
-
     @MigrationUnit(id = 1)
     public void addFieldSharedToAttribute(MigrationContext context)
     {
@@ -38,7 +36,7 @@ public class V0_1_1__addSharedToAttribute
             document.put(SHARED, true);
             db.updateDocument(ATTRIBUTES_COLLECTION, document);
 
-            logger.info("The field 'shared' has been added to the attribute");
+            log.info("The field 'shared' has been added to the attribute");
         }
 
         MDC.remove("migration");

@@ -8,23 +8,23 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.sort.SortInfo.Direction;
 import ru.justtry.shared.NoteConstants;
 
 @Component
+@Slf4j
 public class Sort
 {
-    private final static Logger logger = LogManager.getLogger(Sort.class);
     private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     private final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
-    class NaturalComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>> {
+    static class NaturalComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>> {
 
         @Override
         public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2)
@@ -40,7 +40,7 @@ public class Sort
     }
 
 
-    class NaturalStringComparator<K, String> implements Comparator<Map.Entry<K, String>> {
+    static class NaturalStringComparator<K, String> implements Comparator<Map.Entry<K, String>> {
 
         @Override
         public int compare(Map.Entry<K, String> o1, Map.Entry<K, String> o2)
@@ -56,7 +56,7 @@ public class Sort
     }
 
 
-    class ReverseComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>> {
+    static class ReverseComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>> {
 
         @Override
         public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2)
@@ -72,7 +72,7 @@ public class Sort
     }
 
 
-    class ReverseStringComparator<K, String> implements Comparator<Map.Entry<K, String>> {
+    static class ReverseStringComparator<K, String> implements Comparator<Map.Entry<K, String>> {
 
         @Override
         public int compare(Map.Entry<K, String> o1, Map.Entry<K, String> o2)
@@ -85,6 +85,19 @@ public class Sort
                 return -1;
             return o2.getValue().toString().compareToIgnoreCase(o1.getValue().toString());
         }
+    }
+
+
+    public void run(List<Document> documents, String sortField)
+    {
+        Map<Document, String> documentsMap = documents.stream()
+                .collect(Collectors.toMap(x -> x, x -> x.get(sortField).toString()));
+
+        documents.clear();
+
+        documentsMap.entrySet().stream()
+                .sorted(new NaturalStringComparator<>())
+                .forEachOrdered(x -> documents.add(x.getKey()));
     }
 
 
@@ -186,7 +199,7 @@ public class Sort
             }
             catch (Exception e)
             {
-                logger.error(e);
+                log.error(e.toString());
             }
             break;
         case USER_TIME:
@@ -213,7 +226,7 @@ public class Sort
             }
             catch (Exception e)
             {
-                logger.error(e);
+                log.error(e.toString());
             }
                 break;
         default:

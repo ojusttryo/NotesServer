@@ -12,32 +12,31 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.bson.Document;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
 
+import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
 import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.metainfo.Attribute;
-import ru.justtry.metainfo.Attribute.ImageSize;
-import ru.justtry.metainfo.Attribute.Method;
-import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.EntityService;
+import ru.justtry.metainfo.dictionary.Alignment;
+import ru.justtry.metainfo.dictionary.ImageSize;
+import ru.justtry.metainfo.dictionary.Method;
+import ru.justtry.metainfo.dictionary.Type;
 import ru.justtry.shared.ErrorMessages;
 import ru.justtry.shared.Identifiable;
 
 @Component
+@RequiredArgsConstructor
 public class SaveAttributeValidator implements SaveValidator
 {
     private static Pattern namePattern = Pattern.compile("\\A[a-zA-Z]{1}[0-9a-zA-Z\\-]*\\Z");
 
-    @Autowired
-    private Database database;
-    @Autowired
-    private AttributeMapper attributeMapper;
-    @Autowired
-    private EntityService entityService;
+    private final Database database;
+    private final AttributeMapper attributeMapper;
+    private final EntityService entityService;
 
 
     @Override
@@ -81,14 +80,14 @@ public class SaveAttributeValidator implements SaveValidator
         if (attribute.getMethod() == null)
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("Method"));
 
-        Attribute.Method method = Attribute.Method.get(attribute.getMethod());
+        Method method = Method.get(attribute.getMethod());
         if (method == null)
             throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("method"));
 
         if (attribute.getType() == null)
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("Type"));
 
-        Attribute.Type type = attribute.getTypeAsEnum();
+        Type type = attribute.getTypeAsEnum();
         if (type == null)
             throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("type"));
 
@@ -196,10 +195,10 @@ public class SaveAttributeValidator implements SaveValidator
         if (attribute.getLinesCount() != null && attribute.getLinesCount() < 1)
             throw new IllegalArgumentException("linesCount should be greater or equal to 1");
 
-        if (Attribute.Alignment.get(attribute.getAlignment()) == null)
+        if (Alignment.get(attribute.getAlignment()) == null)
             throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("alignment"));
 
-        if (Attribute.Type.isTimestampType(type) && attribute.getDateFormat() == null)
+        if (Type.isTimestampType(type) && attribute.getDateFormat() == null)
             throw new IllegalArgumentException(ErrorMessages.getIsNotSet("dateFormat"));
 
         if (attribute.getRegex() != null)

@@ -3,10 +3,7 @@ package ru.justtry.rest.controllers;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bson.Document;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +16,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
 import ru.justtry.mappers.EntityMapper;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
+import ru.justtry.notes.NoteService;
 import ru.justtry.postprocessing.DeleteEntityPostprocessor;
 import ru.justtry.postprocessing.SaveEntityPostprocessor;
 import ru.justtry.shared.Identifiable;
@@ -36,31 +35,22 @@ import ru.justtry.validation.save.SaveEntityValidator;
 @RestController
 @CrossOrigin(maxAge = 3600)
 @RequestMapping("/rest/entities")
+@Slf4j
+@RequiredArgsConstructor
 public class EntitiesController
 {
-    final static Logger logger = LogManager.getLogger(EntitiesController.class);
-
-    @Autowired
-    private Database database;
-    @Autowired
-    private EntityMapper entityMapper;
-    @Autowired
-    private SaveEntityValidator saveEntityValidator;
-    @Autowired
-    private DeleteEntityValidator deleteEntityValidator;
-    @Autowired
-    private SaveEntityPostprocessor savePostprocessor;
-    @Autowired
-    private DeleteEntityPostprocessor deletePostprocessor;
-    @Autowired
-    private EntityService entityService;
-    @Autowired
-    private NotesController notesController;
+    private final Database database;
+    private final EntityMapper entityMapper;
+    private final SaveEntityValidator saveEntityValidator;
+    private final DeleteEntityValidator deleteEntityValidator;
+    private final SaveEntityPostprocessor savePostprocessor;
+    private final DeleteEntityPostprocessor deletePostprocessor;
+    private final EntityService entityService;
+    private final NoteService noteService;
 
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public ResponseEntity<Object> save(@RequestBody Entity entity)
     {
         saveEntityValidator.validate(entity, ENTITIES_COLLECTION);
@@ -73,7 +63,6 @@ public class EntitiesController
     }
 
     @PutMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> update(@RequestBody Entity entity)
     {
@@ -88,7 +77,6 @@ public class EntitiesController
 
 
     @GetMapping(path = "/search", produces = APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public Object get(
             @RequestParam(required = false) String id,
@@ -106,9 +94,13 @@ public class EntitiesController
     }
 
 
+    /**
+     *
+     * @return
+     */
+
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public Entity[] get()
     {
         return entityService.getAll();
@@ -122,7 +114,7 @@ public class EntitiesController
         Entity entity = entityService.getByName(name);
         deleteEntityValidator.validate(entity, ENTITIES_COLLECTION);
         database.deleteDocument(ENTITIES_COLLECTION, entity.getId());
-        database.dropCollection(notesController.getCollectionName(name));
+        database.dropCollection(noteService.getCollectionName(name));
         deletePostprocessor.process(entity);
         database.saveLog(ENTITIES_COLLECTION, "DELETE", name, entity.toString(), null);
     }

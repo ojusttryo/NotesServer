@@ -3,9 +3,6 @@ package ru.justtry.rest.controllers;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +15,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.AttributeService;
@@ -36,29 +34,21 @@ import ru.justtry.validation.save.SaveAttributeValidator;
 @RestController
 @CrossOrigin(maxAge = 3600)
 @RequestMapping("/rest/attributes")
+@Slf4j
+@RequiredArgsConstructor
 public class AttributesController
 {
-    final static Logger logger = LogManager.getLogger(AttributesController.class);
-
-    @Autowired
-    private Database database;
-    @Autowired
-    private SaveAttributeValidator saveAttributeValidator;
-    @Autowired
-    private DeleteAttributeValidator deleteAttributeValidator;
-    @Autowired
-    private SaveAttributePostprocessor savePostprocessor;
-    @Autowired
-    private DeleteAttributePostprocessor deletePostprocessor;
-    @Autowired
-    private AttributeService attributeService;
-    @Autowired
-    private EntityService entityService;
+    private final Database database;
+    private final SaveAttributeValidator saveAttributeValidator;
+    private final DeleteAttributeValidator deleteAttributeValidator;
+    private final SaveAttributePostprocessor savePostprocessor;
+    private final DeleteAttributePostprocessor deletePostprocessor;
+    private final AttributeService attributeService;
+    private final EntityService entityService;
 
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public ResponseEntity<Object> save(@RequestBody Attribute attribute)
     {
         saveAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
@@ -85,7 +75,6 @@ public class AttributesController
 
     @GetMapping(path = "/search", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public Object get(
             @RequestParam(required = false) String entityName,
             @RequestParam(required = false) String name,
@@ -129,7 +118,6 @@ public class AttributesController
 
     @GetMapping(path = "/compared/{entityName}", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public Object get(@PathVariable String entityName)
     {
         Entity entity = entityService.getByName(entityName);
@@ -139,7 +127,6 @@ public class AttributesController
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public Attribute[] get()
     {
         return attributeService.getAllWithUsage();
@@ -157,3 +144,5 @@ public class AttributesController
         database.saveLog(ATTRIBUTES_COLLECTION, "DELETE", name, attribute.toString(), null);
     }
 }
+
+
