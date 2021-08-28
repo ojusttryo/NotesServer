@@ -24,8 +24,8 @@ hs_err_pid*
 
 
 # Intellij IDEA files
-#*.iml
-#.idea/
+*.iml
+.idea/
 
 # target
 target/
