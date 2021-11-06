@@ -200,7 +200,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>ru.justtry.springbootapp.Application</mainClass>
+							<mainClass>ru.justtry.Application</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -235,7 +235,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>ru.justtry.springbootapp.Application</mainClass>
+							<mainClass>ru.justtry.Application</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -267,7 +267,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 
-							<mainClass>ru.justtry.springbootapp.Application</mainClass>
+							<mainClass>ru.justtry.Application</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
