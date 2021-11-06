@@ -69,8 +69,7 @@ public class EntityService
     public Entity getById(String id)
     {
         Document doc = database.getDocument(ENTITIES_COLLECTION, id);
-        Entity entity = (Entity)entityMapper.getObject(doc);
-        return entity;
+        return (Entity)entityMapper.getObject(doc);
     }
 
 

@@ -9,7 +9,6 @@ import ru.justtry.shared.Identifiable;
 @Data
 public class Note extends Identifiable
 {
-    private String folderId;
     private boolean hidden = false;
     private String nested = null;
     private boolean favorite = false;

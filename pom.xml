@@ -30,7 +30,31 @@
             <version>2.13.3</version>
         </dependency>
 
-        <dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.9</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.j2html</groupId>
+			<artifactId>j2html</artifactId>
+			<version>1.5.0</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>29.0-jre</version>
+		</dependency>
+
+		<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
@@ -175,7 +199,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>ru.justtry.springbootapp.Application</mainClass>
+							<mainClass>ru.justtry.Application</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -210,7 +234,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>ru.justtry.springbootapp.Application</mainClass>
+							<mainClass>ru.justtry.Application</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -242,7 +266,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 
-							<mainClass>ru.justtry.springbootapp.Application</mainClass>
+							<mainClass>ru.justtry.Application</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

@@ -185,8 +185,6 @@ public class SaveNoteValidator implements SaveValidator
                 break;
             }
         }
-
-        validateFolder(note);
     }
 
 
@@ -204,12 +202,4 @@ public class SaveNoteValidator implements SaveValidator
         throw new IllegalArgumentException(message);
     }
 
-
-    private void validateFolder(Note note)
-    {
-        if (note.getFolderId() != null)
-        {
-            // TODO check if database contains such folder
-        }
-    }
 }

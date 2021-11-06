@@ -22,12 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
+import ru.justtry.database.LogRecord.Operation;
 import ru.justtry.mappers.EntityMapper;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
 import ru.justtry.notes.NoteService;
-import ru.justtry.postprocessing.DeleteEntityPostprocessor;
-import ru.justtry.postprocessing.SaveEntityPostprocessor;
 import ru.justtry.shared.Identifiable;
 import ru.justtry.validation.delete.DeleteEntityValidator;
 import ru.justtry.validation.save.SaveEntityValidator;
@@ -43,8 +42,6 @@ public class EntitiesController
     private final EntityMapper entityMapper;
     private final SaveEntityValidator saveEntityValidator;
     private final DeleteEntityValidator deleteEntityValidator;
-    private final SaveEntityPostprocessor savePostprocessor;
-    private final DeleteEntityPostprocessor deletePostprocessor;
     private final EntityService entityService;
     private final NoteService noteService;
 
@@ -57,10 +54,10 @@ public class EntitiesController
         Document document = entityMapper.getDocument(entity);
         String id = database.saveDocument(ENTITIES_COLLECTION, document);
         entity.setId(id);
-        savePostprocessor.process(entity);
-        database.saveLog(ENTITIES_COLLECTION, "CREATE", id, null, entity.toString());
+        database.saveLog(ENTITIES_COLLECTION, Operation.CREATE, id, null, entity.toString());
         return new ResponseEntity<>(id, new HttpHeaders(), HttpStatus.OK);
     }
+
 
     @PutMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -70,8 +67,7 @@ public class EntitiesController
         entity.setId(before.getId());
         saveEntityValidator.validate(entity, ENTITIES_COLLECTION);
         entityService.update(entity);
-        savePostprocessor.process(entity);
-        database.saveLog(ENTITIES_COLLECTION, "UPDATE", entity.getId(), before.toString(), entity.toString());
+        database.saveLog(ENTITIES_COLLECTION, Operation.UPDATE, entity.getId(), before.toString(), entity.toString());
         return new ResponseEntity<>(entity.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
@@ -94,10 +90,20 @@ public class EntitiesController
     }
 
 
-    /**
-     *
-     * @return
-     */
+    @GetMapping(path = "/id/{id}", produces = APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Entity getById(@PathVariable(required = false) String id)
+    {
+        return entityService.getById(id);
+    }
+
+    @GetMapping(path = "/name/{id}", produces = APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Entity getByName(@PathVariable(required = false) String name)
+    {
+        return entityService.getByName(name);
+    }
+
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -115,7 +121,7 @@ public class EntitiesController
         deleteEntityValidator.validate(entity, ENTITIES_COLLECTION);
         database.deleteDocument(ENTITIES_COLLECTION, entity.getId());
         database.dropCollection(noteService.getCollectionName(name));
-        deletePostprocessor.process(entity);
-        database.saveLog(ENTITIES_COLLECTION, "DELETE", name, entity.toString(), null);
+        database.saveLog(ENTITIES_COLLECTION, Operation.DELETE, name, entity.toString(), null);
     }
+
 }
