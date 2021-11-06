@@ -259,7 +259,7 @@ public class Database
     }
 
 
-    public Object[] getLog()
+    public LogRecord[] getLog()
     {
         MongoCollection<Document> collection = getDatabase().getCollection(LOG_COLLECTION);
 
@@ -273,11 +273,11 @@ public class Database
                 result.add((LogRecord)logMapper.getObject(document));
             }
         }
-        return result.toArray();
+        return result.toArray(LogRecord[]::new);
     }
 
 
-    public Object[] getLog(int count)
+    public LogRecord[] getLog(int count)
     {
         MongoCollection<Document> collection = getDatabase().getCollection(LOG_COLLECTION);
         FindIterable<Document> iterable = collection.find().sort(new Document(MONGO_ID, -1)).limit(count);
@@ -290,11 +290,11 @@ public class Database
                 result.add((LogRecord)logMapper.getObject(document));
             }
         }
-        return result.toArray();
+        return result.toArray(LogRecord[]::new);
     }
 
 
-    public void saveLog(String collectionName, String operation, String id, Object before, Object after)
+    public void saveLog(String collectionName, LogRecord.Operation operation, String id, Object before, Object after)
     {
         LogRecord logRecord = new LogRecord(collectionName, operation, id, before, after);
         Document document = logMapper.getDocument(logRecord);

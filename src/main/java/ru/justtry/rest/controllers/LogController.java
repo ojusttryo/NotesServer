@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
+import ru.justtry.database.LogRecord;
 
 @RestController
 @CrossOrigin(maxAge = 3600)
@@ -20,15 +21,15 @@ public class LogController
 
 
     @GetMapping("/rest/log/{count}")
-    public ResponseEntity<Object[]> get(@PathVariable int count)
+    public ResponseEntity<LogRecord[]> get(@PathVariable int count)
     {
         return new ResponseEntity<>(database.getLog(count), new HttpHeaders(), HttpStatus.OK);
     }
 
-
     @GetMapping("/rest/log")
-    public ResponseEntity<Object[]> get()
+    public ResponseEntity<LogRecord[]> get()
     {
         return new ResponseEntity<>(database.getLog(), new HttpHeaders(), HttpStatus.OK);
     }
+
 }

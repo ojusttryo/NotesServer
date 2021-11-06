@@ -20,7 +20,7 @@ public class LogMapper
     {
         LogRecord logRecord = new LogRecord();
         logRecord.setCollection(document.get(COLLECTION).toString());
-        logRecord.setOperation(document.get(OPERATION).toString());
+        logRecord.setOperation(LogRecord.Operation.valueOf(document.get(OPERATION).toString()));
         logRecord.setId(getStringOrNull(document, ID));
         logRecord.setBefore(document.get(BEFORE));
         logRecord.setAfter(document.get(AFTER));
@@ -34,7 +34,7 @@ public class LogMapper
 
         Document document = new Document()
                 .append(COLLECTION, logRecord.getCollection())
-                .append(OPERATION, logRecord.getOperation())
+                .append(OPERATION, logRecord.getOperation().toString())
                 .append(TIME, logRecord.getTime());
 
         if (logRecord.getId() != null)

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
+import ru.justtry.database.LogRecord.Operation;
 import ru.justtry.mappers.EntityMapper;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
@@ -58,9 +59,10 @@ public class EntitiesController
         String id = database.saveDocument(ENTITIES_COLLECTION, document);
         entity.setId(id);
         savePostprocessor.process(entity);
-        database.saveLog(ENTITIES_COLLECTION, "CREATE", id, null, entity.toString());
+        database.saveLog(ENTITIES_COLLECTION, Operation.CREATE, id, null, entity.toString());
         return new ResponseEntity<>(id, new HttpHeaders(), HttpStatus.OK);
     }
+
 
     @PutMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -71,7 +73,7 @@ public class EntitiesController
         saveEntityValidator.validate(entity, ENTITIES_COLLECTION);
         entityService.update(entity);
         savePostprocessor.process(entity);
-        database.saveLog(ENTITIES_COLLECTION, "UPDATE", entity.getId(), before.toString(), entity.toString());
+        database.saveLog(ENTITIES_COLLECTION, Operation.UPDATE, entity.getId(), before.toString(), entity.toString());
         return new ResponseEntity<>(entity.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
@@ -94,10 +96,20 @@ public class EntitiesController
     }
 
 
-    /**
-     *
-     * @return
-     */
+    @GetMapping(path = "/id/{id}", produces = APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Entity getById(@PathVariable(required = false) String id)
+    {
+        return entityService.getById(id);
+    }
+
+    @GetMapping(path = "/name/{id}", produces = APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Entity getByName(@PathVariable(required = false) String name)
+    {
+        return entityService.getByName(name);
+    }
+
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -116,6 +128,7 @@ public class EntitiesController
         database.deleteDocument(ENTITIES_COLLECTION, entity.getId());
         database.dropCollection(noteService.getCollectionName(name));
         deletePostprocessor.process(entity);
-        database.saveLog(ENTITIES_COLLECTION, "DELETE", name, entity.toString(), null);
+        database.saveLog(ENTITIES_COLLECTION, Operation.DELETE, name, entity.toString(), null);
     }
+
 }

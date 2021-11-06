@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
+import ru.justtry.database.LogRecord.Operation;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
@@ -54,7 +55,7 @@ public class AttributesController
         saveAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
         attributeService.save(attribute);
         savePostprocessor.process(attribute);
-        database.saveLog(ATTRIBUTES_COLLECTION, "CREATE", attribute.getId(), null, attribute.toString());
+        database.saveLog(ATTRIBUTES_COLLECTION, Operation.CREATE, attribute.getId(), null, attribute.toString());
         return new ResponseEntity<>(attribute.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
@@ -68,7 +69,7 @@ public class AttributesController
         Attribute before = attributeService.getByName(attribute.getName());
         attributeService.update(attribute);
         savePostprocessor.process(attribute);
-        database.saveLog(ATTRIBUTES_COLLECTION, "UPDATE", attribute.getId(), before.toString(), attribute.toString());
+        database.saveLog(ATTRIBUTES_COLLECTION, Operation.UPDATE, attribute.getId(), before.toString(), attribute.toString());
         return new ResponseEntity<>(attribute.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
@@ -87,8 +88,7 @@ public class AttributesController
             if (entityName != null)
             {
                 Entity entity = entityService.getByName(entityName);
-                Attribute[] attributes = attributeService.getAvailable(entity);
-                return attributes;
+                return attributeService.getAvailable(entity);
             }
             else
             {
@@ -106,6 +106,7 @@ public class AttributesController
         // single by name
         else if (name != null)
         {
+            // TODO вынести в отдельный метод, чтоб здесь возвращать Attribute[]
             return attributeService.getByName(name);
         }
         // all
@@ -141,7 +142,7 @@ public class AttributesController
         deleteAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
         database.deleteDocument(ATTRIBUTES_COLLECTION, attribute.getId());
         deletePostprocessor.process(attribute);
-        database.saveLog(ATTRIBUTES_COLLECTION, "DELETE", name, attribute.toString(), null);
+        database.saveLog(ATTRIBUTES_COLLECTION, Operation.DELETE, name, attribute.toString(), null);
     }
 }
 

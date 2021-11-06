@@ -37,7 +37,7 @@ public class StatisticsController
 
 
     @GetMapping("/notes")
-    public ResponseEntity<Object[]> getNotesInfo()
+    public ResponseEntity<CollectionInfo[]> getNotesInfo()
     {
         List<CollectionInfo> allCollectionsInfo = new ArrayList<>();
         Entity[] entities = entityService.getAll();
@@ -54,12 +54,13 @@ public class StatisticsController
             allCollectionsInfo.add(collectionInfo);
         }
 
-        return new ResponseEntity<>(allCollectionsInfo.toArray(), new HttpHeaders(), HttpStatus.OK);
+        return new ResponseEntity<>(allCollectionsInfo.toArray(CollectionInfo[]::new),
+                new HttpHeaders(), HttpStatus.OK);
     }
 
 
     @GetMapping("/files")
-    public ResponseEntity<Object> getFilesInfo()
+    public ResponseEntity<FilesInfo[]> getFilesInfo()
     {
         List<FilesInfo> filesInfo = new ArrayList<>();
         List<Document> infoDocuments = database.getFilesInfo();
@@ -72,12 +73,12 @@ public class StatisticsController
             filesInfo.add(fileInfo);
         }
 
-        return new ResponseEntity<>(filesInfo, new HttpHeaders(), HttpStatus.OK);
+        return new ResponseEntity<>(filesInfo.toArray(FilesInfo[]::new), new HttpHeaders(), HttpStatus.OK);
     }
 
 
     @GetMapping("/db")
-    public ResponseEntity<Object> getDatabaseInfo()
+    public ResponseEntity<DatabaseInfo> getDatabaseInfo()
     {
         Document infoDocument = database.getDatabaseInfo();
 
@@ -92,14 +93,14 @@ public class StatisticsController
 
 
     @GetMapping("/icons")
-    public ResponseEntity<Object> getIconsInfo()
+    public ResponseEntity<FilesInfo> getIconsInfo()
     {
         Document infoDocument = database.getCollectionInfo(IMAGES_COLLECTION);
 
         FilesInfo iconsInfo = new FilesInfo();
         iconsInfo.setCount(infoDocument.get("count"));
         iconsInfo.setSize(infoDocument.get("size"));
-        iconsInfo.setContentType("icons for all images");
+        iconsInfo.setContentType("image icons");
 
         return new ResponseEntity<>(iconsInfo, new HttpHeaders(), HttpStatus.OK);
     }

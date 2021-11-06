@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
+import ru.justtry.database.LogRecord.Operation;
 import ru.justtry.database.sort.SortInfo;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.dictionary.Type;
@@ -64,7 +65,7 @@ public class NotesController
         saveNoteValidator.validate(note, entity);
         noteService.save(entity, note);
         savePostprocessor.process(note, null, entity);
-        database.saveLog(noteService.getCollectionName(entity), "CREATE", note.getId(), null, note.toString());
+        database.saveLog(noteService.getCollectionName(entity), Operation.CREATE, note.getId(), null, note.toString());
         return new ResponseEntity<>(note.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
@@ -85,7 +86,7 @@ public class NotesController
         noteService.update(entity, note);
 
         savePostprocessor.process(note, before, entity);
-        database.saveLog(entity, "UPDATE", note.getId(), before.toString(), note.toString());
+        database.saveLog(entity, Operation.UPDATE, note.getId(), before.toString(), note.toString());
         return new ResponseEntity<>(note.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
@@ -192,7 +193,7 @@ public class NotesController
         Note before = noteService.get(noteService.getCollectionName(entity), id);
         database.deleteDocument(noteService.getCollectionName(entity), id);
         deletePostprocessor.process(before, entity);
-        database.saveLog(noteService.getCollectionName(entity), "DELETE", id, before.toString(), null);
+        database.saveLog(noteService.getCollectionName(entity), Operation.DELETE, id, before.toString(), null);
     }
 
 
@@ -210,7 +211,7 @@ public class NotesController
     {
         long count = database.dropCollection(noteService.getCollectionName(entity));
         // TODO unlink here all files related to entity (new DB method)
-        database.saveLog(entity, "DELETE", null, count, 0);
+        database.saveLog(entity, Operation.DELETE, null, count, 0);
     }
 
 

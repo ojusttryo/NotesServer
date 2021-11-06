@@ -7,9 +7,16 @@ import lombok.Data;
 @Data
 public class LogRecord
 {
+    public enum Operation
+    {
+        CREATE,
+        UPDATE,
+        DELETE
+    }
+
     private long time;
     private String collection;
-    private String operation;
+    private Operation operation;
     private String id;
     private Object before;
     private Object after;
@@ -20,7 +27,7 @@ public class LogRecord
 
     }
 
-    public LogRecord(String collection, String operation, String id, Object before, Object after)
+    public LogRecord(String collection, Operation operation, String id, Object before, Object after)
     {
         this.collection = collection;
         this.operation = operation;
