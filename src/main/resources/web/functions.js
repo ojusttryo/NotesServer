@@ -988,7 +988,8 @@ function setImageClass(element, newClass, hasMargin)
 	if (!element.classList.contains(newClass))
 		element.classList.add(newClass);
 
-	var url = `url(img/${newClass.replace("-image", "")}.svg)`;
+
+	var url = `url(resources/web/img/${newClass.replace("-image", "")}.svg)`;
 	element.style.backgroundImage = url.replaceAll("-", "");
 
 	if (hasMargin)

@@ -10,7 +10,7 @@
 }
 
 
-* 
+*
 {
 	margin: 0;
 	padding: 0;
@@ -70,6 +70,18 @@ body
 	cursor: pointer;
 }
 
+#notes-button
+{
+	display: block;
+	width: var(--switchButtonSize);
+	height: var(--switchButtonSize);
+	padding-bottom: 5px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	align-self: center;
+	background-image: url("img/notes.svg");
+}
+
 #settings-button
 {
 	display: block;
@@ -82,7 +94,7 @@ body
 	background-image: url("img/settings.svg");
 }
 
-#notes-button
+#attributes-button
 {
 	display: block;
 	width: var(--switchButtonSize);
@@ -91,7 +103,19 @@ body
 	background-size: contain;
 	background-repeat: no-repeat;
 	align-self: center;
-	background-image: url("img/notes.svg");
+	background-image: url("img/A.svg");
+}
+
+#entities-button
+{
+	display: block;
+	width: var(--switchButtonSize);
+	height: var(--switchButtonSize);
+	padding-bottom: 5px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	align-self: center;
+	background-image: url("img/E.svg");
 }
 
 #log-button
@@ -182,7 +206,7 @@ input, select, textarea
 {
 	display: grid;
 	grid-row-gap: 5px;
-	grid-column-gap: 10px;	
+	grid-column-gap: 10px;
 	width: 100%;
 	box-sizing: border-box;
 	padding-left: var(--padding);
@@ -196,7 +220,7 @@ input, select, textarea
 	display: grid;
 	grid-template-columns: min-content auto auto auto auto min-content min-content;		/* number title type size uploaded download delete */
 	grid-row-gap: 5px;
-	grid-column-gap: 10px;	
+	grid-column-gap: 10px;
 	width: 100%;
 	box-sizing: border-box;
 	padding: var(--padding);;
@@ -274,7 +298,7 @@ input, select, textarea
 	margin-right: 0.5em;
 }
 
-.gallery div 
+.gallery div
 {
 	position: relative;
 }
@@ -396,7 +420,7 @@ input, select, textarea
 	clear: both;
 	background-size: contain;
 	background-position: left center;
-	background-repeat: no-repeat;	
+	background-repeat: no-repeat;
 }
 
 
@@ -457,24 +481,24 @@ input, select, textarea
 	text-shadow: 1px 1px 1px #555;
 }
 
-.multiselect 
+.multiselect
 {
 	display: inline-block;
 	background-color: white;
 	background: white;
 }
 
-.selectBox 
+.selectBox
 {
 	position: relative;
 }
 
-.selectBox select 
+.selectBox select
 {
 	width: 100%;
 }
 
-.overSelect 
+.overSelect
 {
 	position: absolute;
 	left: 0;

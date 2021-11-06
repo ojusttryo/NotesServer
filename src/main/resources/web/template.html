@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Notes</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" type="text/css" href="/resources/web/styles.css?%s" />
+        <link rel="icon" href="/resources/web/img/notes.svg" id="title-icon">
+        <script type="text/javascript" src="/resources/web/notes.js"></script>
+        <script type="text/javascript" src="/resources/web/constants.js"></script>
+        <script type="text/javascript" src="/resources/web/functions.js"></script>
+        <script type="text/javascript" src="/resources/web/attributes.js"></script>
+        <script type="text/javascript" src="/resources/web/entities.js"></script>
+        <script type="text/javascript" src="/resources/web/moment.js"></script>
+        <script type="text/javascript" src="/resources/web/colors.js"></script>
+    </head>
+    <body>
+        <div id="main">
+            <div id="switch">
+                <a id="notes-button" onclick="/notes"></a>
+                <a id="attributes-button" href="/attributes"></a>
+                <a id="entities-button" href="/entities"></a>
+                <a id="log-button" href="/log/50"></a>
+                <a id="info-button" href="/statistics"></a>
+            </div>
+            <div id="menu">
+                <div id="menu-list"></div>
+            </div>
+            <div id="content">
+                <div id="error-label" style="display: none;"></div>
+                %s
+            </div>
+        </div>
+    </body>
+</html>

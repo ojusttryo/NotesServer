@@ -10,6 +10,6 @@
    <path id="svg_6" d="m256,396l-120,0c-11.046,0 -20,8.954 -20,20s8.954,20 20,20l120,0c11.046,0 20,-8.954 20,-20s-8.954,-20 -20,-20z"/>
   </g>
   <rect id="svg_9" height="209" width="151" y="71" x="105" stroke-dasharray="5,2,2,2,2,2" stroke-width="0" stroke="#000" fill="#ffffff"/>
-  <text transform="matrix(1.09556, 0, 0, 1.30379, 478.681, -25.9798)" stroke-dasharray="5,2,2,2,2,2" font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="start" font-family="'Nunito Black'" font-size="211" id="svg_7" y="232.3198" x="-344.9006" stroke-width="0" stroke="#000" fill="#000000">E</text>
+  <text transform="matrix(1.09556, 0, 0, 1.30379, 478.681, -25.9798)" stroke-dasharray="5,2,2,2,2,2" font-style="normal" font-weight="bold" xml:space="preserve" text-anchor="start" font-family="'Verdana'" font-size="211" id="svg_7" y="232.3198" x="-344.9006" stroke-width="0" stroke="#000" fill="#000000">E</text>
  </g>
 </svg>
