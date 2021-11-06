@@ -2,7 +2,6 @@ package ru.justtry.mappers;
 
 import static ru.justtry.shared.Constants.MONGO_ID;
 import static ru.justtry.shared.NoteConstants.FAVORITE;
-import static ru.justtry.shared.NoteConstants.FOLDER_ID;
 import static ru.justtry.shared.NoteConstants.HIDDEN;
 import static ru.justtry.shared.NoteConstants.NESTED;
 
@@ -22,7 +21,6 @@ import ru.justtry.shared.NoteConstants;
  *
  * {
  *     "id": "5d8ad8ad43e02d58f3a59945",
- *     "folderId": null,
  *     hidden: false,
  *     "attributes":
  *     {
@@ -40,7 +38,6 @@ public class NoteMapper extends Mapper
     {
         Note note = new Note();
         note.setId(document.get(MONGO_ID).toString());
-        note.setFolderId(getStringOrNull(document, FOLDER_ID));
         note.setHidden((boolean)document.get(HIDDEN));
         note.setFavorite((boolean)document.get(FAVORITE));
         note.setNested(getStringOrNull(document, NESTED));
@@ -60,7 +57,6 @@ public class NoteMapper extends Mapper
         Note note = (Note)object;
 
         Document document = new Document();
-        document.append(FOLDER_ID, note.getFolderId());
         document.append(HIDDEN, note.isHidden());
         document.append(FAVORITE, note.isFavorite());
         if (!Strings.isNullOrEmpty(note.getNested()))
