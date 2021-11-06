@@ -9,15 +9,16 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
+import ru.justtry.metainfo.dictionary.Alignment;
 import ru.justtry.metainfo.dictionary.ImageSize;
 import ru.justtry.metainfo.dictionary.Method;
 import ru.justtry.metainfo.dictionary.Type;
-import ru.justtry.shared.AttributeConstants.DefaultValue;
 import ru.justtry.shared.Identifiable;
-
 
 /**
  * The meta information about some field of the note. This class describes how to use fields of notes.
@@ -29,33 +30,25 @@ import ru.justtry.shared.Identifiable;
 public class Attribute extends Identifiable
 {
 
-    /**
-     * The unique name of attribute.
-     */
-    @NotNull(message = "Name cannot be null")
+    /** The unique name of attribute */
+    @NotNull(message = "Name should be set")
     private String name = "";
 
-    /**
-     * The title of attribute, which will be displayed on the form.
-     */
-    @NotNull(message = "Title cannot be null")
+    /** The title of attribute, which will be displayed on the form */
+    @NotNull(message = "Title should be set")
     private String title = "";
 
-    /**
-     * Method responsible for aggregation operations on folders.
-     */
+    /** Method responsible for aggregation operations */
     @NotNull(message = "Method cannot be null")
     private String method = Method.NONE.title;
 
-    /**
-     * Value type.
-     */
+    /** Value type */
     @NotNull(message = "Type cannot be null")
     private String type = Type.TEXT.title;
 
     /**
-     * Minimum width of the field with this attribute or the while input at form (like gallery).
-     * Could keep value like "200" and "20em"
+     * Minimal width of the field with this attribute or the input at form (like gallery).
+     * It can stores values like "200" and "20em"
      */
     private String minWidth = null;
 
@@ -99,13 +92,13 @@ public class Attribute extends Identifiable
     /**
      * Step of numeric value. Keep in string for precision.
      */
-    private String step = DefaultValue.STEP.toString();
+    private String step = "1";
 
     /**
      * Lines count to display this attribute.
      * Except textarea the value is ignored.
      */
-    private Integer linesCount = DefaultValue.LINES_COUNT;
+    private Integer linesCount = 1;
 
     private Integer imagesSize = ImageSize.SIZE_100.size;
 
@@ -113,13 +106,13 @@ public class Attribute extends Identifiable
      * The alignment of the attribute in data table.
      */
     @NotNull(message = "Alignment cannot be null")
-    private String alignment = DefaultValue.ALIGNMENT;
+    private String alignment = Alignment.LEFT.getTitle();
 
     /**
      * Specifies if the attribute must be filled.
      */
     @NotNull(message = "Required cannot be null")
-    private Boolean required = DefaultValue.REQUIRED;
+    private Boolean required = false;
 
     /**
      * The regular expression is used to check the correctness of value.

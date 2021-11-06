@@ -6,8 +6,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public enum Alignment
 {
@@ -15,7 +17,7 @@ public enum Alignment
     RIGHT("right"),
     CENTER("center");
 
-    public final String title;
+    private final String title;
 
     private static final Map<String, Alignment> AVAILABLE_VALUES = Arrays.stream(values())
             .collect(Collectors.toMap(x -> x.title, identity()));;
