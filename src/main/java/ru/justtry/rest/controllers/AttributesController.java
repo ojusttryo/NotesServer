@@ -26,11 +26,8 @@ import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
-import ru.justtry.postprocessing.DeleteAttributePostprocessor;
-import ru.justtry.postprocessing.SaveAttributePostprocessor;
 import ru.justtry.validation.delete.DeleteAttributeValidator;
 import ru.justtry.validation.save.SaveAttributeValidator;
-
 
 @RestController
 @CrossOrigin(maxAge = 3600)
@@ -42,8 +39,6 @@ public class AttributesController
     private final Database database;
     private final SaveAttributeValidator saveAttributeValidator;
     private final DeleteAttributeValidator deleteAttributeValidator;
-    private final SaveAttributePostprocessor savePostprocessor;
-    private final DeleteAttributePostprocessor deletePostprocessor;
     private final AttributeService attributeService;
     private final EntityService entityService;
 
@@ -54,7 +49,6 @@ public class AttributesController
     {
         saveAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
         attributeService.save(attribute);
-        savePostprocessor.process(attribute);
         database.saveLog(ATTRIBUTES_COLLECTION, Operation.CREATE, attribute.getId(), null, attribute.toString());
         return new ResponseEntity<>(attribute.getId(), new HttpHeaders(), HttpStatus.OK);
     }
@@ -68,7 +62,6 @@ public class AttributesController
         saveAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
         Attribute before = attributeService.getByName(attribute.getName());
         attributeService.update(attribute);
-        savePostprocessor.process(attribute);
         database.saveLog(ATTRIBUTES_COLLECTION, Operation.UPDATE, attribute.getId(), before.toString(), attribute.toString());
         return new ResponseEntity<>(attribute.getId(), new HttpHeaders(), HttpStatus.OK);
     }
@@ -141,7 +134,6 @@ public class AttributesController
         Attribute attribute = attributeService.getByName(name);
         deleteAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
         database.deleteDocument(ATTRIBUTES_COLLECTION, attribute.getId());
-        deletePostprocessor.process(attribute);
         database.saveLog(ATTRIBUTES_COLLECTION, Operation.DELETE, name, attribute.toString(), null);
     }
 }

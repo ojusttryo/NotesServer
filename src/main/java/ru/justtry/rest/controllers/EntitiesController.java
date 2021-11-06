@@ -27,8 +27,6 @@ import ru.justtry.mappers.EntityMapper;
 import ru.justtry.metainfo.Entity;
 import ru.justtry.metainfo.EntityService;
 import ru.justtry.notes.NoteService;
-import ru.justtry.postprocessing.DeleteEntityPostprocessor;
-import ru.justtry.postprocessing.SaveEntityPostprocessor;
 import ru.justtry.shared.Identifiable;
 import ru.justtry.validation.delete.DeleteEntityValidator;
 import ru.justtry.validation.save.SaveEntityValidator;
@@ -44,8 +42,6 @@ public class EntitiesController
     private final EntityMapper entityMapper;
     private final SaveEntityValidator saveEntityValidator;
     private final DeleteEntityValidator deleteEntityValidator;
-    private final SaveEntityPostprocessor savePostprocessor;
-    private final DeleteEntityPostprocessor deletePostprocessor;
     private final EntityService entityService;
     private final NoteService noteService;
 
@@ -58,7 +54,6 @@ public class EntitiesController
         Document document = entityMapper.getDocument(entity);
         String id = database.saveDocument(ENTITIES_COLLECTION, document);
         entity.setId(id);
-        savePostprocessor.process(entity);
         database.saveLog(ENTITIES_COLLECTION, Operation.CREATE, id, null, entity.toString());
         return new ResponseEntity<>(id, new HttpHeaders(), HttpStatus.OK);
     }
@@ -72,7 +67,6 @@ public class EntitiesController
         entity.setId(before.getId());
         saveEntityValidator.validate(entity, ENTITIES_COLLECTION);
         entityService.update(entity);
-        savePostprocessor.process(entity);
         database.saveLog(ENTITIES_COLLECTION, Operation.UPDATE, entity.getId(), before.toString(), entity.toString());
         return new ResponseEntity<>(entity.getId(), new HttpHeaders(), HttpStatus.OK);
     }
@@ -127,7 +121,6 @@ public class EntitiesController
         deleteEntityValidator.validate(entity, ENTITIES_COLLECTION);
         database.deleteDocument(ENTITIES_COLLECTION, entity.getId());
         database.dropCollection(noteService.getCollectionName(name));
-        deletePostprocessor.process(entity);
         database.saveLog(ENTITIES_COLLECTION, Operation.DELETE, name, entity.toString(), null);
     }
 
