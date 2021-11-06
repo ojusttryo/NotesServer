@@ -1,12 +1,15 @@
 package ru.justtry.database;
 
+import static ru.justtry.shared.Constants.APPLICATION_CONTEXT;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import com.github.ojusttryo.migmong.MongoMigration;
+import com.github.migmong.MongoMigration;
+import com.github.migmong.exception.MigrationException;
 
 import lombok.RequiredArgsConstructor;
 import ru.justtry.database.sort.Sort;
@@ -41,16 +44,17 @@ public class DatabaseConfiguration
         return db;
     }
 
-
     @Bean
-    public MongoMigration mongoMigration()
+    public MongoMigration mongoMigration() throws MigrationException
     {
         MongoMigration migration = new MongoMigration(host, port, name, user, password);
         migration.setMigrationScanPackage("ru.justtry.database.migrations");
-        migration.setApplicationContext(context);
+        migration.setMigrationVariable(APPLICATION_CONTEXT, context);
         migration.setEnabled(true);
         migration.setMigrationNamePrefix("V");
         migration.setMigrationCollectionName("migrationLog");
+        migration.execute();
         return migration;
     }
+
 }

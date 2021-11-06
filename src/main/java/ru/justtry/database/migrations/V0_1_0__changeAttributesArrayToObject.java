@@ -1,5 +1,6 @@
 package ru.justtry.database.migrations;
 
+import static ru.justtry.shared.Constants.APPLICATION_CONTEXT;
 import static ru.justtry.shared.Constants.MONGO_ID;
 
 import java.util.List;
@@ -7,10 +8,11 @@ import java.util.Map.Entry;
 
 import org.bson.Document;
 import org.slf4j.MDC;
+import org.springframework.context.ApplicationContext;
 
-import com.github.ojusttryo.migmong.migration.MigrationContext;
-import com.github.ojusttryo.migmong.migration.annotations.Migration;
-import com.github.ojusttryo.migmong.migration.annotations.MigrationUnit;
+import com.github.migmong.migration.MigrationContext;
+import com.github.migmong.migration.annotations.Migration;
+import com.github.migmong.migration.annotations.MigrationUnit;
 import com.mongodb.BasicDBObject;
 
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +31,10 @@ public class V0_1_0__changeAttributesArrayToObject
     {
         MDC.put("migration", this.getClass().getSimpleName());
 
-        Database db = context.getApplicationContext().getBean(Database.class);
-        EntityService entityService = context.getApplicationContext().getBean(EntityService.class);
-        NoteService noteService = context.getApplicationContext().getBean(NoteService.class);
+        ApplicationContext applicationContext = (ApplicationContext)context.getVariable(APPLICATION_CONTEXT);
+        Database db = applicationContext.getBean(Database.class);
+        EntityService entityService = applicationContext.getBean(EntityService.class);
+        NoteService noteService = applicationContext.getBean(NoteService.class);
 
         Entity[] entities = entityService.getAll();
         for (Entity entity : entities)
@@ -90,9 +93,10 @@ public class V0_1_0__changeAttributesArrayToObject
     {
         MDC.put("migration", this.getClass().getSimpleName());
 
-        Database db = context.getApplicationContext().getBean(Database.class);
-        EntityService entityService = context.getApplicationContext().getBean(EntityService.class);
-        NoteService noteService = context.getApplicationContext().getBean(NoteService.class);
+        ApplicationContext applicationContext = (ApplicationContext)context.getVariable(APPLICATION_CONTEXT);
+        Database db = applicationContext.getBean(Database.class);
+        EntityService entityService = applicationContext.getBean(EntityService.class);
+        NoteService noteService = applicationContext.getBean(NoteService.class);
 
         Entity diary = entityService.getByName("diary");
         String collectionName = noteService.getCollectionName(diary.getName());
@@ -144,9 +148,10 @@ public class V0_1_0__changeAttributesArrayToObject
     {
         MDC.put("migration", this.getClass().getSimpleName());
 
-        Database db = context.getApplicationContext().getBean(Database.class);
-        EntityService entityService = context.getApplicationContext().getBean(EntityService.class);
-        NoteService noteService = context.getApplicationContext().getBean(NoteService.class);
+        ApplicationContext applicationContext = (ApplicationContext)context.getVariable(APPLICATION_CONTEXT);
+        Database db = applicationContext.getBean(Database.class);
+        EntityService entityService = applicationContext.getBean(EntityService.class);
+        NoteService noteService = applicationContext.getBean(NoteService.class);
         final String FAVOURITE = "favourite";
 
         Entity[] entities = entityService.getAll();
