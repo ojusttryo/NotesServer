@@ -61,7 +61,7 @@ public class V0_1_2__cleanFiles
                     if (Type.isMultiFile(attribute.getTypeAsEnum()))
                     {
                         Object value = note.getAttributes().get(attribute.getName());
-                        if (value != null)
+                        if (value instanceof ArrayList)
                         {
                             List<String> ids = (ArrayList<String>)value;
                             usedIds.addAll(ids);

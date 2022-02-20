@@ -11,12 +11,11 @@ import com.google.common.base.Strings;
 
 import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
-import ru.justtry.database.sort.SortInfo;
-import ru.justtry.database.sort.SortInfo.Direction;
+import ru.justtry.database.sort.Direction;
 import ru.justtry.metainfo.Attribute;
-import ru.justtry.metainfo.dictionary.Type;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
+import ru.justtry.metainfo.dictionary.Type;
 import ru.justtry.shared.EntityConstants;
 import ru.justtry.shared.ErrorMessages;
 
@@ -57,7 +56,7 @@ public class SaveEntityValidator implements SaveValidator
             throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("sort direction"));
         if (entity.getSortDirection() != null)
         {
-            Direction direction = SortInfo.Direction.get(entity.getSortDirection());
+            Direction direction = Direction.get(entity.getSortDirection());
             if (direction == null)
                 throw new IllegalArgumentException(ErrorMessages.getIsNotInPredefinedValues("sort direction"));
         }

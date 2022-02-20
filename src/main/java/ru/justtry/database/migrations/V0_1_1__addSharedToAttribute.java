@@ -34,12 +34,13 @@ public class V0_1_1__addSharedToAttribute
         List<Document> attributeDocuments = db.getDocuments(ATTRIBUTES_COLLECTION, exists(SHARED, false), null);
         for (Document document : attributeDocuments)
         {
-            MDC.put("attribute", document.get(AttributeConstants.NAME).toString());
+            String attributeName = document.get(AttributeConstants.NAME).toString();
+            MDC.put("attribute", attributeName);
 
             document.put(SHARED, true);
             db.updateDocument(ATTRIBUTES_COLLECTION, document);
 
-            log.info("The field 'shared' has been added to the attribute");
+            log.info("The field 'shared' has been added to the attribute " + attributeName);
         }
 
         MDC.remove("migration");

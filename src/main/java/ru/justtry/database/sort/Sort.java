@@ -8,13 +8,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.justtry.database.sort.SortInfo.Direction;
 import ru.justtry.shared.NoteConstants;
 
 @Component
@@ -24,8 +22,9 @@ public class Sort
     private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     private final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
-    static class NaturalComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>> {
 
+    static class NaturalComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>>
+    {
         @Override
         public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2)
         {
@@ -35,13 +34,14 @@ public class Sort
                 return 1;
             if (o2.getValue() == null)
                 return -1;
+
             return o1.getValue().compareTo(o2.getValue());
         }
     }
 
 
-    static class NaturalStringComparator<K, String> implements Comparator<Map.Entry<K, String>> {
-
+    static class NaturalStringComparator<K, String> implements Comparator<Map.Entry<K, String>>
+    {
         @Override
         public int compare(Map.Entry<K, String> o1, Map.Entry<K, String> o2)
         {
@@ -56,8 +56,8 @@ public class Sort
     }
 
 
-    static class ReverseComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>> {
-
+    static class ReverseComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>>
+    {
         @Override
         public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2)
         {
@@ -72,8 +72,8 @@ public class Sort
     }
 
 
-    static class ReverseStringComparator<K, String> implements Comparator<Map.Entry<K, String>> {
-
+    static class ReverseStringComparator<K, String> implements Comparator<Map.Entry<K, String>>
+    {
         @Override
         public int compare(Map.Entry<K, String> o1, Map.Entry<K, String> o2)
         {
@@ -88,21 +88,9 @@ public class Sort
     }
 
 
-    public void run(List<Document> documents, String sortField)
-    {
-        Map<Document, String> documentsMap = documents.stream()
-                .collect(Collectors.toMap(x -> x, x -> x.get(sortField).toString()));
-
-        documents.clear();
-
-        documentsMap.entrySet().stream()
-                .sorted(new NaturalStringComparator<>())
-                .forEachOrdered(x -> documents.add(x.getKey()));
-    }
-
-
     public void run(List<Document> documents, SortInfo sortInfo)
     {
+        // TODO throw exception
         if (sortInfo == null)
             return;
 
@@ -114,15 +102,15 @@ public class Sort
         case DELIMITED_TEXT:
         case SELECT:
             HashMap<Document, String> stringMap = new HashMap<>();
-            for (Document d : documents)
+            for (Document document : documents)
             {
-                Object noteAttr = getNoteAttr(d, attrName);
+                Object noteAttr = getNoteAttr(document, attrName);
                 String defaultValue = sortInfo.getAttribute().getDefaultValue();
 
                 if (noteAttr == null)
-                    stringMap.put(d, defaultValue);
+                    stringMap.put(document, defaultValue);
                 else
-                    stringMap.put(d, noteAttr.toString());
+                    stringMap.put(document, noteAttr.toString());
             }
             documents.clear();
 
@@ -134,19 +122,19 @@ public class Sort
         case INC:
         case NUMBER:
             HashMap<Document, Double> doubleMap = new HashMap<>();
-            for (Document d : documents)
+            for (Document document : documents)
             {
-                Object noteAttr = getNoteAttr(d, attrName);
+                Object noteAttr = getNoteAttr(document, attrName);
                 Double defaultValue = null;
                 if (sortInfo.getAttribute().getDefaultValue() != null)
                     defaultValue = Double.parseDouble(sortInfo.getAttribute().getDefaultValue());
 
-                // In some reason expression like map,put(d, noteAttr == null ? defaultValue : Double.parse...)
+                // In some reason expression like map.put(document, noteAttr == null ? defaultValue : Double.parse...)
                 // throws NPE because execution comes to Double.parse even when noteAttr is null.
                 if (noteAttr == null)
-                    doubleMap.put(d, defaultValue);
+                    doubleMap.put(document, defaultValue);
                 else
-                    doubleMap.put(d, Double.parseDouble(noteAttr.toString()));
+                    doubleMap.put(document, Double.parseDouble(noteAttr.toString()));
             }
             documents.clear();
 
@@ -157,16 +145,16 @@ public class Sort
             break;
         case CHECKBOX:
             HashMap<Document, Boolean> booleanMap = new HashMap<>();
-            for (Document d : documents)
+            for (Document document : documents)
             {
-                Object noteAttr = getNoteAttr(d, attrName);
+                Object noteAttr = getNoteAttr(document, attrName);
                 String defaultValueStr = sortInfo.getAttribute().getDefaultValue();
                 Boolean defaultValue = defaultValueStr == null ? null : Boolean.parseBoolean(defaultValueStr);
 
                 if (noteAttr == null)
-                    booleanMap.put(d, defaultValue);
+                    booleanMap.put(document, defaultValue);
                 else
-                    booleanMap.put(d, (Boolean)noteAttr);
+                    booleanMap.put(document, (Boolean)noteAttr);
             }
             documents.clear();
 
@@ -179,16 +167,16 @@ public class Sort
             try
             {
                 HashMap<Document, Date> dateMap = new HashMap<>();
-                for (Document d : documents)
+                for (Document document : documents)
                 {
-                    Object noteAttr = getNoteAttr(d, attrName);
+                    Object noteAttr = getNoteAttr(document, attrName);
                     String defaultValueStr = sortInfo.getAttribute().getDefaultValue();
                     Date defaultValue = defaultValueStr == null ? null : DATE_FORMAT.parse(defaultValueStr);
 
                     if (noteAttr == null)
-                        dateMap.put(d, defaultValue);
+                        dateMap.put(document, defaultValue);
                     else
-                        dateMap.put(d, DATE_FORMAT.parse(noteAttr.toString()));
+                        dateMap.put(document, DATE_FORMAT.parse(noteAttr.toString()));
                 }
                 documents.clear();
 
@@ -206,16 +194,17 @@ public class Sort
             try
             {
                 HashMap<Document, LocalTime> dateMap = new HashMap<>();
-                for (Document d : documents)
+                for (Document document : documents)
                 {
-                    Object noteAttr = getNoteAttr(d, attrName);
+                    Object noteAttr = getNoteAttr(document, attrName);
                     String defaultValueStr = sortInfo.getAttribute().getDefaultValue();
-                    LocalTime defaultValue = defaultValueStr == null ? null : LocalTime.parse(defaultValueStr, TIME_FORMAT);
+                    LocalTime defaultValue = defaultValueStr == null ? null
+                        : LocalTime.parse(defaultValueStr, TIME_FORMAT);
 
                     if (noteAttr == null)
-                        dateMap.put(d, defaultValue);
+                        dateMap.put(document, defaultValue);
                     else
-                        dateMap.put(d, LocalTime.parse(noteAttr.toString(), TIME_FORMAT));
+                        dateMap.put(document, LocalTime.parse(noteAttr.toString(), TIME_FORMAT));
                 }
                 documents.clear();
 
@@ -228,7 +217,7 @@ public class Sort
             {
                 log.error(e.toString());
             }
-                break;
+            break;
         default:
             break;
         }
@@ -240,4 +229,5 @@ public class Sort
         Document attributes = (Document)document.get(NoteConstants.ATTRIBUTES);
         return attributes.get(attributeName);
     }
+
 }

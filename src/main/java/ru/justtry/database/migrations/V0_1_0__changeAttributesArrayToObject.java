@@ -57,7 +57,7 @@ public class V0_1_0__changeAttributesArrayToObject
                     log.info(String.format("The old field %s has been removed", NoteConstants.ATTRIBUTES + "2"));
                 }
 
-                // Start changing only if attributes field is still list (ArrayList)
+                // Start changing only if attributes field is still the list (ArrayList)
                 Object attributesField = note.get(NoteConstants.ATTRIBUTES);
                 if (attributesField instanceof List)
                 {
@@ -73,7 +73,7 @@ public class V0_1_0__changeAttributesArrayToObject
 
                     db.updateDocument(collectionName, note);
 
-                    log.info(String.format("The attribute field has been changed from array to object"));
+                    log.info("The attribute field has been changed from array to object");
                 }
             }
         }
@@ -85,8 +85,8 @@ public class V0_1_0__changeAttributesArrayToObject
 
 
     /**
-     * A migration for my private usage to fix current collection state after changing attribute.
-     * There are no change attribute mechanism yet, so it will have been done by migration
+     * The migration for my private usage to fix current collection state after changing attribute.
+     * There is no change attribute mechanism yet, so it will be done by this migration.
      */
     @MigrationUnit(id = 2)
     public void fixDiaryDateAttributeName(MigrationContext context)
@@ -109,14 +109,14 @@ public class V0_1_0__changeAttributesArrayToObject
         {
             MDC.put("note", note.get(MONGO_ID).toString());
 
-            // We can use this migration only if the previous one has changed attributes field
+            // We can use this migration only if the previous one has successfully changed attributes field
             Object attributesField = note.get(NoteConstants.ATTRIBUTES);
             if (!(attributesField instanceof Document))
                 continue;
 
             Document attributes = (Document)note.get(NoteConstants.ATTRIBUTES);
 
-            // Nothing to do
+            // Nothing to change
             if (!attributes.containsKey("date"))
                 continue;
 
