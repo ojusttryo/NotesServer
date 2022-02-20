@@ -1,5 +1,7 @@
 package ru.justtry.configuration;
 
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.ViewResolver;
@@ -19,6 +21,11 @@ public class CustomWebMvcConfigurer implements WebMvcConfigurer
         resolver.setPrefix("/WEB-INF/");
         resolver.setSuffix(".jsp");
         return resolver;
+    }
+
+    @Bean
+    public WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> getDefaultServletFactoryCustomizer() {
+        return (factory) -> factory.setRegisterDefaultServlet(true);
     }
 
     @Override
