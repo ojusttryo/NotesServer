@@ -1,9 +1,9 @@
 package ru.justtry.fileprocessing;
 
+import static ru.justtry.database.DatabaseConfiguration.MONGO_MIGRATION_BEAN;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
@@ -17,7 +17,7 @@ import ru.justtry.database.Database;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-@DependsOn({"mongoMigration"})      // it should start after any changes have been made in migrations
+@DependsOn({ MONGO_MIGRATION_BEAN })      // it should start after any changes have been made in migrations
 public class FileCleaner
 {
     private final Database database;

@@ -1,0 +1,33 @@
+
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 128MB
+      max-request-size: 128MB
+  http:
+    encoding:
+      enabled: true
+      force: true
+      charset: UTF-8
+
+server:
+  port: 8765
+  host: localhost
+
+# local db that not accessible from the outside - can keep credentials here
+database:
+  host: localhost
+  port: 27017
+  name: notes
+  user: justtry
+  password: 123456789
+
+logging:
+  level:
+    org: INFO
+    root: INFO
+
+files:
+  cleaner:
+    enabled: false

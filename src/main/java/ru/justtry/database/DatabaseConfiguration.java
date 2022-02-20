@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 import com.github.migmong.MongoMigration;
 import com.github.migmong.exception.MigrationException;
@@ -16,10 +15,11 @@ import ru.justtry.database.sort.Sort;
 import ru.justtry.mappers.LogMapper;
 
 @Configuration
-@PropertySource("classpath:application.properties")
 @RequiredArgsConstructor
 public class DatabaseConfiguration
 {
+    public static final String MONGO_MIGRATION_BEAN = "mongoMigration";
+
     private final ApplicationContext context;
     private final LogMapper logMapper;
     private final Sort sort;
@@ -44,7 +44,7 @@ public class DatabaseConfiguration
         return db;
     }
 
-    @Bean
+    @Bean(name = MONGO_MIGRATION_BEAN)
     public MongoMigration mongoMigration() throws MigrationException
     {
         MongoMigration migration = new MongoMigration(host, port, name, user, password);
