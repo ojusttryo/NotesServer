@@ -1,51 +1,54 @@
 package ru.justtry.fileprocessing;
 
-import static ru.justtry.database.DatabaseConfiguration.MONGO_MIGRATION_BEAN;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.scheduling.annotation.Scheduled;
+import javax.annotation.PostConstruct;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
 
 @Component
-@Slf4j
-@RequiredArgsConstructor
-@DependsOn({ MONGO_MIGRATION_BEAN })      // it should start after any changes have been made in migrations
 public class FileCleaner
 {
-    private final Database database;
+    final static Logger logger = LogManager.getLogger(FileCleaner.class);
 
-    @Value("${files.cleaner.enabled:false}")
-    private boolean enabled;
+    @Autowired
+    private Database database;
 
-
-    @Scheduled(fixedDelay = 3600_000)
-    public void cleanFiles()
+    @PostConstruct
+    public void run()
     {
-        if (!enabled)
-        {
-            log.info("Removing old unused files is skipped due to settings.");
-            return;
-        }
+        Thread t = new Thread(() -> {
+            while (true)
+            {
+                try
+                {
+                    logger.info("Removing old unused files...");
+                    long time = Instant.now().minus(1, ChronoUnit.HOURS).getEpochSecond();
+                    int count = database.deleteFilesOlderThan(time);
+                    logger.info("Removed " + count + " files");
+                }
+                catch (Exception e)
+                {
+                    logger.error(e);
+                }
 
-        try
-        {
-            log.info("Removing old unused files...");
-            long time = Instant.now().minus(1, ChronoUnit.HOURS).getEpochSecond();
-            int count = database.deleteFilesOlderThan(time);
-            log.info("Removed " + count + " files");
-        }
-        catch (Exception e)
-        {
-            log.error(e.toString());
-        }
+                try
+                {
+                    Thread.sleep(5 * 60 * 1000);
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+        });
+        t.setDaemon(true);
+        t.start();
     }
-
 }

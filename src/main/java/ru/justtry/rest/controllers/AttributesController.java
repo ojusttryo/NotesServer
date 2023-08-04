@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.justtry.database.Database;
-import ru.justtry.database.LogRecord.Operation;
 import ru.justtry.metainfo.Attribute;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.metainfo.Entity;
@@ -49,7 +48,7 @@ public class AttributesController
     {
         saveAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
         attributeService.save(attribute);
-        database.saveLog(ATTRIBUTES_COLLECTION, Operation.CREATE, attribute.getId(), null, attribute.toString());
+        database.saveLog(ATTRIBUTES_COLLECTION, "CREATE", attribute.getId(), null, attribute.toString());
         return new ResponseEntity<>(attribute.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
@@ -62,7 +61,7 @@ public class AttributesController
         saveAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
         Attribute before = attributeService.getByName(attribute.getName());
         attributeService.update(attribute);
-        database.saveLog(ATTRIBUTES_COLLECTION, Operation.UPDATE, attribute.getId(), before.toString(), attribute.toString());
+        database.saveLog(ATTRIBUTES_COLLECTION, "UPDATE", attribute.getId(), before.toString(), attribute.toString());
         return new ResponseEntity<>(attribute.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
@@ -134,7 +133,7 @@ public class AttributesController
         Attribute attribute = attributeService.getByName(name);
         deleteAttributeValidator.validate(attribute, ATTRIBUTES_COLLECTION);
         database.deleteDocument(ATTRIBUTES_COLLECTION, attribute.getId());
-        database.saveLog(ATTRIBUTES_COLLECTION, Operation.DELETE, name, attribute.toString(), null);
+        database.saveLog(ATTRIBUTES_COLLECTION, "DELETE", name, attribute.toString(), null);
     }
 }
 

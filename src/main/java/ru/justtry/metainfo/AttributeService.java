@@ -6,29 +6,28 @@ import static ru.justtry.shared.AttributeConstants.TITLE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.bson.Document;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
 import ru.justtry.database.Database;
-import ru.justtry.database.sort.Sort;
 import ru.justtry.mappers.AttributeMapper;
 import ru.justtry.shared.Identifiable;
 
-@Service
-@RequiredArgsConstructor
+@Component
 public class AttributeService
 {
-    private final AttributeMapper attributeMapper;
-    private final Database database;
-    private final EntityService entityService;
-    private final Sort sort;
+    @Autowired
+    private AttributeMapper attributeMapper;
+    @Autowired
+    protected Database database;
+    @Autowired
+    private EntityService entityService;
 
 
     public Attribute getById(String id)
@@ -80,22 +79,6 @@ public class AttributeService
     }
 
 
-    public Attribute[] getAllWithUsage()
-    {
-        Attribute[] attributes = getAll();
-        Map<String, Attribute> attributeMap = Arrays.stream(attributes)
-                .collect(Collectors.toMap(Attribute::getName, x -> x));
-
-        Entity[] entities = entityService.getAll();
-        for (Entity entity : entities)
-        {
-            for (String attribute : entity.getAttributes())
-                attributeMap.get(attribute).getUsage().add(entity.getName());
-        }
-        return attributes;
-    }
-
-
     public Attribute[] getAvailable(Entity entity)
     {
         Entity[] entities = entityService.getAll();
@@ -126,8 +109,6 @@ public class AttributeService
             if (entry.getValue() == 0 || (entity != null && entity.getAttributes().contains(entry.getKey())))
                 available.add(attrMap.get(entry.getKey()));
         }
-
-        available.sort(Comparator.comparing(Attribute::getName));
 
         return available.toArray(Attribute[]::new);
     }

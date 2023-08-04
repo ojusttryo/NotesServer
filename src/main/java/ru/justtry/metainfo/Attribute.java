@@ -9,16 +9,12 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
-import ru.justtry.metainfo.dictionary.Alignment;
-import ru.justtry.metainfo.dictionary.ImageSize;
-import ru.justtry.metainfo.dictionary.Method;
-import ru.justtry.metainfo.dictionary.Type;
+import ru.justtry.shared.AttributeConstants.DefaultValue;
 import ru.justtry.shared.Identifiable;
+
 
 /**
  * The meta information about some field of the note. This class describes how to use fields of notes.
@@ -29,26 +25,234 @@ import ru.justtry.shared.Identifiable;
 @Data
 public class Attribute extends Identifiable
 {
+    public enum Method
+    {
+        NONE("none"),                   // does nothing, just empty field
+        AVG("avg"),
+        SUM("sum"),
+        MIN("min"),
+        MAX("max"),
+        RANGE("range"),                 // range of values like "5 - 200"
+        EMPTY("empty"),                 // count of empty elements
+        COUNT("count");
 
-    /** The unique name of attribute */
-    @NotNull(message = "Name should be set")
+        public final String title;
+
+        public static Method get(String method)
+        {
+            switch (method)
+            {
+            case "none": return NONE;
+            case "avg": return AVG;
+            case "sum": return SUM;
+            case "min": return MIN;
+            case "max": return MAX;
+            case "range": return RANGE;
+            case "empty": return EMPTY;
+            case "count": return COUNT;
+            default: return null;
+            }
+        }
+
+        Method(String title)
+        {
+            this.title = title;
+        }
+    }
+
+    public enum Type
+    {
+        TEXT("text"),                       // single line string
+        TEXT_AREA("textarea"),              // multiline string
+        DELIMITED_TEXT("delimited text"),   // string with delimited like ;
+        NUMBER("number"),                   // numeric field (double or integer)
+        SELECT("select"),                   // drop-down list with single selected value, represents enum value
+        MULTI_SELECT("multiselect"),        // drop-down list that allows multiple selections
+        CHECKBOX("checkbox"),               // boolean value
+        INC("inc"),                         // incremented number, which has plus sign beside
+        URL("url"),                         // the URL
+        SAVE_TIME("save time"),             // timestamp when the note is saved
+        UPDATE_TIME("update time"),         // timestamp when the note is updated
+        USER_DATE("user date"),             // custom date (yyyy-mm-dd)
+        USER_TIME("user time"),             // custom time (hh:mm, 24-hours format)
+        FILE("file"),
+        IMAGE("image"),
+        FILES("files"),
+        GALLERY("gallery"),
+        NESTED_NOTES("nested notes"),
+        RELATED_NOTES("related notes"),
+        COMPARED_NOTES("compared notes"),
+        ROW_NUMBER("row number");
+
+        public final String title;
+
+        public static boolean isTextType(Type type)
+        {
+            return (type == TEXT || type == TEXT_AREA || type == DELIMITED_TEXT);
+        }
+
+        public static boolean isTextType(String type)
+        {
+            Type t = get(type);
+            return (t != null) && isTextType(t);
+        }
+
+        public static boolean isNumericType(Type type)
+        {
+            return (type == NUMBER || type == INC);
+        }
+
+        public static boolean isNumericType(String type)
+        {
+            Type t = get(type);
+            return (t != null) && isNumericType(t);
+        }
+
+        public static boolean isSelectType(Type type)
+        {
+            return (type == SELECT || type == MULTI_SELECT);
+        }
+
+        public static boolean isTimestampType(Type type)
+        {
+            return (type == SAVE_TIME || type == UPDATE_TIME);
+        }
+
+        public static boolean isTimestampType(String type)
+        {
+            Type t = get(type);
+            return (t != null) && isTimestampType(t);
+        }
+
+        public static boolean isFile(Type type)
+        {
+            return (type == FILE || type == IMAGE);
+        }
+
+        public static boolean isMultiFile(Type type)
+        {
+            return (type == GALLERY || type == FILES);
+        }
+
+        public static boolean isNotesList(Type type)
+        {
+            return (type == NESTED_NOTES || type == RELATED_NOTES || type == COMPARED_NOTES);
+        }
+
+        public static Type get(String type)
+        {
+            switch (type)
+            {
+            case "text": return TEXT;
+            case "textarea": return TEXT_AREA;
+            case "delimited text": return DELIMITED_TEXT;
+            case "number": return NUMBER;
+            case "select": return SELECT;
+            case "multiselect": return MULTI_SELECT;
+            case "checkbox": return CHECKBOX;
+            case "inc": return INC;
+            case "url": return URL;
+            case "save time": return SAVE_TIME;
+            case "update time": return UPDATE_TIME;
+            case "user date": return USER_DATE;
+            case "user time": return USER_TIME;
+            case "file": return FILE;
+            case "image": return IMAGE;
+            case "files": return FILES;
+            case "gallery": return GALLERY;
+            case "nested notes": return NESTED_NOTES;
+            case "related notes": return RELATED_NOTES;
+            case "compared notes": return COMPARED_NOTES;
+            case "row number": return ROW_NUMBER;
+            default: return null;
+            }
+        }
+
+        Type(String title)
+        {
+            this.title = title;
+        }
+    }
+
+    public enum Alignment
+    {
+        LEFT("left"),
+        RIGHT("right"),
+        CENTER("center");
+
+        public final String title;
+
+        public static Alignment get(String alignment)
+        {
+            switch (alignment)
+            {
+            case "left": return LEFT;
+            case "right": return RIGHT;
+            case "center": return CENTER;
+            default: return null;
+            }
+        }
+
+        Alignment(String titile)
+        {
+            this.title = titile;
+        }
+    }
+
+
+    public enum ImageSize
+    {
+        SIZE_50(50),
+        SIZE_100(100),
+        SIZE_200(200);
+
+        public final int size;
+
+        public static ImageSize get(int size)
+        {
+            switch (size)
+            {
+            case 50: return SIZE_50;
+            case 100: return SIZE_100;
+            case 200: return SIZE_200;
+            default: return null;
+            }
+        }
+
+        ImageSize(int size)
+        {
+            this.size = size;
+        }
+    }
+
+
+    /**
+     * The unique name of attribute.
+     */
+    @NotNull(message = "Name cannot be null")
     private String name = "";
 
-    /** The title of attribute, which will be displayed on the form */
-    @NotNull(message = "Title should be set")
+    /**
+     * The title of attribute, which will be displayed on the form.
+     */
+    @NotNull(message = "Title cannot be null")
     private String title = "";
 
-    /** Method responsible for aggregation operations */
+    /**
+     * Method responsible for aggregation operations on folders.
+     */
     @NotNull(message = "Method cannot be null")
     private String method = Method.NONE.title;
 
-    /** Value type */
+    /**
+     * Value type.
+     */
     @NotNull(message = "Type cannot be null")
     private String type = Type.TEXT.title;
 
     /**
-     * Minimal width of the field with this attribute or the input at form (like gallery).
-     * It can stores values like "200" and "20em"
+     * Minimum width of the field with this attribute or the while input at form (like gallery).
+     * Could keep value like "200" and "20em"
      */
     private String minWidth = null;
 
@@ -71,16 +275,12 @@ public class Attribute extends Identifiable
     private String maxHeight = null;
 
     /**
-     * For number types applies as the lower bound.
-     * For text types - as the minimum length.
-     * For files - as the minimum size (Kb)
+     * For number types applies as the lower bound. For text types - as the minimum length.
      */
     private Double min = null;
 
     /**
-     * For numeric types applies as the upper bound.
-     * For text types - as the maximum length.
-     * For files - as the maximum size (Kb)
+     * For int types applies as the upper bound. For text types - as the maximum length.
      */
     private Double max = null;
 
@@ -92,13 +292,13 @@ public class Attribute extends Identifiable
     /**
      * Step of numeric value. Keep in string for precision.
      */
-    private String step = "1";
+    private String step = DefaultValue.STEP.toString();
 
     /**
      * Lines count to display this attribute.
      * Except textarea the value is ignored.
      */
-    private Integer linesCount = 1;
+    private Integer linesCount = DefaultValue.LINES_COUNT;
 
     private Integer imagesSize = ImageSize.SIZE_100.size;
 
@@ -106,13 +306,13 @@ public class Attribute extends Identifiable
      * The alignment of the attribute in data table.
      */
     @NotNull(message = "Alignment cannot be null")
-    private String alignment = Alignment.LEFT.getTitle();
+    private String alignment = DefaultValue.ALIGNMENT;
 
     /**
      * Specifies if the attribute must be filled.
      */
     @NotNull(message = "Required cannot be null")
-    private Boolean required = false;
+    private Boolean required = DefaultValue.REQUIRED;
 
     /**
      * The regular expression is used to check the correctness of value.
@@ -139,8 +339,6 @@ public class Attribute extends Identifiable
      * this attributes won't be shown in the list of available attributes on entity form.
      */
     private boolean shared = true;
-
-    private List<String> usage = new ArrayList<>();
 
     public void setSelectOptions(List<String> selectOptions)
     {

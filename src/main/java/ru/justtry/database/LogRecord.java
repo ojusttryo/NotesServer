@@ -1,22 +1,15 @@
 package ru.justtry.database;
 
-import java.util.Date;
-
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 public class LogRecord
 {
-    public enum Operation
-    {
-        CREATE,
-        UPDATE,
-        DELETE
-    }
-
     private long time;
     private String collection;
-    private Operation operation;
+    private String operation;
     private String id;
     private Object before;
     private Object after;
@@ -27,7 +20,7 @@ public class LogRecord
 
     }
 
-    public LogRecord(String collection, Operation operation, String id, Object before, Object after)
+    public LogRecord(String collection, String operation, String id, Object before, Object after)
     {
         this.collection = collection;
         this.operation = operation;

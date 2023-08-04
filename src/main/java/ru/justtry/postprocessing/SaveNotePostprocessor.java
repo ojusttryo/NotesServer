@@ -9,21 +9,24 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
+import com.google.common.base.Strings;
+
 import ru.justtry.database.Database;
 import ru.justtry.metainfo.Attribute;
-import ru.justtry.metainfo.dictionary.Type;
+import ru.justtry.metainfo.Attribute.Type;
 import ru.justtry.metainfo.AttributeService;
 import ru.justtry.notes.Note;
 
 @Component
-@RequiredArgsConstructor
 public class SaveNotePostprocessor
 {
-    private final Database database;
-    private final AttributeService attributeService;
+    @Autowired
+    private Database database;
+    @Autowired
+    private AttributeService attributeService;
 
 
     public void process(Note note, @Nullable Note oldNote, String entityName)
@@ -31,12 +34,15 @@ public class SaveNotePostprocessor
         Map<String, Attribute> attributes = attributeService.getAttributesAsMap(entityName);
         for (String attributeName : attributes.keySet())
         {
-            Type type = attributes.get(attributeName).getTypeAsEnum();
+            Attribute.Type type = attributes.get(attributeName).getTypeAsEnum();
 
             if (Type.isFile(type))
             {
                 String oldFileId = oldNote == null ? null : (String)oldNote.getAttributes().get(attributeName);
                 String newFileId = (String)note.getAttributes().get(attributeName);
+
+                if (!Strings.isNullOrEmpty(newFileId) && !database.isFileExists(newFileId))
+                    throw new IllegalArgumentException("The file for attribute " + attributeName + " does not exist");
 
                 boolean fileIsDeleted = (newFileId == null && oldFileId != null);
                 boolean fileIsChanged = (newFileId != null && oldFileId != null && !newFileId.contentEquals(oldFileId));

@@ -54,7 +54,7 @@ public class EntitiesController
         Document document = entityMapper.getDocument(entity);
         String id = database.saveDocument(ENTITIES_COLLECTION, document);
         entity.setId(id);
-        database.saveLog(ENTITIES_COLLECTION, Operation.CREATE, id, null, entity.toString());
+        database.saveLog(ENTITIES_COLLECTION, "CREATE", id, null, entity.toString());
         return new ResponseEntity<>(id, new HttpHeaders(), HttpStatus.OK);
     }
 
@@ -67,7 +67,7 @@ public class EntitiesController
         entity.setId(before.getId());
         saveEntityValidator.validate(entity, ENTITIES_COLLECTION);
         entityService.update(entity);
-        database.saveLog(ENTITIES_COLLECTION, Operation.UPDATE, entity.getId(), before.toString(), entity.toString());
+        database.saveLog(ENTITIES_COLLECTION, "UPDATE", entity.getId(), before.toString(), entity.toString());
         return new ResponseEntity<>(entity.getId(), new HttpHeaders(), HttpStatus.OK);
     }
 
@@ -121,7 +121,7 @@ public class EntitiesController
         deleteEntityValidator.validate(entity, ENTITIES_COLLECTION);
         database.deleteDocument(ENTITIES_COLLECTION, entity.getId());
         database.dropCollection(noteService.getCollectionName(name));
-        database.saveLog(ENTITIES_COLLECTION, Operation.DELETE, name, entity.toString(), null);
+        database.saveLog(ENTITIES_COLLECTION, "DELETE", name, entity.toString(), null);
     }
 
 }

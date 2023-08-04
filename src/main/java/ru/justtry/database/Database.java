@@ -1,44 +1,6 @@
 package ru.justtry.database;
 
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.in;
-import static com.mongodb.client.model.Filters.lt;
-import static com.mongodb.client.model.Projections.excludeId;
-import static com.mongodb.client.model.Projections.include;
-import static com.mongodb.client.model.Sorts.ascending;
-import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
-import static ru.justtry.shared.Constants.MONGO_ID;
-import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
-import static ru.justtry.shared.EntityConstants.NAME;
-import static ru.justtry.shared.ScaledImageConstants.ORIGINAL_ID;
-import static ru.justtry.shared.ScaledImageConstants.SIZE;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoCredential;
-import com.mongodb.ReadConcern;
-import com.mongodb.ServerAddress;
-import com.mongodb.WriteConcern;
+import com.mongodb.*;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -54,16 +16,39 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.web.multipart.MultipartFile;
 import ru.justtry.database.sort.Sort;
 import ru.justtry.database.sort.SortInfo;
 import ru.justtry.mappers.LogMapper;
 import ru.justtry.shared.AttributeConstants;
 
-@RequiredArgsConstructor
+import java.io.IOException;
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Projections.excludeId;
+import static com.mongodb.client.model.Projections.include;
+import static com.mongodb.client.model.Sorts.ascending;
+import static ru.justtry.shared.AttributeConstants.ATTRIBUTES_COLLECTION;
+import static ru.justtry.shared.Constants.MONGO_ID;
+import static ru.justtry.shared.EntityConstants.ENTITIES_COLLECTION;
+import static ru.justtry.shared.EntityConstants.NAME;
+import static ru.justtry.shared.ScaledImageConstants.ORIGINAL_ID;
+import static ru.justtry.shared.ScaledImageConstants.SIZE;
+
 @Slf4j
+@NoArgsConstructor
 public class Database
 {
     private static final String LOG_COLLECTION = "log";
@@ -71,11 +56,12 @@ public class Database
     public static final String NOTES_FILES_COLLECTION = "notes.files";
     public static final String IMAGES_COLLECTION = "notes.images";
 
-    private final LogMapper logMapper;
-    private final Sort sort;
-
     private String databaseName;
     private MongoClient mongoClient;
+    @Autowired
+    private LogMapper logMapper;
+    @Autowired
+    private Sort sort;
 
 
     public void init(String host, Integer port, String name, String user, String password)
@@ -169,7 +155,11 @@ public class Database
     {
         MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
 
-        FindIterable<Document> iterable = collection.find(in(fieldName, values));
+        List<String> identifiers = new ArrayList<>(values.size());
+        for (String id : values)
+            identifiers.add(id);
+
+        FindIterable<Document> iterable = collection.find(in(fieldName, identifiers));
 
         List<Document> documents = new ArrayList<>();
         try (MongoCursor<Document> cursor = iterable.iterator())
@@ -259,7 +249,7 @@ public class Database
     }
 
 
-    public LogRecord[] getLog()
+    public Object[] getLog()
     {
         MongoCollection<Document> collection = getDatabase().getCollection(LOG_COLLECTION);
 
@@ -273,11 +263,11 @@ public class Database
                 result.add((LogRecord)logMapper.getObject(document));
             }
         }
-        return result.toArray(LogRecord[]::new);
+        return result.toArray();
     }
 
 
-    public LogRecord[] getLog(int count)
+    public Object[] getLog(int count)
     {
         MongoCollection<Document> collection = getDatabase().getCollection(LOG_COLLECTION);
         FindIterable<Document> iterable = collection.find().sort(new Document(MONGO_ID, -1)).limit(count);
@@ -290,11 +280,11 @@ public class Database
                 result.add((LogRecord)logMapper.getObject(document));
             }
         }
-        return result.toArray(LogRecord[]::new);
+        return result.toArray();
     }
 
 
-    public void saveLog(String collectionName, LogRecord.Operation operation, String id, Object before, Object after)
+    public void saveLog(String collectionName, String operation, String id, Object before, Object after)
     {
         LogRecord logRecord = new LogRecord(collectionName, operation, id, before, after);
         Document document = logMapper.getDocument(logRecord);
@@ -338,7 +328,7 @@ public class Database
             catch (Exception e)
             {
                 // Maybe we connect the same note attribute to the same file
-                log.error(e.toString());
+                log.error(e);
             }
         }
     }
@@ -382,24 +372,11 @@ public class Database
 
     public boolean isFileExists(String fileId)
     {
-        MongoCollection<Document> allFiles = getDatabase().getCollection("files.files");
-        FindIterable<Document> iterable = allFiles.find(eq(MONGO_ID, new ObjectId(fileId))).limit(1);
-        Document file = iterable.first();
+        GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
+        GridFSFindIterable iterable = bucket.find(eq(MONGO_ID, fileId)).limit(1);
+        GridFSFile file = iterable.first();
 
         return (file != null);
-    }
-
-
-    public Integer getFileSize(String fileId)
-    {
-        MongoCollection<Document> allFiles = getDatabase().getCollection(FILES_COLLECTION);
-        FindIterable<Document> iterable = allFiles.find(eq(MONGO_ID, new ObjectId(fileId))).limit(1);
-        Document file = iterable.first();
-
-        if (file == null)
-            return null;
-
-        return (Integer)file.get("length");
     }
 
 
@@ -414,6 +391,28 @@ public class Database
             throw new NoSuchElementException("Cannot find file with md5 " + md5);
 
         return file.getObjectId().toString();
+    }
+
+
+    public void deleteFilesExcept(Collection<String> fileIds)
+    {
+        MongoCollection imagesCollection = getDatabase().getCollection(IMAGES_COLLECTION);
+        GridFSBucket bucket = GridFSBuckets.create(getDatabase(), FILES_COLLECTION);
+
+        GridFSFindIterable iterable = bucket.find();
+        MongoCursor<GridFSFile> iterator = iterable.iterator();
+        while (iterator.hasNext())
+        {
+            GridFSFile file = iterator.next();
+            String fileId = file.getObjectId().toString();
+            if (!fileIds.contains(fileId))
+            {
+                Document document = new Document().append(ORIGINAL_ID, fileId);
+                imagesCollection.deleteMany(document);
+                bucket.delete(new ObjectId(fileId));
+                log.info("Deleted file " + fileId);
+            }
+        }
     }
 
 

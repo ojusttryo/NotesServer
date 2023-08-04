@@ -9,22 +9,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.springframework.stereotype.Component;
 
-import lombok.extern.slf4j.Slf4j;
+import ru.justtry.database.sort.SortInfo.Direction;
 import ru.justtry.shared.NoteConstants;
 
 @Component
-@Slf4j
 public class Sort
 {
+    private final static Logger logger = LogManager.getLogger(Sort.class);
     private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     private final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
+    class NaturalComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>> {
 
-    static class NaturalComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>>
-    {
         @Override
         public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2)
         {
@@ -34,30 +35,13 @@ public class Sort
                 return 1;
             if (o2.getValue() == null)
                 return -1;
-
             return o1.getValue().compareTo(o2.getValue());
         }
     }
 
 
-    static class NaturalStringComparator<K, String> implements Comparator<Map.Entry<K, String>>
-    {
-        @Override
-        public int compare(Map.Entry<K, String> o1, Map.Entry<K, String> o2)
-        {
-            if (o1.getValue() == null && o2.getValue() == null)
-                return 0;
-            if (o1.getValue() == null)
-                return 1;
-            if (o2.getValue() == null)
-                return -1;
-            return o1.getValue().toString().compareToIgnoreCase(o2.getValue().toString());
-        }
-    }
+    class ReverseComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>> {
 
-
-    static class ReverseComparator<K, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>>
-    {
         @Override
         public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2)
         {
@@ -72,25 +56,8 @@ public class Sort
     }
 
 
-    static class ReverseStringComparator<K, String> implements Comparator<Map.Entry<K, String>>
-    {
-        @Override
-        public int compare(Map.Entry<K, String> o1, Map.Entry<K, String> o2)
-        {
-            if (o1.getValue() == null && o2.getValue() == null)
-                return 0;
-            if (o1.getValue() == null)
-                return 1;
-            if (o2.getValue() == null)
-                return -1;
-            return o2.getValue().toString().compareToIgnoreCase(o1.getValue().toString());
-        }
-    }
-
-
     public void run(List<Document> documents, SortInfo sortInfo)
     {
-        // TODO throw exception
         if (sortInfo == null)
             return;
 
@@ -102,39 +69,39 @@ public class Sort
         case DELIMITED_TEXT:
         case SELECT:
             HashMap<Document, String> stringMap = new HashMap<>();
-            for (Document document : documents)
+            for (Document d : documents)
             {
-                Object noteAttr = getNoteAttr(document, attrName);
+                Object noteAttr = getNoteAttr(d, attrName);
                 String defaultValue = sortInfo.getAttribute().getDefaultValue();
 
                 if (noteAttr == null)
-                    stringMap.put(document, defaultValue);
+                    stringMap.put(d, defaultValue);
                 else
-                    stringMap.put(document, noteAttr.toString());
+                    stringMap.put(d, noteAttr.toString());
             }
             documents.clear();
 
             stringMap.entrySet().stream()
-                    .sorted(sortInfo.getDirection() == Direction.DESCENDING ? new ReverseStringComparator<>()
-                            : new NaturalStringComparator<>())
+                    .sorted(sortInfo.getDirection() == Direction.DESCENDING ?
+                            new ReverseComparator<>() : new NaturalComparator<>())
                     .forEachOrdered(x -> documents.add(x.getKey()));
             break;
         case INC:
         case NUMBER:
             HashMap<Document, Double> doubleMap = new HashMap<>();
-            for (Document document : documents)
+            for (Document d : documents)
             {
-                Object noteAttr = getNoteAttr(document, attrName);
+                Object noteAttr = getNoteAttr(d, attrName);
                 Double defaultValue = null;
                 if (sortInfo.getAttribute().getDefaultValue() != null)
                     defaultValue = Double.parseDouble(sortInfo.getAttribute().getDefaultValue());
 
-                // In some reason expression like map.put(document, noteAttr == null ? defaultValue : Double.parse...)
+                // In some reason expression like map,put(d, noteAttr == null ? defaultValue : Double.parse...)
                 // throws NPE because execution comes to Double.parse even when noteAttr is null.
                 if (noteAttr == null)
-                    doubleMap.put(document, defaultValue);
+                    doubleMap.put(d, defaultValue);
                 else
-                    doubleMap.put(document, Double.parseDouble(noteAttr.toString()));
+                    doubleMap.put(d, Double.parseDouble(noteAttr.toString()));
             }
             documents.clear();
 
@@ -145,16 +112,16 @@ public class Sort
             break;
         case CHECKBOX:
             HashMap<Document, Boolean> booleanMap = new HashMap<>();
-            for (Document document : documents)
+            for (Document d : documents)
             {
-                Object noteAttr = getNoteAttr(document, attrName);
+                Object noteAttr = getNoteAttr(d, attrName);
                 String defaultValueStr = sortInfo.getAttribute().getDefaultValue();
                 Boolean defaultValue = defaultValueStr == null ? null : Boolean.parseBoolean(defaultValueStr);
 
                 if (noteAttr == null)
-                    booleanMap.put(document, defaultValue);
+                    booleanMap.put(d, defaultValue);
                 else
-                    booleanMap.put(document, (Boolean)noteAttr);
+                    booleanMap.put(d, (Boolean)noteAttr);
             }
             documents.clear();
 
@@ -167,16 +134,16 @@ public class Sort
             try
             {
                 HashMap<Document, Date> dateMap = new HashMap<>();
-                for (Document document : documents)
+                for (Document d : documents)
                 {
-                    Object noteAttr = getNoteAttr(document, attrName);
+                    Object noteAttr = getNoteAttr(d, attrName);
                     String defaultValueStr = sortInfo.getAttribute().getDefaultValue();
                     Date defaultValue = defaultValueStr == null ? null : DATE_FORMAT.parse(defaultValueStr);
 
                     if (noteAttr == null)
-                        dateMap.put(document, defaultValue);
+                        dateMap.put(d, defaultValue);
                     else
-                        dateMap.put(document, DATE_FORMAT.parse(noteAttr.toString()));
+                        dateMap.put(d, DATE_FORMAT.parse(noteAttr.toString()));
                 }
                 documents.clear();
 
@@ -187,24 +154,23 @@ public class Sort
             }
             catch (Exception e)
             {
-                log.error(e.toString());
+                logger.error(e);
             }
             break;
         case USER_TIME:
             try
             {
                 HashMap<Document, LocalTime> dateMap = new HashMap<>();
-                for (Document document : documents)
+                for (Document d : documents)
                 {
-                    Object noteAttr = getNoteAttr(document, attrName);
+                    Object noteAttr = getNoteAttr(d, attrName);
                     String defaultValueStr = sortInfo.getAttribute().getDefaultValue();
-                    LocalTime defaultValue = defaultValueStr == null ? null
-                        : LocalTime.parse(defaultValueStr, TIME_FORMAT);
+                    LocalTime defaultValue = defaultValueStr == null ? null : LocalTime.parse(defaultValueStr, TIME_FORMAT);
 
                     if (noteAttr == null)
-                        dateMap.put(document, defaultValue);
+                        dateMap.put(d, defaultValue);
                     else
-                        dateMap.put(document, LocalTime.parse(noteAttr.toString(), TIME_FORMAT));
+                        dateMap.put(d, LocalTime.parse(noteAttr.toString(), TIME_FORMAT));
                 }
                 documents.clear();
 
@@ -215,9 +181,9 @@ public class Sort
             }
             catch (Exception e)
             {
-                log.error(e.toString());
+                logger.error(e);
             }
-            break;
+                break;
         default:
             break;
         }
@@ -229,5 +195,4 @@ public class Sort
         Document attributes = (Document)document.get(NoteConstants.ATTRIBUTES);
         return attributes.get(attributeName);
     }
-
 }

@@ -29,4 +29,30 @@ public interface AttributeConstants
     String ENTITY = "entity";
     String SHARED = "shared";
 
+    interface Type
+    {
+        String TEXT = "text";
+        String TEXTAREA = "textarea";
+        String SELECT = "select";
+    }
+
+    interface DefaultValue
+    {
+        Integer WIDTH = 0;
+        Integer LINES_COUNT = 1;
+        Integer STEP = 1;
+        String ALIGNMENT = LEFT;
+        boolean REQUIRED = false;
+        boolean VISIBLE = true;
+    }
+
+    interface PredefinedAttributes
+    {
+        String NAME = "name";
+        String ADD_TIME = "add time";
+        String UPDATE_TIME = "last update time";
+        String STATE = "state";
+        String FOLDER = "folder";
+        String COMMENT = "comment";
+    }
 }
